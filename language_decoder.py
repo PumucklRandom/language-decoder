@@ -21,6 +21,7 @@ NEW_LINE = '\n'
 PATTERNS = [',', ';', '.', ':', '!', '?']
 PUNCTUATIONS = ['.', '!', '?']
 
+# Dictionary of common translation mistakes. (Example for russian to german)
 DICTIONARY = {
     'ICH BIN': 'Ich', 'Ich bin': 'Ich', 'ich bin': 'ich', 'ICH': 'Ich', 'DU BIST': 'Du', 'Du bist': 'Du', 'du bist': 'du',
     'ER IST': 'Er', 'Er ist': 'Er', 'er ist': 'er', 'SIE IST': 'Sie', 'Sie ist': 'Sie', 'sie ist': 'sie',
@@ -313,20 +314,15 @@ class LanguageDecoder(object):
 
 
 if __name__ == "__main__":
+    # Initialise language decoder.
     language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de')
-    # language_decoder.get_supported_languages()
-    base_path = 'D:/Marlon/Русский/3 История/'
-    directories = glob(os.path.join(base_path, '**/*/'), recursive = True)
-    for directory in directories:
-        text_files = glob(os.path.join(directory, '*.txt'))
-        for text_file in text_files:
-            if not text_file.endswith('transl.txt') and not text_file.endswith('decode.txt'):
-                language_decoder.decode_text(source_path = text_file, translate_text = True)
-            if text_file.endswith('decode.txt'):
-                language_decoder.convert2pdf(decode_path = text_file)
-                # language_decoder.delete_decoded_files(decode_path=text_file)
-
-    # source_path = 'C:/Users/Marlon/Marlon/python/Урок.txt'
-    # decode_path = language_decoder.decode_text(source_path = source_path, translate_text = True)
-    # pdf_path = language_decoder.convert2pdf(decode_path = decode_path)
-    # language_decoder.delete_translation_files(decode_path = decode_path)
+    # Get supported languages.
+    language_decoder.get_supported_languages()
+    # Define source path to text file.
+    source_path = '/../../.txt'
+    # Decoding text (takes a while).
+    decode_path = language_decoder.decode_text(source_path = source_path, translate_text = True)
+    # Check the decoding translation before converting to pdf, because word by word translation is pretty bad.
+    pdf_path = language_decoder.convert2pdf(decode_path = decode_path)
+    # Optional remove decoded and translated text files.
+    # language_decoder.delete_decoded_files(decode_path = decode_path)
