@@ -6,61 +6,89 @@ from typing import Optional, Tuple, List
 from pprint import PrettyPrinter
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, MicrosoftAPIerror
-
-pp = PrettyPrinter(indent = 4)
-# PDF FORMATTING PARAMETER
-CHAR_LIM = 74  # character limit of one line (max: 74)
-LINE_LIM = 54  # Lines limit of one page (max: 54) reduce in steps of 3
-TITLE_SIZE = 24  # Font size of the title (max: 24)
-FONT_SIZE = 13.4  # Font size of the text (max: 13.4)
-PDF_W = 215  # Width of the pdf text field (min 215)
-PDF_H = 5.28  # Height for each pdf line (5.18 - 5.28)
-PATH_NOTO = './fonts/NotoMono.ttf'
-NEW_LINE = '\n'
-# TEXT DECODING PARAMETER
-PATTERNS = [',', ';', '.', ':', '!', '?']
-PUNCTUATIONS = ['.', '!', '?']
-
-# Dictionary of common translation mistakes. (Example for russian to german)
-DICTIONARY = {
-    'ICH BIN': 'Ich', 'Ich bin': 'Ich', 'ich bin': 'ich', 'ICH': 'Ich', 'DU BIST': 'Du', 'Du bist': 'Du', 'du bist': 'du',
-    'ER IST': 'Er', 'Er ist': 'Er', 'er ist': 'er', 'SIE IST': 'Sie', 'Sie ist': 'Sie', 'sie ist': 'sie',
-    'ES IST': 'Es', 'Es ist': 'Es', 'es ist': 'es', 'WIR SIND': 'Wir', 'Wir sind': 'Wir', 'wir sind': 'wir',
-    'IHR SEID': 'Ihr', 'Ihr seid': 'Ihr', 'ihr seid': 'ihr', 'SIE SIND': 'Sie', 'Sie sind': 'Sie', 'sie sind': 'sie',
-    'BIN ICH': 'Ich', 'Bin ich': 'Ich', 'bin ich': 'ich', 'BIST DU': 'Du', 'Bist du': 'Du', 'bist du': 'du',
-    'IST ER': 'Er', 'Ist er': 'Er', 'ist er': 'er', 'IST SIE': 'Sie', 'Ist sie': 'Sie', 'ist sie': 'sie',
-    'IST ES': 'Es', 'Ist es': 'Es', 'ist es': 'es', 'SIND WIR': 'Wir', 'Sind wir': 'Wir', 'sind wir': 'wir',
-    'SEID IHR': 'Ihr', 'Seid ihr': 'Ihr', 'seid ihr': 'ihr', 'SIND SIE': 'Sie', 'Sind sie': 'Sie', 'sind sie': 'sie',
-    'Für dich': 'Euch', 'für dich': 'euch', 'Dein sein': 'Euer', 'dein sein': 'euer', 'Es gibt': 'sein',
-    'Verfügen über': 'Bei', 'beim': 'bei', 'Beim': 'Bei', 'ZU': 'Zu', 'Zu': 'zu', 'V': 'In', 'v': 'in', 'Ö': 'über', 'ö': 'über',
-    'UND': 'Und', 'EIN': 'Und', 'ABER': 'Und', 'MIT': 'Mit', 'Mit': 'mit', 'Pro': 'Für', 'pro': 'für', 'von diesen': 'diese', 'BEI': 'In',
-    'ABER)': 'A)', 'BEIM': 'In', 'Std': 'Stunde', 'Std.': 'Stunde', 'Auf der': 'Auf', 'auf der': 'auf', 'Jede einzelne': 'Jede', 'jede einzelne': 'jede',
-    'Sie sagen': 'sprechen', '-': 'STRICH', 'STRICH': '-'
-}
+from dictionaries import RU2DE
 
 
 class LanguageDecoder(object):
 
-    def __init__(self, source_language: str = 'auto', target_language: str = 'en',
-                 word_space: int = 4, page_sep: bool = False):
+    """
+    The LanguageDecoder is used to translate a text from a source language to a given target language word by word (decoding).
+    Therefor the Google translator is used to generate a decoded text file.
+    After checking the decoded text file, the decoding can be converted to a pdf file.
+    """
+
+    def __init__(self,
+                 source_language: str = 'auto',
+                 target_language: str = 'en',
+                 new_line: str = '\n',
+                 word_space: int = 4,
+                 patterns: list = None,
+                 punctuations: list = None,
+                 dictionary: dict = None,
+                 font_path: str = './fonts/NotoMono.ttf',
+                 page_sep: bool = False,
+                 char_lim: int = 74,
+                 line_lim: int = 54,
+                 title_size: int = 24,
+                 font_size: int = 13.4,
+                 pdf_w: float = 215.,
+                 pdf_h: float = 5.28):
+
+        """
+        # TEXT DECODING PARAMETER
+        :param source_language: the translation source language
+        :param target_language: the translation target language
+        :param new_line: new line string
+        :param word_space: the space between two words
+        :param patterns: patterns where to check the whitespace afterward
+        :param punctuations: punctuations to recognize the end of a sentence
+        # PDF FORMATTING PARAMETER
+        :param font_path: path to the font used for the pdf (monospace font recommended)
+        :param page_sep: optional pdf page seperator activation
+        :param char_lim: character limit of one line (max: 74)
+        :param line_lim: lines limit of one page (max: 54) reduce in steps of 3
+        :param title_size: font size of the title (max: 24)
+        :param font_size: font size of the text (max: 13.4)
+        :param pdf_w: width of the pdf text field (min 215)
+        :param pdf_h: height for each pdf line (5.18 - 5.28)
+        """
+
+        self.pp = PrettyPrinter(indent=4)
         self.translator = GoogleTranslator(source = source_language, target = target_language)
+        self.source_language = source_language
+        self.target_language = target_language
+        self.new_line = new_line
         self.word_space = word_space
+        if not patterns:
+            self.patterns = [',', ';', '.', ':', '!', '?']
+        if not punctuations:
+            self.punctuations = ['.', '!', '?']
+        self.dictionary = dictionary
+        if not isinstance(self.dictionary, dict):
+            self.dictionary = dict()
+        self.font_path = font_path
         self.page_sep = ''
-        self.char_lim = CHAR_LIM
+        self.char_lim = char_lim
         if page_sep:
             self.page_sep = '|'
-            self.char_lim = CHAR_LIM - 1
-        self.fpdf = None
+            self.char_lim = self.char_lim - 1
+        self.line_lim = line_lim
+        self.title_size = title_size
+        self.font_size = font_size
+        self.pdf_w = pdf_w
+        self.pdf_h = pdf_h
+        self.fpdf: FPDF
 
-    def __init_fpdf__(self):
+    def __init_fpdf__(self) -> FPDF:
         self.fpdf = FPDF(format = 'A4', orientation = 'P', unit = 'mm')
-        self.fpdf.add_font(family = 'Noto', fname = PATH_NOTO, uni = True)
+        self.fpdf.add_font(family = 'Noto', fname = self.font_path, uni = True)
         self.fpdf.set_auto_page_break(auto = False, margin = 0)
         self.fpdf.set_margins(left = -1, top = 1, right = -1)
+        return self.fpdf
 
     def get_supported_languages(self) -> List[str]:
         languages = self.translator.get_supported_languages(as_dict = True)
-        pp.pprint(languages)
+        self.pp.pprint(languages)
         return list(languages.values())
 
     def _translate(self, text: str) -> str:
@@ -97,35 +125,33 @@ class LanguageDecoder(object):
             print(exception)
             return ['']
 
-    @staticmethod
-    def _text_formatting(text: str, patterns: list, addons: list = None, reduces: list = None) -> str:
-        text = ' '.join(text.split())  # remove whitespaces
-        # add whitespaces if char starts with uppercase
-        # text = ''.join([f' {char}' if char.isupper() else char for char in text])
+    def _text_formatting(self, text: str, addons: list = None, reduces: list = None) -> str:
+        # remove whitespaces
+        text = ' '.join(text.split())
         if reduces:
-            if len(patterns) == len(reduces):
-                for pattern, reduce in zip(patterns, reduces):
+            if len(self.patterns) == len(reduces):
+                for pattern, reduce in zip(self.patterns, reduces):
                     text = text.replace(reduce + pattern, pattern)
             else:
                 reduce = reduces[0]
-                for pattern in patterns:
+                for pattern in self.patterns:
                     text = text.replace(reduce + pattern, pattern)
         if addons:
-            if len(patterns) == len(addons):
-                for pattern, addon in zip(patterns, addons):
+            if len(self.patterns) == len(addons):
+                for pattern, addon in zip(self.patterns, addons):
                     text = text.replace(pattern, pattern + addon)
             else:
                 addon = addons[0]
-                for pattern in patterns:
+                for pattern in self.patterns:
                     text = text.replace(pattern, pattern + addon)
-        return ' '.join(text.split())  # remove whitespaces
+        return ' '.join(text.split())
 
-    @staticmethod
-    def _replace_words(word_list: list) -> List[str]:
-        return [DICTIONARY.get(word) if word in DICTIONARY.keys() else word for word in word_list]
+    def _replace_words(self, word_list: list) -> List[str]:
+        return [self.dictionary.get(word) if word in self.dictionary.keys() else word for word in word_list]
 
     @staticmethod
     def _lonlen(a_list: list) -> int:
+        # get the length of the longest list element
         return len(max(a_list, key = len))
 
     @staticmethod
@@ -165,7 +191,7 @@ class LanguageDecoder(object):
             text = file.read()
 
         # formatting text for translator
-        source_text = self._text_formatting(text = text, patterns = PATTERNS, addons = [' '], reduces = [' '])
+        source_text = self._text_formatting(text = text, addons = [' '], reduces = [' '])
         # split text into words
         source_words = source_text.split()
         if len(source_words) == 0:
@@ -183,19 +209,19 @@ class LanguageDecoder(object):
         decode_text = ''
         for source_word, decode_word in zip(source_words, decode_words):
             # add missing punctuation mark
-            if source_word[-1] in PATTERNS and decode_word[-1] not in PATTERNS:
+            if source_word[-1] in self.patterns and decode_word[-1] not in self.patterns:
                 decode_word += source_word[-1]
             # get the length of the longest word + space
             word_len = self._lonlen([source_word, decode_word]) + self.word_space
             # if a punctuation mark is at the end of the word (end of sentence)
-            if any(punctuation == source_word[-1] for punctuation in PUNCTUATIONS):
+            if any(punctuation == source_word[-1] for punctuation in self.punctuations):
                 # adjust word for same length without space and add word to the line
                 source_line += source_word.ljust(word_len - self.word_space, ' ')
                 decode_line += decode_word.ljust(word_len - self.word_space, ' ')
-                # replace the space with NEW_LINE and combine to formatted text
-                source_line = source_line + NEW_LINE
-                decode_line = decode_line + NEW_LINE
-                decode_text += source_line + decode_line + NEW_LINE
+                # replace the space with self.new_line and combine to formatted text
+                source_line = source_line + self.new_line
+                decode_line = decode_line + self.new_line
+                decode_text += source_line + decode_line + self.new_line
                 # reset length and lines
                 source_line = ''
                 decode_line = ''
@@ -210,7 +236,7 @@ class LanguageDecoder(object):
 
         if translate_text:
             transl_text = self._translate(source_text)
-            transl_text = textwrap.fill(transl_text, width = CHAR_LIM)
+            transl_text = textwrap.fill(transl_text, width = self.char_lim)
             # save translated text
             with open(file = transl_path, mode = 'w', encoding = 'utf-8') as file:
                 file.write(transl_text)
@@ -248,12 +274,12 @@ class LanguageDecoder(object):
             word_len = self._lonlen([source_word, decode_word]) + self.word_space
             # get the length of the current line
             line_len += word_len
-            # if the length of the line is to long
+            # if the length of the line is too long
             if (line_len - self.word_space) > self.char_lim:
-                # replace the space with NEW_LINE and append to pdf lines
-                pdf_lines.append(source_line[0:-self.word_space] + NEW_LINE)
-                pdf_lines.append(decode_line[0:-self.word_space] + NEW_LINE)
-                pdf_lines.append(NEW_LINE)
+                # replace the space with self.new_line and append to pdf lines
+                pdf_lines.append(source_line[0:-self.word_space] + self.new_line)
+                pdf_lines.append(decode_line[0:-self.word_space] + self.new_line)
+                pdf_lines.append(self.new_line)
                 # reset length and lines
                 line_len = word_len
                 source_line = ''
@@ -262,22 +288,22 @@ class LanguageDecoder(object):
             source_line += source_word.ljust(word_len, ' ')
             decode_line += decode_word.ljust(word_len, ' ')
         # if the loop is finished create the last lines
-        pdf_lines.append(source_line[0:-self.word_space] + NEW_LINE)
-        pdf_lines.append(decode_line[0:-self.word_space] + NEW_LINE)
-        pdf_lines.append(NEW_LINE)
+        pdf_lines.append(source_line[0:-self.word_space] + self.new_line)
+        pdf_lines.append(decode_line[0:-self.word_space] + self.new_line)
+        pdf_lines.append(self.new_line)
 
         # create pages
         lines_len = len(pdf_lines)
         pages, completed_lines = list(), 0
         while completed_lines < lines_len:
             # get the lines for one page
-            page_lines = pdf_lines[completed_lines:completed_lines + LINE_LIM]
+            page_lines = pdf_lines[completed_lines:completed_lines + self.line_lim]
             if len(pages) % 2:  # page number is odd
                 # if page number is odd add page separator at the beginning of the line
                 page_lines = [self.page_sep + line for line in page_lines]
-            # join lines to a single page and remove the NEW_LINEs at the end of the page
-            pages.append(''.join(page_lines)[:-2 * len(NEW_LINE)])
-            completed_lines += LINE_LIM
+            # join lines to a single page and remove the self.new_lines at the end of the page
+            pages.append(''.join(page_lines)[:-2 * len(self.new_line)])
+            completed_lines += self.line_lim
         print(f'Convert {lines_len} lines of formatted text to pdf with {len(pages)} pages.', '\n')
 
         # formatting pdf
@@ -288,26 +314,26 @@ class LanguageDecoder(object):
             self.fpdf.add_page()
             if first_page:
                 # add the title to the top of the first front page
-                self.fpdf.set_font(family = 'Noto', size = TITLE_SIZE)
-                self.fpdf.cell(ln = 1, txt = pdf_title, align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.set_font(family = 'Noto', size = FONT_SIZE)
+                self.fpdf.set_font(family = 'Noto', size = self.title_size)
+                self.fpdf.cell(ln = 1, txt = pdf_title, align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.set_font(family = 'Noto', size = self.font_size)
                 first_page = False
             elif 0.5 * p % 2 < 1.:  # front page
                 # add space to the top of the front page
-                self.fpdf.set_font(family = 'Noto', size = FONT_SIZE)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
+                self.fpdf.set_font(family = 'Noto', size = self.font_size)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
             # write the formatted page
-            self.fpdf.multi_cell(txt = page, align = 'L', w = PDF_W, h = PDF_H)
+            self.fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
             if 0.5 * p % 2 > 1.:  # back page
                 # add space to the end of the back page
-                self.fpdf.set_font(family = 'Noto', size = FONT_SIZE)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
-                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = PDF_W, h = PDF_H)
+                self.fpdf.set_font(family = 'Noto', size = self.font_size)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self.fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
         # create pdf
         self.fpdf.output(pdf_path)
         return pdf_path
@@ -315,14 +341,27 @@ class LanguageDecoder(object):
 
 if __name__ == "__main__":
     # Initialise language decoder.
-    language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de')
-    # Get supported languages.
-    language_decoder.get_supported_languages()
-    # Define source path to text file.
-    source_path = '/../../.txt'
-    # Decoding text (takes a while).
-    decode_path = language_decoder.decode_text(source_path = source_path, translate_text = True)
-    # Check the decoding translation before converting to pdf, because word by word translation is pretty bad.
-    pdf_path = language_decoder.convert2pdf(decode_path = decode_path)
-    # Optional remove decoded and translated text files.
-    # language_decoder.delete_decoded_files(decode_path = decode_path)
+    DICTIONARY = {'-': '--0--', '--0--': '-'}
+    DICTIONARY.update(RU2DE)
+    language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de', dictionary=DICTIONARY)
+    # # Get supported languages.
+    # language_decoder.get_supported_languages()
+    # # Define source path to text file.
+    # source_path = 'C:/Users/Marlon/Marlon/python/Урок.txt'
+    # # Decoding text (takes a while).
+    # decode_path = language_decoder.decode_text(source_path = source_path, translate_text = True)
+    # # Check the decoding translation before converting to pdf, because word by word translation is pretty bad.
+    # pdf_path = language_decoder.convert2pdf(decode_path = decode_path)
+    # # Optional remove decoded and translated text files.
+    # # language_decoder.delete_decoded_files(decode_path = decode_path)
+
+    base_path = 'D:/Marlon/Русский/3 История/'
+    directories = glob(os.path.join(base_path, '**/*/'), recursive = True)
+    for directory in directories:
+        text_files = glob(os.path.join(directory, '*.txt'))
+        for text_file in text_files:
+            if not text_file.endswith('transl.txt') and not text_file.endswith('decode.txt'):
+                language_decoder.decode_text(source_path = text_file, translate_text = True)
+            if text_file.endswith('decode.txt'):
+                language_decoder.convert2pdf(decode_path = text_file)
+                # language_decoder.delete_decoded_files(decode_path=text_file)
