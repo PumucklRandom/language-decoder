@@ -12,5 +12,5 @@ RU2DE = {
     'Ö': 'über', 'ö': 'über', 'UND': 'Und', 'EIN': 'Und', 'ABER': 'Und', 'MIT': 'Mit', 'Mit': 'mit', 'Pro': 'Für', 'pro': 'für',
     'von diesen': 'diese', 'BEI': 'In', 'ABER)': 'A)', 'BEIM': 'In', 'Std': 'Stunde', 'Std.': 'Stunde',
     'Auf der': 'Auf', 'auf der': 'auf', 'Jede einzelne': 'Jede', 'jede einzelne': 'jede', 'Sie sagen': 'sprechen',
-    'tun': 'machen', 'Tun': 'machen',
+    'tun': 'machen', 'Tun': 'machen', 'tut': 'macht', 'Tut': 'macht', 'tat': 'machte', 'Tat': 'machte', 'co': 'mit', 'Co': 'Mit'
 }

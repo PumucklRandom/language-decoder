@@ -60,7 +60,7 @@ class LanguageDecoder(object):
         self.new_line = new_line
         self.word_space = word_space
         if not patterns:
-            self.patterns = [',', ';', '.', ':', '!', '?']
+            self.patterns = [',', ';', '.', ':', '!', '?', '"']
         if not punctuations:
             self.punctuations = ['.', '!', '?']
         self.dictionary = dictionary
@@ -125,17 +125,22 @@ class LanguageDecoder(object):
             print(exception)
             return ['']
 
+    @staticmethod
+    def split_camel_case(text):
+        # 'camelCase' => 'camel. Case'
+        i = 0
+        end = len(text) - 1
+        while i < end:
+            if text[i].islower() and text[i + 1].isupper():
+                text = f'{text[:i + 1]}. {text[i + 1:]}'
+                i += 2
+                end += 2
+            i += 1
+        return text
+
     def _text_formatting(self, text: str, addons: list = None, reduces: list = None) -> str:
         # remove whitespaces
         text = ' '.join(text.split())
-        if reduces:
-            if len(self.patterns) == len(reduces):
-                for pattern, reduce in zip(self.patterns, reduces):
-                    text = text.replace(reduce + pattern, pattern)
-            else:
-                reduce = reduces[0]
-                for pattern in self.patterns:
-                    text = text.replace(reduce + pattern, pattern)
         if addons:
             if len(self.patterns) == len(addons):
                 for pattern, addon in zip(self.patterns, addons):
@@ -144,6 +149,17 @@ class LanguageDecoder(object):
                 addon = addons[0]
                 for pattern in self.patterns:
                     text = text.replace(pattern, pattern + addon)
+        if reduces:
+            if len(self.patterns) == len(reduces):
+                for pattern, reduce in zip(self.patterns, reduces):
+                    text = text.replace(reduce + pattern, pattern)
+            else:
+                reduce = reduces[0]
+                for pattern in self.patterns:
+                    text = text.replace(reduce + pattern, pattern)
+            text = self.split_camel_case(text)
+            if not any(punctuation in text.split()[-1] for punctuation in self.punctuations):
+                text += '.'
         return ' '.join(text.split())
 
     def _replace_words(self, word_list: list) -> List[str]:
@@ -190,16 +206,23 @@ class LanguageDecoder(object):
         with open(file = source_path, mode = 'r', encoding = 'utf-8') as file:
             text = file.read()
 
+        if len(text) == 0:
+            return
+
         # formatting text for translator
-        source_text = self._text_formatting(text = text, addons = [' '], reduces = [' '])
+        source_text = self._text_formatting(
+            text = text,
+            addons = [' ', ' ', ' ', ' ', ' ', ' ', ''],
+            reduces = [' ', ' ', ' ', ' ', ' ', ' ', ' ']
+        )
         # split text into words
         source_words = source_text.split()
-        if len(source_words) == 0:
-            return
         print('Decode Text for:', source_path)
         print(f'Found {len(source_words)} words')
         words_batch = self._replace_words(word_list = source_words)
         decode_words = self._translate_batch(words_batch)
+        if len(decode_words) == 0:
+            return
         decode_words = self._replace_words(word_list = decode_words)
         print('Decoded words!', '\n')
 
