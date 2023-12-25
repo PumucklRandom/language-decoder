@@ -55,7 +55,7 @@ class LanguageDecoder(object):
         :param pdf_h: height for each pdf line (5.18 - 5.28)
         """
 
-        self._pp = PrettyPrinter(indent=4)
+        self._pp = PrettyPrinter(indent = 4)
         self._translator = GoogleTranslator(source = source_language, target = target_language)
         self.source_language = source_language
         self.target_language = target_language
@@ -180,7 +180,7 @@ class LanguageDecoder(object):
 
     @staticmethod
     def _split_camel_case(text: str) -> str:
-        # 'camelCase' => 'camel. Case'
+        # 'camelCase' -> 'camel. Case'
         i = 0
         end = len(text) - 1
         while i < end:
@@ -204,9 +204,9 @@ class LanguageDecoder(object):
         # remove any white whitespaces before "end marks" and add one whitespace after "end marks"
         text = re.sub(f'\s*([{END_PATTERNS}])', r'\1 ', text)
         # remove whitespaces inside "quotation mark" pairs and add whitespaces outside of pairs
-        text = re.sub('(["])\s*(.*?)\s*(["])', r' \1\2\3 ', text)
-        text = re.sub('([\'])\s*(.*?)\s*([\'])', r' \1\2\3 ', text)
-        text = re.sub('([´`])\s*(.*?)\s*([´`])', r' \1\2\3 ', text)
+        text = re.sub(f'([{QUO_PATTERNS[0]}])\s*(.*?)\s*([{QUO_PATTERNS[0]}])', r' \1\2\3 ', text)
+        text = re.sub(f'([{QUO_PATTERNS[1]}])\s*(.*?)\s*([{QUO_PATTERNS[1]}])', r' \1\2\3 ', text)
+        text = re.sub(f'([{QUO_PATTERNS[2:]}])\s*(.*?)\s*([{QUO_PATTERNS[2:]}])', r' \1\2\3 ', text)
         # add potentially missing dots
         text = self._split_camel_case(text)
         # add a dot at the end of the text in case of missing punctuation
