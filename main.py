@@ -1,11 +1,11 @@
 import os
 from glob import glob
 from language_decoder.language_decoder import LanguageDecoder
-from language_decoder.dictionaries import CHARS, RU2DE
+from language_decoder.dictionaries import REPLACEMENTS, RU2DE
 
 # Initialise language decoder.
 language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de',
-                                   replace_dict = CHARS, dictionary = RU2DE)
+                                   replace_dict = REPLACEMENTS, dictionary = RU2DE)
 base_path = 'C:/Users/User/source/'
 directories = glob(os.path.join(base_path, '**/*/'), recursive = True)
 for directory in directories:
