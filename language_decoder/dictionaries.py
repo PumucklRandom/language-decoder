@@ -4,14 +4,9 @@ PUNCTUATIONS = '.!?'
 BEG_PATTERNS = '#$<(\[{'
 END_PATTERNS = ',;.:!?°%€>)\]}'
 QUO_PATTERNS = '"\'´`'
-CHAR_STRING = '&*+-/=\_|~§'
-PLACEHOLDERS = dict()
-for char in CHAR_STRING:
-    PLACEHOLDERS[char] = f"-=<({hex(ord(char)).upper()})>=-"
-    PLACEHOLDERS[f"-=<({hex(ord(char)).upper()})>=-"] = char
 
 # A mapping dict to replace chars
-CHARS = {'«': '"', '»': '"', '<<': '"', '>>': '"', '“': '"', '—': '-'}
+REPLACEMENTS = {'«': '"', '»': '"', '<<': '"', '>>': '"', '“': '"', '—': '-', '–': '-'}
 
 RU2DE = {
     'ICH BIN': 'Ich', 'Ich bin': 'Ich', 'ich bin': 'ich', 'ICH': 'Ich', 'DU BIST': 'Du', 'Du bist': 'Du', 'du bist': 'du',

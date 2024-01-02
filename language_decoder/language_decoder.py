@@ -7,11 +7,12 @@ from pprint import PrettyPrinter
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, MicrosoftAPIerror
 from dictionaries import PUNCTUATIONS, BEG_PATTERNS, END_PATTERNS, QUO_PATTERNS
-from dictionaries import PLACEHOLDERS, CHARS, RU2DE
+from dictionaries import REPLACEMENTS, RU2DE
+
+PACKAGE_PATH = os.path.dirname(os.path.relpath(__file__))
 
 
 class LanguageDecoder(object):
-
     """
     The LanguageDecoder is used to translate a text from a source language to a given target language word by word (decoding).
     Therefor the Google translator is used to generate a decoded text file.
@@ -26,7 +27,7 @@ class LanguageDecoder(object):
                  char_lim_decode: int = 120,
                  replace_dict: dict = None,
                  dictionary: dict = None,
-                 font_path: str = './fonts/NotoMono.ttf',
+                 font_path: str = 'fonts/NotoMono/NotoMono.ttf',
                  page_sep: bool = False,
                  char_lim: int = 74,
                  line_lim: int = 54,
@@ -42,7 +43,7 @@ class LanguageDecoder(object):
         :param new_line: new line string
         :param word_space: the space between two words
         :param char_lim_decode: character limit of one line for decode text file
-        :param replace_dict: a dictionary to replace chars
+        :param replace_dict: a dictionary to replace marks
         :param dictionary: a dictionary to correct common translation mistakes
         # PDF FORMATTING PARAMETER
         :param font_path: path to the font used for the pdf (monospace font recommended)
@@ -68,8 +69,7 @@ class LanguageDecoder(object):
         self.dictionary = dictionary
         if not isinstance(self.dictionary, dict):
             self.dictionary = dict()
-        self.dictionary.update(PLACEHOLDERS)
-        self.font_path = font_path
+        self.font_path = os.path.join(PACKAGE_PATH, font_path)
         self.page_sep = ''
         self.char_lim = char_lim
         if page_sep:
@@ -164,6 +164,7 @@ class LanguageDecoder(object):
 
     @staticmethod
     def _add_missing_marks(source_word: str, decode_word: str) -> str:
+        decode_word = source_word if decode_word is None else decode_word
         # get the number of marks in the beginning of the word
         re_com = re.compile(f'^[{BEG_PATTERNS + QUO_PATTERNS}]*')
         beg_num_s = len(re.search(re_com, source_word).group())
@@ -235,8 +236,7 @@ class LanguageDecoder(object):
         source_words = source_text.split()
         print(f'Decode Text for: `{source_path}´.')
         print(f'Found {len(source_words)} words.')
-        words_batch = self._replace_words(word_list = source_words, dictionary = PLACEHOLDERS)
-        decode_words = self.translate_batch(words_batch)
+        decode_words = self.translate_batch(source_words)
         if len(decode_words) != len(source_words):
             print('Something went wrong with the translation.\n')
             return
@@ -394,7 +394,7 @@ class LanguageDecoder(object):
 if __name__ == "__main__":
     # Initialise language decoder.
     language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de',
-                                       replace_dict = CHARS, dictionary = RU2DE)
+                                       replace_dict = REPLACEMENTS, dictionary = RU2DE)
     # Get supported languages.
     language_decoder.get_supported_languages()
     # Define source path to text file.
