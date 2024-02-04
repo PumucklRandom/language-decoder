@@ -1,0 +1,12 @@
+host: 127.0.0.1
+port: 8080
+title: Language Decoder
+favicon: null
+dark: true
+reconnect_timeout: 10
+native: false   # native = True for window mode
+window_size: null  # [ 1200, 1200 ]
+fullscreen: false
+frameless: false
+reload: true
+storage_secret: STORAGE_SECRET

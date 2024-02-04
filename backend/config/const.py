@@ -1,12 +1,47 @@
-# The placeholder is used to be able to "translate" special characters
-# May be extended by additional placeholders
+import os
+import yaml
+
+# Character mark patterns for reformation the source text
 PUNCTUATIONS = '.!?'
 BEG_PATTERNS = '#$<(\[{'
 END_PATTERNS = ',;.:!?°%€>)\]}'
 QUO_PATTERNS = '"\'´`'
 
-# A mapping dict to replace chars
+# A mapping dict to replace language independent characters for the source text
 REPLACEMENTS = {'«': '"', '»': '"', '<<': '"', '>>': '"', '“': '"', '—': '-', '–': '-'}
+
+
+class URLS(object):
+    START = '/'
+    UPLOAD = '/upload/'
+    DECODING = '/decoding/'
+    DICTIONARIES = '/dicts/'
+    SETTINGS = '/settings/'
+
+
+class Config(object):
+    def __init__(self, config_path: str = 'config.yml'):
+        config_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), config_path)
+        self.load(config_path = config_path)
+
+    def __repr__(self) -> str:
+        return f'{self.__dict__}'
+
+    def __len__(self) -> int:
+        return len(self.__dict__)
+
+    def __add__(self, other) -> None:
+        self.__dict__.update(other.__dict__)
+
+    def load(self, config_path: str) -> None:
+        if not os.path.isfile(config_path):
+            # TODO: Error Handling
+            pass
+        with open(config_path, 'r') as config_file:
+            self.__dict__.update(yaml.load(config_file, yaml.FullLoader))
+
+
+CONFIG = Config()
 
 RU2DE = {
     'ICH BIN': 'Ich', 'Ich bin': 'Ich', 'ich bin': 'ich', 'ICH': 'Ich', 'DU BIST': 'Du', 'Du bist': 'Du', 'du bist': 'du',
