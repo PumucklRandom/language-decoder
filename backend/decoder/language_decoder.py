@@ -24,7 +24,7 @@ class LanguageDecoder(object):
                  uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  source_language: str = 'auto',
                  target_language: str = 'english',
-                 dict_name: str = '',
+                 dict_name: str = None,
                  punctuations: str = PUNCTUATIONS,
                  beg_patterns: str = BEG_PATTERNS,
                  end_patterns: str = END_PATTERNS,
@@ -37,7 +37,7 @@ class LanguageDecoder(object):
         :param uuid: user uuid to identify correspondent dictionaries
         :param source_language: the translation source language
         :param target_language: the translation target language
-        :param dict_name: the name of the  dictionary to select the desires dictionary
+        :param dict_name: the name of the dictionary to select the desires dictionary
         :param punctuations: character patterns at the end of a sentence
         :param beg_patterns: character patterns at the beginning of a word
         :param end_patterns: character patterns at the end of a word
@@ -45,8 +45,6 @@ class LanguageDecoder(object):
         :param new_line: new line string
         :param word_space: the space between two words
         :param char_lim_decode: character limit of one line for decode text file
-        source_words: list of all source words
-        decode_words: list of all decoded words
         """
 
         self._pp = PrettyPrinter(indent = 4)
@@ -65,9 +63,9 @@ class LanguageDecoder(object):
         self.char_lim_decode = char_lim_decode
         self.source_path = ''
         self.source_text = ''
+        self.target_text = ''
         self.source_words = []
-        self.decoded_words = []
-        self.decoded_text = ''
+        self.target_words = []
         self.translated_text = ''
 
     def get_supported_languages(self, show: bool = False) -> List[str]:
@@ -189,20 +187,20 @@ class LanguageDecoder(object):
             text += '.'
         return ' '.join(text.split())
 
-    def _strip_word(self, source_word: str, decode_word: str) -> str:
-        decode_word = source_word if decode_word is None else decode_word
+    def _strip_word(self, source_word: str, target_word: str) -> str:
+        target_word = source_word if target_word is None else target_word
         # get the number of marks in the beginning of the word
         re_com = re.compile(f'^[{self.beg_patterns + self.quo_patterns}]*')
-        beg_num = len(re.search(re_com, decode_word).group())
+        beg_num = len(re.search(re_com, target_word).group())
         # get the number of marks in the end of the word
         re_com = re.compile(f'[{self.end_patterns + self.quo_patterns}]*$')
-        end_num = len(re.search(re_com, decode_word).group())
+        end_num = len(re.search(re_com, target_word).group())
         # if the end numbers are 0 get the length of the words
-        end_num = -len(decode_word) if end_num == 0 else end_num
+        end_num = -len(target_word) if end_num == 0 else end_num
         # return target word without marks
-        return decode_word[beg_num:-end_num]
+        return target_word[beg_num:-end_num]
 
-    def _wrap_word(self, source_word: str, decode_word: str) -> str:
+    def _wrap_word(self, source_word: str, target_word: str) -> str:
         # get the number of marks in the beginning of the word
         re_com = re.compile(f'^[{self.beg_patterns + self.quo_patterns}]*')
         beg_num = len(re.search(re_com, source_word).group())
@@ -212,7 +210,7 @@ class LanguageDecoder(object):
         # if the end numbers are 0 get the length of the words
         end_num = -len(source_word) if end_num == 0 else end_num
         # add the marks from source word to target word
-        return f'{source_word[0:beg_num]}{decode_word}{source_word[-end_num:]}'
+        return f'{source_word[0:beg_num]}{target_word}{source_word[-end_num:]}'
 
     def split_text(self) -> None:
         if len(self.source_text) == 0:
@@ -226,33 +224,33 @@ class LanguageDecoder(object):
 
     def decode_words(self):
         print(f'Decode {len(self.source_words)} words.')
-        decode_words = self.translate_batch(self.source_words)
-        if len(decode_words) != len(self.source_words):
+        target_words = self.translate_batch(self.source_words)
+        if len(target_words) != len(self.source_words):
             # TODO: Error handling and logger
             print('Something went wrong with the translation.\n')
             raise Exception
-        self.decoded_words.clear()
-        for source_word, decode_word in zip(self.source_words, decode_words):
+        self.target_words.clear()
+        for source_word, target_word in zip(self.source_words, target_words):
             # first strip the decode words from marks
-            decode_word = self._strip_word(source_word = source_word, decode_word = decode_word)
+            target_word = self._strip_word(source_word = source_word, target_word = target_word)
             # then add missing marks from source words to decode words
-            self.decoded_words.append(self._wrap_word(source_word = source_word, decode_word = decode_word))
+            self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
         print(f'Decoded words!\n')
-        return self.decoded_words
+        return self.target_words
 
     def apply_dict(self) -> None:
         self._dicts.load(uuid = self.uuid)
         dictionary = self._dicts.dictionaries.get(self.dict_name)
-        decode_words = []
-        for source_word, decode_word in zip(self.source_words, self.decoded_words):
+        target_words = []
+        for source_word, target_word in zip(self.source_words, self.target_words):
             # first strip the decode words from marks
-            decode_words.append(self._strip_word(source_word = source_word, decode_word = decode_word))
+            target_words.append(self._strip_word(source_word = source_word, target_word = target_word))
         # replace words from dictionary
-        decode_words = self.replace_words(word_list = decode_words, dictionary = dictionary)
-        self.decoded_words.clear()
-        for source_word, decode_word in zip(self.source_words, decode_words):
+        target_words = self.replace_words(word_list = target_words, dictionary = dictionary)
+        self.target_words.clear()
+        for source_word, target_word in zip(self.source_words, target_words):
             # add missing marks from source words to decode words
-            self.decoded_words.append(self._wrap_word(source_word = source_word, decode_word = decode_word))
+            self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
 
     def decode_text_to_file(self, source_path: str = None, translate: bool = False) -> None:
         try:
@@ -266,10 +264,10 @@ class LanguageDecoder(object):
         line_len = 0
         source_line = ''
         decode_line = ''
-        self.decoded_text = ''
-        for source_word, decode_word in zip(self.source_words, self.decoded_words):
+        self.target_text = ''
+        for source_word, target_word in zip(self.source_words, self.target_words):
             # get the length of the longest word + word_space
-            word_len = utils.lonlen([source_word, decode_word]) + self.word_space
+            word_len = utils.lonlen([source_word, target_word]) + self.word_space
             # get the length of the current line
             line_len += word_len
             # if the length of the line is too long
@@ -278,19 +276,19 @@ class LanguageDecoder(object):
                 source_line = f'{source_line[0:-self.word_space]}{self.new_line}'
                 decode_line = f'{decode_line[0:-self.word_space]}{self.new_line}'
                 # combine to formatted text
-                self.decoded_text = f'{self.decoded_text}{source_line}{decode_line}{self.new_line}'
+                self.target_text = f'{self.target_text}{source_line}{decode_line}{self.new_line}'
                 # set length to word length
                 line_len = word_len
                 # adjust word for same length, add word_space and add it to the line
                 source_line = source_word.ljust(word_len, ' ')
-                decode_line = decode_word.ljust(word_len, ' ')
+                decode_line = target_word.ljust(word_len, ' ')
             # if a punctuation mark is at the end of the word (end of sentence)
             elif any(punctuation in source_word for punctuation in PUNCTUATIONS):
                 # add word to the line and add self.new_line at the end
                 source_line = f'{source_line}{source_word}{self.new_line}'
-                decode_line = f'{decode_line}{decode_word}{self.new_line}'
+                decode_line = f'{decode_line}{target_word}{self.new_line}'
                 # combine to formatted text
-                self.decoded_text = f'{self.decoded_text}{source_line}{decode_line}{self.new_line}'
+                self.target_text = f'{self.target_text}{source_line}{decode_line}{self.new_line}'
                 # reset length and lines
                 line_len = 0
                 source_line = ''
@@ -298,22 +296,22 @@ class LanguageDecoder(object):
             else:
                 # adjust word for same length, add word_space and add it to the line
                 source_line += source_word.ljust(word_len, ' ')
-                decode_line += decode_word.ljust(word_len, ' ')
+                decode_line += target_word.ljust(word_len, ' ')
         # if the loop is finished add the last lines
         source_line = f'{source_line[0:-self.word_space]}{self.new_line}'
         decode_line = f'{decode_line[0:-self.word_space]}{self.new_line}'
-        self.decoded_text = f'{self.decoded_text}{source_line}{decode_line}{self.new_line}'
+        self.target_text = f'{self.target_text}{source_line}{decode_line}{self.new_line}'
 
-        self.save_decoded_text()
+        self.save_target_text()
         if translate:
             self.translate_text()
             self.save_translated_text()
 
-    def save_decoded_text(self) -> str:
+    def save_target_text(self) -> str:
         decode_path, _ = self._get_decode_paths(source_path = self.source_path)
-        if not os.path.isfile(decode_path) and self.decoded_text:
+        if not os.path.isfile(decode_path) and self.target_text:
             with open(file = decode_path, mode = 'w', encoding = 'utf-8') as file:
-                file.write(self.decoded_text)
+                file.write(self.target_text)
             return decode_path
 
     def translate_text(self) -> None:

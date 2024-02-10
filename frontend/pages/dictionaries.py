@@ -81,7 +81,7 @@ class Dictionaries(Page):
         self.dicts.save(uuid = self.decoder.uuid)
 
     def _header(self) -> None:
-        with ui.header().classes('justify-between'):
+        with ui.header():
             ui.button(text = 'GO BACK', on_click = self._open_previous_url)
             ui.label('DICTIONARIES').classes('absolute-center')
             ui.space()
@@ -89,8 +89,8 @@ class Dictionaries(Page):
 
     def _center(self) -> None:
         self.dicts.load(uuid = self.decoder.uuid)
-        with ui.column().classes(f'{self.abs_top_center(50)} w-[80%]').style('align-items: center').style('font-size: 12pt'):
-            with ui.card():
+        with ui.column().classes('w-full items-center').style('font-size:12pt'):
+            with ui.card().style('width:350px'):
                 with ui.row().classes('justify-between'):
                     self.ui_selector = ui.select(
                         label = 'Select or create a dictionary',
@@ -99,27 +99,23 @@ class Dictionaries(Page):
                         with_input = True,
                         new_value_mode = 'add-unique',
                         on_change = self._select_table) \
-                        .style('width: 250px')
-                    self.ui_space(width = 50)
+                        .style('width:250px')
                     ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
                     ui.button(icon = 'delete', on_click = self._delete_table).classes('absolute-bottom-right')
-            with ui.card().style('align-items: center'):
-                with ui.column():
+            with ui.card():
+                with ui.element():  # is somehow needed
                     self._table()
-                    self._load_table()
-            self.ui_space(height = 100)
+                self._load_table()
 
     def _table(self) -> None:
-        # TODO: prevent double key usage (maybe also pop-out editing to normal input)
-        # TODO: table coloring key: blue-grey-10 val: teal-10
+        # TODO: prevent double key usage
         columns = [
             {'label': 'Source Words', 'name': 'key', 'field': 'key', 'required': True, 'sortable': True, 'align': 'left'},
             {'label': 'Target Words', 'name': 'val', 'field': 'val', 'required': True, 'sortable': True, 'align': 'left'},
         ]
-        self.ui_table = ui.table(columns = columns, rows = [], row_key = 'key') \
-            .classes('header-color') \
+        self.ui_table = ui.table(columns = columns, rows = [], row_key = 'id') \
             .props('flat bordered separator=cell') \
-            .style('min-width:450px; max-height:80vh;')
+            .style('min-width:450px; max-height:80vh')
         self.ui_table.add_slot('header', TABLE.HEADER)
         self.ui_table.add_slot('body', TABLE.BODY)
         self.ui_table.on('_upd_row', self._upd_row)
@@ -127,7 +123,7 @@ class Dictionaries(Page):
         self.ui_table.on('_add_row', self._add_row)
 
     def _footer(self) -> None:
-        with ui.footer().classes('justify-between'):
+        with ui.footer():
             ui.button(icon = 'help', on_click = None)
             ui.button(icon = 'save', on_click = self._update_dict).classes('absolute-center')
             ui.space()

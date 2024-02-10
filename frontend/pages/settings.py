@@ -78,63 +78,59 @@ class Settings(Page):
         self.decoder.quo_patterns = self.ui_quo_patterns.value
 
     def _header(self) -> None:
-        with ui.header().style('align-items: center'):
+        with ui.header():
             ui.button(text = 'GO BACK', on_click = self._open_previous_url)
             ui.label('SETTINGS').classes('absolute-center')
 
     def _center(self) -> None:
         self.dicts.load(uuid = self.decoder.uuid)
 
-        with ui.column().classes(f'{self.abs_top_center(50)} w-[80%]').style(
-                'align-items: center; font-size: 12pt'):
+        with ui.column().classes('w-full items-center').style('font-size:12pt'):
             with ui.tabs() as tabs:
                 panel0 = ui.tab('PDF SETTINGS')
                 panel1 = ui.tab('REPLACEMENTS')
                 panel2 = ui.tab('ADVANCED SETTINGS')
             with ui.tab_panels(tabs, value = panel0, animated = True):
-                with ui.tab_panel(panel0).style('align-items: center; min-width: 600px'):
-                    self._pdf_settings()
+                with ui.tab_panel(panel0).classes('items-center').style('min-width:600px'):
                     ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
-                with ui.tab_panel(panel1).classes('w-fit').style('align-items: center; min-width: 600px'):
+                    self._pdf_settings()
+                with ui.tab_panel(panel1).classes('items-center').style('min-width:600px'):
+                    ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
                     self._table()
                     self._load_table()
+                with ui.tab_panel(panel2).classes('items-center').style('min-width:600px'):
                     ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
-                with ui.tab_panel(panel2).style('align-items: center; min-width: 600px'):
                     self._adv_settings()
-                    ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
-            self.ui_space(height = 100)
 
     def _pdf_settings(self):
         # TODO: finish tab for pdf settings
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.input(label = '', value = '') \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.separator()
         ui.button(icon = 'save', on_click = None)
         ui.button(icon = 'restore', on_click = None).classes('absolute-bottom-left')
 
     def _table(self) -> None:
-        # TODO: prevent double key usage (maybe also pop-out editing to normal input)
-        # TODO: table coloring
+        # TODO: prevent double key usage
         columns = [
             {'label': 'Character ', 'name': 'key', 'field': 'key', 'required': True, 'sortable': True, 'align': 'left'},
             {'label': 'Substitute', 'name': 'val', 'field': 'val', 'required': True, 'sortable': True, 'align': 'left'},
         ]
-        self.ui_table = ui.table(columns = columns, rows = [], row_key = 'key') \
-            .classes('header-color') \
+        self.ui_table = ui.table(columns = columns, rows = [], row_key = 'id') \
             .props('flat bordered separator=cell') \
             .style('min-width:450px; max-height:80vh;')
         self.ui_table.add_slot('header', TABLE.HEADER)
@@ -150,13 +146,13 @@ class Settings(Page):
 
     def _adv_settings(self) -> None:
         self.ui_punctuations = ui.input(label = 'Punctuations', value = self.decoder.punctuations) \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         self.ui_beg_patterns = ui.input(label = 'Beginning Patterns', value = self.decoder.beg_patterns) \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         self.ui_end_patterns = ui.input(label = 'End Pattern', value = self.decoder.end_patterns) \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         self.ui_quo_patterns = ui.input(label = 'Quotations', value = self.decoder.quo_patterns) \
-            .style('font-size: 12pt')
+            .style('font-size:12pt')
         ui.separator()
         ui.button(icon = 'save', on_click = self._update_patterns)
         ui.button(icon = 'restore', on_click = self._reset_patterns).classes('absolute-bottom-left')

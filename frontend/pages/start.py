@@ -14,8 +14,8 @@ class Start(Page):
 
     def page(self) -> None:
         self.__init_ui__()
-        with ui.column().classes(f'{self.abs_top_center(50)} w-full h-full').style('align-items: center; font-size: 12pt'):
-            with ui.card().classes('w-[80%] h-[55%]').style('align-items: center; min-width: 1000px; min-height: 500px'):
+        with ui.column().classes('w-full items-center').style('font-size:12pt'):
+            with ui.card().classes('w-[80%] items-center').style('min-width:1000px; min-height:562px; height:60vh'):
                 ui.label(text = 'Some explanations:')
                 ui.label(text = 'blabla')
                 ui.button(text = 'START', on_click = self._open_upload)

@@ -15,7 +15,7 @@ class URLS(object):
     START = '/'
     UPLOAD = '/upload/'
     DECODING = '/decoding/'
-    DICTIONARIES = '/dicts/'
+    DICTIONARIES = '/dictionaries/'
     SETTINGS = '/settings/'
 
 
