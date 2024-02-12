@@ -31,7 +31,7 @@ class LanguageDecoder(object):
                  quo_patterns: str = QUO_PATTERNS,
                  new_line: str = '\n',
                  word_space: int = 4,
-                 char_lim_decode: int = 120) -> None:
+                 char_lim: int = 120) -> None:
 
         """
         :param uuid: user uuid to identify correspondent dictionaries
@@ -44,7 +44,7 @@ class LanguageDecoder(object):
         :param quo_patterns: character patterns for quotations
         :param new_line: new line string
         :param word_space: the space between two words
-        :param char_lim_decode: character limit of one line for decode text file
+        :param char_lim: character limit of one line
         """
 
         self._pp = PrettyPrinter(indent = 4)
@@ -60,13 +60,14 @@ class LanguageDecoder(object):
         self.quo_patterns = quo_patterns
         self.new_line = new_line
         self.word_space = word_space
-        self.char_lim_decode = char_lim_decode
+        self.char_lim = char_lim
         self.source_path = ''
         self.source_text = ''
-        self.target_text = ''
+        self.decode_text = ''
         self.source_words = []
         self.target_words = []
         self.translated_text = ''
+        self.title = ''
 
     def get_supported_languages(self, show: bool = False) -> List[str]:
         languages = self._translator.get_supported_languages(as_dict = True)
@@ -113,28 +114,28 @@ class LanguageDecoder(object):
             return ['']
 
     @staticmethod
-    def _get_decode_paths(source_path: str) -> Tuple[str, str]:
+    def _get_destin_paths(source_path: str) -> Tuple[str, str]:
         if not os.path.isfile(source_path):
             raise OSError('Error in `LanguageDecoder´. Text file not Found.')
         title = os.path.basename(source_path).split('.')[0]
-        decode_path = os.path.join(os.path.dirname(source_path), f'{title}_decode.txt')
+        destin_path = os.path.join(os.path.dirname(source_path), f'{title}_decode.txt')
         transl_path = os.path.join(os.path.dirname(source_path), f'{title}_transl.txt')
-        return decode_path, transl_path
+        return destin_path, transl_path
 
     @staticmethod
-    def delete_decoded_files(decode_path: str) -> None:
-        transl_path = decode_path.replace('decode.txt', 'transl.txt')
-        if os.path.isfile(decode_path):
-            os.remove(decode_path)
+    def delete_destind_files(destin_path: str) -> None:
+        transl_path = destin_path.replace('decode.txt', 'transl.txt')
+        if os.path.isfile(destin_path):
+            os.remove(destin_path)
         if os.path.isfile(transl_path):
             os.remove(transl_path)
 
     def _read_text(self, source_path: str) -> None:
         if source_path:
             self.source_path = source_path
-            decode_path, _ = self._get_decode_paths(source_path = source_path)
-            if os.path.isfile(decode_path):
-                # print(f'Text already decoded: `{decode_path}´. \n')
+            destin_path, _ = self._get_destin_paths(source_path = source_path)
+            if os.path.isfile(destin_path):
+                # print(f'Text already decoded: `{destin_path}´. \n')
                 self.source_text = ''
                 return
             try:
@@ -222,7 +223,7 @@ class LanguageDecoder(object):
         # split text into words
         self.source_words = source_text.split()
 
-    def decode_words(self):
+    def decode_words(self) -> None:
         print(f'Decode {len(self.source_words)} words.')
         target_words = self.translate_batch(self.source_words)
         if len(target_words) != len(self.source_words):
@@ -231,25 +232,24 @@ class LanguageDecoder(object):
             raise Exception
         self.target_words.clear()
         for source_word, target_word in zip(self.source_words, target_words):
-            # first strip the decode words from marks
+            # first strip the target words from marks
             target_word = self._strip_word(source_word = source_word, target_word = target_word)
-            # then add missing marks from source words to decode words
+            # then add missing marks from source words to target words
             self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
         print(f'Decoded words!\n')
-        return self.target_words
 
     def apply_dict(self) -> None:
         self._dicts.load(uuid = self.uuid)
         dictionary = self._dicts.dictionaries.get(self.dict_name)
         target_words = []
         for source_word, target_word in zip(self.source_words, self.target_words):
-            # first strip the decode words from marks
+            # first strip the target words from marks
             target_words.append(self._strip_word(source_word = source_word, target_word = target_word))
         # replace words from dictionary
         target_words = self.replace_words(word_list = target_words, dictionary = dictionary)
         self.target_words.clear()
         for source_word, target_word in zip(self.source_words, target_words):
-            # add missing marks from source words to decode words
+            # add missing marks from source words to target words
             self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
 
     def decode_text_to_file(self, source_path: str = None, translate: bool = False) -> None:
@@ -263,63 +263,63 @@ class LanguageDecoder(object):
         # formatting text
         line_len = 0
         source_line = ''
-        decode_line = ''
-        self.target_text = ''
+        target_line = ''
+        self.decode_text = ''
         for source_word, target_word in zip(self.source_words, self.target_words):
             # get the length of the longest word + word_space
             word_len = utils.lonlen([source_word, target_word]) + self.word_space
             # get the length of the current line
             line_len += word_len
             # if the length of the line is too long
-            if (line_len - self.word_space) > self.char_lim_decode:
+            if (line_len - self.word_space) > self.char_lim:
                 # add self.new_line at the end
                 source_line = f'{source_line[0:-self.word_space]}{self.new_line}'
-                decode_line = f'{decode_line[0:-self.word_space]}{self.new_line}'
+                target_line = f'{target_line[0:-self.word_space]}{self.new_line}'
                 # combine to formatted text
-                self.target_text = f'{self.target_text}{source_line}{decode_line}{self.new_line}'
+                self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
                 # set length to word length
                 line_len = word_len
                 # adjust word for same length, add word_space and add it to the line
                 source_line = source_word.ljust(word_len, ' ')
-                decode_line = target_word.ljust(word_len, ' ')
+                target_line = target_word.ljust(word_len, ' ')
             # if a punctuation mark is at the end of the word (end of sentence)
             elif any(punctuation in source_word for punctuation in PUNCTUATIONS):
                 # add word to the line and add self.new_line at the end
                 source_line = f'{source_line}{source_word}{self.new_line}'
-                decode_line = f'{decode_line}{target_word}{self.new_line}'
+                target_line = f'{target_line}{target_word}{self.new_line}'
                 # combine to formatted text
-                self.target_text = f'{self.target_text}{source_line}{decode_line}{self.new_line}'
+                self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
                 # reset length and lines
                 line_len = 0
                 source_line = ''
-                decode_line = ''
+                target_line = ''
             else:
                 # adjust word for same length, add word_space and add it to the line
                 source_line += source_word.ljust(word_len, ' ')
-                decode_line += target_word.ljust(word_len, ' ')
+                target_line += target_word.ljust(word_len, ' ')
         # if the loop is finished add the last lines
         source_line = f'{source_line[0:-self.word_space]}{self.new_line}'
-        decode_line = f'{decode_line[0:-self.word_space]}{self.new_line}'
-        self.target_text = f'{self.target_text}{source_line}{decode_line}{self.new_line}'
+        target_line = f'{target_line[0:-self.word_space]}{self.new_line}'
+        self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
 
-        self.save_target_text()
+        self.save_decode_text()
         if translate:
             self.translate_text()
             self.save_translated_text()
 
-    def save_target_text(self) -> str:
-        decode_path, _ = self._get_decode_paths(source_path = self.source_path)
-        if not os.path.isfile(decode_path) and self.target_text:
-            with open(file = decode_path, mode = 'w', encoding = 'utf-8') as file:
-                file.write(self.target_text)
-            return decode_path
+    def save_decode_text(self) -> str:
+        destin_path, _ = self._get_destin_paths(source_path = self.source_path)
+        if not os.path.isfile(destin_path) and self.decode_text:
+            with open(file = destin_path, mode = 'w', encoding = 'utf-8') as file:
+                file.write(self.decode_text)
+            return destin_path
 
     def translate_text(self) -> None:
         self.translated_text = self.translate(self.source_text)
-        self.translated_text = textwrap.fill(self.translated_text, width = self.char_lim_decode)
+        self.translated_text = textwrap.fill(self.translated_text, width = self.char_lim)
 
     def save_translated_text(self) -> str:
-        _, transl_path = self._get_decode_paths(source_path = self.source_path)
+        _, transl_path = self._get_destin_paths(source_path = self.source_path)
         if not os.path.isfile(transl_path) and self.translated_text:
             with open(file = transl_path, mode = 'w', encoding = 'utf-8') as file:
                 file.write(self.translated_text)

@@ -12,13 +12,16 @@ class Start(Page):
         self.update_url_history()
         ui.open(f'{URLS.UPLOAD}')
 
-    def page(self) -> None:
-        self.__init_ui__()
+    def _center(self) -> None:
         with ui.column().classes('w-full items-center').style('font-size:12pt'):
-            with ui.card().classes('w-[80%] items-center').style('min-width:1000px; min-height:562px; height:60vh'):
+            with ui.card().classes('w-[60%] items-center').style('min-width:1000px; min-height:562px; height:60vh'):
                 ui.label(text = 'Some explanations:')
                 ui.label(text = 'blabla')
                 ui.button(text = 'START', on_click = self._open_upload)
             ui.separator()
             ui.label(text = 'Disclaimer:')
             ui.label(text = 'blabla')
+
+    def page(self) -> None:
+        self.__init_ui__()
+        self._center()

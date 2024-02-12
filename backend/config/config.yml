@@ -14,3 +14,12 @@ UPLOAD:
   max_file_size: 100_000
   auto_upload: false
   max_files: 1
+PDF:
+  word_space: 4
+  page_sep: false
+  char_lim: 74
+  line_lim: 54
+  title_size: 24
+  font_size: 13.4
+  pdf_w: 215.
+  pdf_h: 5.28

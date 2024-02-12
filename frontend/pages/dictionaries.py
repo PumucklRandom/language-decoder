@@ -1,7 +1,7 @@
 from nicegui import ui, events
 from backend.config.const import URLS
 from backend.dicts.dictonaries import Dicts
-from frontend.pages.ui_config import TABLE
+from frontend.pages.ui_custom import ui_dialog, TABLE
 from frontend.pages.page_abc import Page
 
 
@@ -10,8 +10,8 @@ class Dictionaries(Page):
     def __init__(self) -> None:
         super().__init__(url = URLS.DICTIONARIES)
         self.dicts: Dicts = Dicts()
-        self.ui_selector: ui.select = None
-        self.ui_table: ui.table = None
+        self.ui_selector: ui.select = None  # noqa
+        self.ui_table: ui.table = None  # noqa
 
     def _open_previous_url(self) -> None:
         self._update_dict()
@@ -80,6 +80,20 @@ class Dictionaries(Page):
             self.dicts.dictionaries.get(self.decoder.dict_name).pop('', None)
         self.dicts.save(uuid = self.decoder.uuid)
 
+    @staticmethod
+    def _dialog_select() -> ui_dialog:
+        label_list = [
+            'Some tips for the user interface!'
+        ]
+        return ui_dialog(label_list = label_list)
+
+    @staticmethod
+    def _dialog_table() -> ui_dialog:
+        label_list = [
+            'Some tips for the user interface!'
+        ]
+        return ui_dialog(label_list = label_list)
+
     def _header(self) -> None:
         with ui.header():
             ui.button(text = 'GO BACK', on_click = self._open_previous_url)
@@ -100,15 +114,18 @@ class Dictionaries(Page):
                         new_value_mode = 'add-unique',
                         on_change = self._select_table) \
                         .style('width:250px')
-                    ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
-                    ui.button(icon = 'delete', on_click = self._delete_table).classes('absolute-bottom-right')
+                    with ui.button(icon = 'help', on_click = self._dialog_select().open) \
+                            .classes('absolute-top-right'):
+                        ui.tooltip('Need help?')
+                    with ui.button(icon = 'delete', on_click = self._delete_table) \
+                            .classes('absolute-bottom-right'):
+                        ui.tooltip('Delete dictionary')
             with ui.card():
                 with ui.element():  # is somehow needed
                     self._table()
                 self._load_table()
 
     def _table(self) -> None:
-        # TODO: prevent double key usage
         columns = [
             {'label': 'Source Words', 'name': 'key', 'field': 'key', 'required': True, 'sortable': True, 'align': 'left'},
             {'label': 'Target Words', 'name': 'val', 'field': 'val', 'required': True, 'sortable': True, 'align': 'left'},
@@ -124,10 +141,14 @@ class Dictionaries(Page):
 
     def _footer(self) -> None:
         with ui.footer():
-            ui.button(icon = 'help', on_click = None)
-            ui.button(icon = 'save', on_click = self._update_dict).classes('absolute-center')
+            with ui.button(icon = 'help', on_click = self._dialog_table().open):
+                ui.tooltip('Need help?')
+            with ui.button(icon = 'save', on_click = self._update_dict) \
+                    .classes('absolute-center'):
+                ui.tooltip('Save dictionary')
             ui.space()
-            ui.button(icon = 'delete', on_click = self._clear_table)
+            with ui.button(icon = 'delete', on_click = self._clear_table):
+                ui.tooltip('Clear dictionary').style('width:90px')
 
     def page(self) -> None:
         self.__init_ui__()

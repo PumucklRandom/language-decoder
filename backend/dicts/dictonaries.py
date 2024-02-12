@@ -19,7 +19,7 @@ class Dicts(object):
         """
         :param uuid: user uuid to identify correspondent dictionaries
         """
-        json_path = os.path.join(self.folder_path, f'{uuid}.json')
+        json_path = os.path.join(self.folder_path, f'json/{uuid}.json')
         if os.path.isfile(json_path):
             with open(file = json_path, mode = 'r') as json_file:
                 data = json.load(json_file)
@@ -34,7 +34,7 @@ class Dicts(object):
         """
         :param uuid: user uuid to identify correspondent dictionaries
         """
-        json_path = os.path.join(self.folder_path, f'{uuid}.json')
+        json_path = os.path.join(self.folder_path, f'json/{uuid}.json')
         with open(file = json_path, mode = 'w') as json_file:
             data = {'replacements': self.replacements, 'dictionaries': self.dictionaries}
             json.dump(data, json_file, indent = 4)

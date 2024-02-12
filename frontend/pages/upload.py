@@ -1,7 +1,6 @@
 from nicegui import ui, events
-from backend.config.const import CONFIG
-from backend.config.const import URLS
-from frontend.pages.ui_config import abs_top_left
+from backend.config.const import CONFIG, URLS
+from frontend.pages.ui_custom import ui_dialog, abs_top_left
 from frontend.pages.page_abc import Page
 
 
@@ -9,10 +8,11 @@ class Upload(Page):
 
     def __init__(self) -> None:
         super().__init__(url = URLS.UPLOAD)
-        self.ui_uploader: ui.upload = None
-        self.ui_text_box: ui.textarea = None
-        self.ui_scr_select: ui.select = None
-        self.ui_tar_select: ui.select = None
+        self.ui_uploader: ui.upload = None  # noqa
+        self.ui_input: ui.input = None  # noqa
+        self.ui_text_box: ui.textarea = None  # noqa
+        self.ui_scr_select: ui.select = None  # noqa
+        self.ui_tar_select: ui.select = None  # noqa
         self.max_file_size: int = CONFIG.UPLOAD.get('max_file_size')
         self.auto_upload: bool = CONFIG.UPLOAD.get('auto_upload')
         self.max_files: int = CONFIG.UPLOAD.get('max_files')
@@ -41,6 +41,7 @@ class Upload(Page):
             self._source_text_mis_notify()
 
     def _clear_text(self) -> None:
+        # self.decoder.title = ''
         self.ui_uploader.reset()
         self.ui_text_box.set_value(None)
         self.decoder.source_text = None
@@ -48,11 +49,13 @@ class Upload(Page):
         # self.decoder.target_language = 'english'
 
     def _load_text(self) -> None:
+        self.ui_input.set_value(self.decoder.title)
         self.ui_text_box.set_value(self.decoder.source_text)
         self.ui_scr_select.set_value(self.decoder.source_language)
         self.ui_tar_select.set_value(self.decoder.target_language)
 
     def _update_text(self) -> None:
+        self.decoder.title = self.ui_input.value
         self.decoder.source_text = self.ui_text_box.value
         self.decoder.source_language = self.ui_scr_select.value
         self.decoder.target_language = self.ui_tar_select.value
@@ -85,6 +88,13 @@ class Upload(Page):
     def _upload_success_notify() -> None:
         ui.notify('Upload finished', type = 'positive', position = 'top')
 
+    @staticmethod
+    def _dialog() -> ui_dialog:
+        label_list = [
+            'Some tips for the user interface!'
+        ]
+        return ui_dialog(label_list = label_list)
+
     def _header(self) -> None:
         with ui.header():
             ui.button(text = 'START PAGE', on_click = self._open_start_page)
@@ -97,17 +107,20 @@ class Upload(Page):
         with ui.column().classes('w-full items-center'):
             with ui.card().classes('w-[50%] items-center') \
                     .style('min-width:1000px; min-height:562px; height:90vh'):
-                ui.button(icon = 'help', on_click = None).classes('absolute-top-right')
+                with ui.button(icon = 'help', on_click = self._dialog().open) \
+                        .classes('absolute-top-right'):
+                    ui.tooltip('Need help?')
                 ui.label('Upload a text file or enter some text below').style('font-size:14pt')
                 self.ui_uploader = ui.upload(
-                    # label = 'select path',
+                    label = 'Select file',
                     on_upload = self._upload_handler,
                     on_rejected = self._upload_rejected_notify,
                     max_file_size = self.max_file_size,
                     auto_upload = self.auto_upload,
                     max_files = self.max_files) \
                     .props('accept=.txt flat dense')
-                ui.input(label = 'Title').classes(abs_top_left(130, 160))
+                with ui.input(label = 'Title').classes(abs_top_left(130, 160)) as self.ui_input:
+                    ui.tooltip('Title of text')
                 self.ui_text_box = ui.textarea(
                     label = 'Enter some text',
                     placeholder = 'start typing',
@@ -116,7 +129,7 @@ class Upload(Page):
                     .style('min-width:1000px; min-height:562px; font-size:12pt')
                 self._language_selector()
 
-    def _language_selector(self):
+    def _language_selector(self) -> None:
         languages = self.decoder.get_supported_languages()
         with ui.row():
             self.ui_scr_select = ui.select(
@@ -135,10 +148,14 @@ class Upload(Page):
                 .props('dense options-dense') \
                 .style('min-width:200px; font-size:12pt')
             ui.space()
-            ui.button(icon = 'save', on_click = self._update_text)
+            with ui.button(icon = 'save', on_click = self._update_text):
+                ui.tooltip('Save text')
             ui.space()
-            ui.button(text = 'Decode', on_click = self._open_decoding)
-            ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right')
+            with ui.button(text = 'Decode', on_click = self._open_decoding):
+                ui.tooltip('Start decoding')
+            with ui.button(icon = 'delete', on_click = self._clear_text) \
+                    .classes('absolute-bottom-right'):
+                ui.tooltip('Clear text')
             self._load_text()
 
     def page(self) -> None:

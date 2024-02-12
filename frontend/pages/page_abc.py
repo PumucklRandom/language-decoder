@@ -1,9 +1,10 @@
 from typing import List
 from abc import ABC, abstractmethod
 from nicegui import ui, app
+from backend.config.const import CONFIG
 from backend.utils import utilities as utils
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui_config import COLORS, HTML
+from frontend.pages.ui_custom import COLORS, HTML
 
 # It is very important to initialize the LanguageDecoder instance outside the initialization of the Page class,
 # so that all inherited Page classes have the same LanguageDecoder state!
@@ -39,13 +40,13 @@ class Page(ABC, ui.page):
         super().__init__(path = url)
         self._URL: str = url
         self._url_history: URLHistory = URL_HISTORY
-        self.decoder: LanguageDecoder = language_decoder
+        self._APP: app = app
         self.utils: utils = utils
-        self.APP: app = app
-        self.test = LanguageDecoder()
+        self.decoder: LanguageDecoder = language_decoder
+        self.pdf: dict = CONFIG.PDF
 
     def __init_ui__(self):
-        self.decoder.uuid = self.APP.storage.browser.get('id')
+        self.decoder.uuid = self._APP.storage.browser.get('id')
         ui.colors(primary = COLORS.PRIMARY, secondary = COLORS.SECONDARY, accent = COLORS.ACCENT, dark = COLORS.DARK,
                   positive = COLORS.POSITIVE, negative = COLORS.NEGATIVE, info = COLORS.INFO, warning = COLORS.WARNING)
         ui.add_head_html(HTML.FLEX_GROW)
@@ -67,14 +68,6 @@ class Page(ABC, ui.page):
     def update_url_history(self) -> None:
         if self.url_history[0] != self.URL:
             self.url_history = self.URL
-
-    @staticmethod
-    def ui_space(width: int = 0, height: int = 0) -> None:
-        """
-        :param width: width space in px
-        :param height: height space in px
-        """
-        ui.space().style(f'width: {width}px; height: {height}px')
 
     def build(self) -> None:
         self(self.page)

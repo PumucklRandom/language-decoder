@@ -1,12 +1,10 @@
-from nicegui import ui, events
+from nicegui import ui
 from backend.config.const import CONFIG
 from frontend.pages.start import Start
 from frontend.pages.upload import Upload
 from frontend.pages.decoding import Decoding
 from frontend.pages.dictionaries import Dictionaries
 from frontend.pages.settings import Settings
-
-from frontend.pages.page_abc import Page
 
 
 def build():

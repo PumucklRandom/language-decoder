@@ -17,6 +17,8 @@ class URLS(object):
     DECODING = '/decoding/'
     DICTIONARIES = '/dictionaries/'
     SETTINGS = '/settings/'
+    PDF_VIEW = '/pdf-view/'
+    DOWNLOAD = '/download/'
 
 
 class Config(object):

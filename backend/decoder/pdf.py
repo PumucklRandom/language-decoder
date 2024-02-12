@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union
 from fpdf import FPDF
 from backend.utils import utilities as utils
 
@@ -17,6 +17,7 @@ class PDF(object):
                  font_size: int = 13.4,
                  pdf_w: float = 215.,
                  pdf_h: float = 5.28) -> None:
+
         """
         :param font_path: path to the font used for the pdf (monospace font recommended)
         :param new_line: new line string
@@ -29,11 +30,6 @@ class PDF(object):
         :param pdf_w: width of the pdf text field (min 215)
         :param pdf_h: height for each pdf line (5.18 - 5.28)
         """
-        # super().__init__(orientation = 'P', unit = 'mm', format = 'A4')
-
-        # self.add_font(family = 'Noto', fname = self.font_path, uni = True)
-        # self.set_auto_page_break(auto = False, margin = 0)
-        # self.set_margins(left = -1, top = 1, right = -1)
 
         self.font_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), font_path)
         self.new_line = new_line
@@ -79,40 +75,40 @@ class PDF(object):
 
         # split lines in source and decode
         source_words = list()
-        decode_words = list()
+        target_words = list()
         for i, line in enumerate(lines):
             if i % 3 == 0:
                 source_words += line.split()
             if i % 3 == 1:
-                decode_words += line.split()
-        return source_words, decode_words
+                target_words += line.split()
+        return source_words, target_words
 
-    def _format_text(self, source_words, decode_words) -> List[str]:
+    def _format_text(self, source_words, target_words) -> List[str]:
         line_len = 0
         source_line = ''
-        decode_line = ''
+        target_line = ''
         pdf_lines = list()
-        for source_word, decode_word in zip(source_words, decode_words):
+        for source_word, target_word in zip(source_words, target_words):
             # get the length of the longest word + word_space
-            word_len = utils.lonlen([source_word, decode_word]) + self.word_space
+            word_len = utils.lonlen([source_word, target_word]) + self.word_space
             # get the length of the current line
             line_len += word_len
             # if the length of the line is too long
             if (line_len - self.word_space) > self.char_lim:
                 # replace the word_space with self.new_line and append to pdf lines
                 pdf_lines.append(f'{source_line[0:-self.word_space]}{self.new_line}')
-                pdf_lines.append(f'{decode_line[0:-self.word_space]}{self.new_line}')
+                pdf_lines.append(f'{target_line[0:-self.word_space]}{self.new_line}')
                 pdf_lines.append(self.new_line)
                 # reset length and lines
                 line_len = word_len
                 source_line = ''
-                decode_line = ''
+                target_line = ''
             # adjust word for same length, add word_space and add it to the line
             source_line += source_word.ljust(word_len, ' ')
-            decode_line += decode_word.ljust(word_len, ' ')
+            target_line += target_word.ljust(word_len, ' ')
         # if the loop is finished create the last lines
         pdf_lines.append(f'{source_line[0:-self.word_space]}{self.new_line}')
-        pdf_lines.append(f'{decode_line[0:-self.word_space]}{self.new_line}')
+        pdf_lines.append(f'{target_line[0:-self.word_space]}{self.new_line}')
         # pdf_lines.append(self.new_line)
         return pdf_lines
 
@@ -161,23 +157,33 @@ class PDF(object):
                 self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
 
     def _delete_pkl_files(self):
-        for file_path in os.listdir(os.path.dirname(self.font_path)):
-            if file_path.endswith('.pkl'):
+        directory = os.path.dirname(self.font_path)
+        for file in os.listdir(directory):
+            if file.endswith('.pkl'):
+                file_path = os.path.join(directory, file)
                 os.remove(file_path)
 
-    def convert2pdf(self, source_words: list = None, decode_words: list = None,
-                    pdf_path: str = '', title: str = '', decode_path: str = '') -> Optional[str]:
+    def convert2pdf(self, title: str = '', source_words: list = None, target_words: list = None,
+                    decode_path: str = '') -> Union[None, str, bytes]:
+        pdf_path = None
         if decode_path:
             pdf_path, title = self._get_pdf_paths(decode_path = decode_path)
-            source_words, decode_words = self._read_decode_text(decode_path = decode_path)
+            source_words, target_words = self._read_decode_text(decode_path = decode_path)
         if not source_words:
             return
 
-        pdf_lines = self._format_text(source_words = source_words, decode_words = decode_words)
+        pdf_lines = self._format_text(source_words = source_words, target_words = target_words)
         pages = self._create_pages(pdf_lines = pdf_lines)
         self._format_pdf(title = title, pages = pages)
-        # save pdf
-        if not os.path.isfile(pdf_path) and pages:
-            self._fpdf.output(pdf_path)
+
+        if pdf_path:
+            if not os.path.isfile(pdf_path):
+                # save pdf as file
+                self._fpdf.output(pdf_path, dest = 'F')  # noqa
+                self._delete_pkl_files()
+                return pdf_path
+        else:
+            # save pdf as string
+            buffer: str = self._fpdf.output(dest = 'S')  # noqa
             self._delete_pkl_files()
-            return pdf_path
+            return buffer.encode('latin1')
