@@ -3,6 +3,7 @@ from nicegui import ui
 
 SIZE_FACTOR = 10
 
+# TODO: change default icons of ui.checkbox
 ui.select.default_props('outlined')
 ui.input.default_props('dense outlined debounce="200"')
 

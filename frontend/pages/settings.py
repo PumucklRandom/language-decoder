@@ -1,5 +1,5 @@
 from nicegui import ui, events
-from backend.config.const import CONFIG, URLS
+from backend.config.const import CONFIG, URLS, REPLACE_COLS, PDF_COLS, PDF_SETTING_LABELS
 from backend.config.const import PUNCTUATIONS, BEG_PATTERNS, END_PATTERNS, QUO_PATTERNS, REPLACEMENTS
 from backend.dicts.dictonaries import Dicts
 from frontend.pages.ui_custom import ui_dialog, TABLE, LIST
@@ -20,15 +20,17 @@ class Settings(Page):
 
     def _open_previous_url(self) -> None:
         self._update_replacements()
+        self._update_pdf_params()
         self._update_patterns()
         # do not update url history in settings
         ui.open(f'{self.url_history[0]}')
 
     def _reset_interface(self) -> None:
-        pass
+        self.settings.show_tips = True
+        self.settings.dark_mode = True
 
-    def _update_interface(self) -> None:
-        pass
+    def _refresh_interface(self) -> None:
+        ui.open(f'{self.URL}')
 
     def _add_row(self, event: events.GenericEventArguments) -> None:
         _id = max(row.get('id') for row in self.ui_table.rows) + 1
@@ -77,17 +79,7 @@ class Settings(Page):
 
     def _load_list(self) -> None:
         self.ui_list.rows.clear()
-        keys = [
-            'Tab size',
-            'Use page seperator [0, 1]',
-            'Characters per line',
-            'Lines per page',
-            'Title font size',
-            'Font size',
-            'PDF width',
-            'PDF block height'
-        ]
-        for i, (key, val) in enumerate(zip(keys, self.pdf.values())):
+        for i, (key, val) in enumerate(zip(PDF_SETTING_LABELS, self.pdf.values())):
             self.ui_list.rows.append({'id': i, 'key': key, 'val': float(val)})
         self.ui_list.update()
 
@@ -165,42 +157,39 @@ class Settings(Page):
                 with ui.tab_panel(panel0).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_interface().open) \
                             .classes('absolute-top-right'):
-                        ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip('Need help?')
                     self._interface()
                 with ui.tab_panel(panel1).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_replacements().open) \
                             .classes('absolute-top-right'):
-                        ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip('Need help?')
                     self._table()
                     self._load_table()
                 with ui.tab_panel(panel2).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_pdf_settings().open) \
                             .classes('absolute-top-right'):
-                        ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip('Need help?')
                     self._pdf_settings()
                     self._load_list()
                 with ui.tab_panel(panel3).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_adv_settings().open) \
                             .classes('absolute-top-right'):
-                        ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip('Need help?')
                     self._adv_settings()
 
     def _interface(self) -> None:
-        # TODO: finish tab for interface settings
-        ui.checkbox('Show tooltips')
+        with ui.card().style('width:400px'):
+            ui.checkbox('Show tooltips').bind_value(self.settings, 'show_tips')
+            ui.checkbox('Dark mode').bind_value(self.settings, 'dark_mode')
         ui.separator()
-        with ui.button(icon = 'save', on_click = self._update_interface):
-            ui.tooltip('Save settings')
+        with ui.button(icon = 'touch_app', on_click = self._refresh_interface):
+            if self.show_tips: ui.tooltip('Apply settings')
         with ui.button(icon = 'restore', on_click = self._reset_interface) \
                 .classes('absolute-bottom-left'):
-            ui.tooltip('Reset settings')
+            if self.show_tips: ui.tooltip('Reset settings')
 
     def _table(self) -> None:
-        columns = [
-            {'label': 'Character ', 'name': 'key', 'field': 'key', 'required': True, 'sortable': True, 'align': 'left'},
-            {'label': 'Substitute', 'name': 'val', 'field': 'val', 'required': True, 'sortable': True, 'align': 'left'},
-        ]
-        self.ui_table = ui.table(columns = columns, rows = [], row_key = 'id') \
+        self.ui_table = ui.table(columns = REPLACE_COLS, rows = [], row_key = 'id') \
             .props('flat bordered separator=cell') \
             .style('min-width:450px; max-height:80vh;')
         self.ui_table.add_slot('header', TABLE.HEADER)
@@ -211,54 +200,50 @@ class Settings(Page):
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._update_replacements):
-                ui.tooltip('Save settings')
+                if self.show_tips: ui.tooltip('Save settings')
             with ui.button(icon = 'restore', on_click = self._reset_table) \
                     .classes('absolute-bottom-left'):
-                ui.tooltip('Reset settings')
+                if self.show_tips: ui.tooltip('Reset settings')
             with ui.button(icon = 'delete', on_click = self._clear_table) \
                     .classes('absolute-bottom-right'):
-                ui.tooltip('Clear settings')
+                if self.show_tips: ui.tooltip('Clear settings')
 
     def _pdf_settings(self) -> None:
-        columns = [
-            {'name': 'key', 'field': 'key', 'required': True, 'align': 'left'},
-            {'name': 'val', 'field': 'val', 'required': True, 'align': 'left'},
-        ]
-        self.ui_list = ui.table(columns = columns, rows = [], row_key = 'id') \
+        self.ui_list = ui.table(columns = PDF_COLS, rows = [], row_key = 'id') \
             .props('hide-header separator=none') \
-            .style('min-width:250px')
+            .style('min-width:400px')
         self.ui_list.add_slot('body', LIST.BODY)
         self.ui_list.on('_upd_param', self._upd_param)
         ui.separator()
-        with ui.button(icon = 'save', on_click = None):
-            ui.tooltip('Save settings')
-        with ui.button(icon = 'restore', on_click = None) \
+        with ui.button(icon = 'save', on_click = self._update_pdf_params):
+            if self.show_tips: ui.tooltip('Save settings')
+        with ui.button(icon = 'restore', on_click = self._reset_list) \
                 .classes('absolute-bottom-left'):
-            ui.tooltip('Reset settings')
+            if self.show_tips: ui.tooltip('Reset settings')
 
     def _adv_settings(self) -> None:
         with ui.card().style('gap: 0.0rem; font-size:10pt'):
             ui.label('Punctuations')
             self.ui_punctuations = ui.input(value = self.decoder.punctuations) \
-                .style('font-size:12pt')
+                .style('width:400px; font-size:12pt')
             ui.space().style('height:15px')
             ui.label('Beginning Patterns')
             self.ui_beg_patterns = ui.input(value = self.decoder.beg_patterns) \
-                .style('font-size:12pt')
+                .style('width:400px; font-size:12pt')
             ui.space().style('height:15px')
             ui.label('End Pattern')
             self.ui_end_patterns = ui.input(value = self.decoder.end_patterns) \
-                .style('font-size:12pt')
+                .style('width:400px; font-size:12pt')
             ui.space().style('height:15px')
             ui.label('Quotations')
             self.ui_quo_patterns = ui.input(value = self.decoder.quo_patterns) \
-                .style('font-size:12pt')
+                .style('width:400px; font-size:12pt')
         ui.separator()
         with ui.button(icon = 'save', on_click = self._update_patterns):
-            ui.tooltip('Save settings')
+            if self.show_tips: ui.tooltip('Save settings')
         with ui.button(icon = 'restore', on_click = self._reset_patterns) \
                 .classes('absolute-bottom-left'):
-            ui.tooltip('Reset settings')
+            if self.show_tips: ui.tooltip('Reset settings')
 
     def page(self) -> None:
         self.__init_ui__()

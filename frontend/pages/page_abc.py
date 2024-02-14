@@ -11,6 +11,14 @@ from frontend.pages.ui_custom import COLORS, HTML
 language_decoder = LanguageDecoder()
 
 
+class Settings(object):
+    show_tips = True
+    dark_mode = True
+
+
+settings = Settings()
+
+
 class URLHistory(object):
     """
      Stores the URL of previous viewed pages to provide the GO BACK option
@@ -28,7 +36,7 @@ class URLHistory(object):
         self._url_history.insert(0, url)
 
 
-URL_HISTORY = URLHistory()
+url_history = URLHistory()
 
 
 class Page(ABC, ui.page):
@@ -39,14 +47,16 @@ class Page(ABC, ui.page):
     def __init__(self, url) -> None:
         super().__init__(path = url)
         self._URL: str = url
-        self._url_history: URLHistory = URL_HISTORY
+        self._url_history: URLHistory = url_history
         self._APP: app = app
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
         self.pdf: dict = CONFIG.PDF
+        self.settings: Settings = settings
 
     def __init_ui__(self):
         self.decoder.uuid = self._APP.storage.browser.get('id')
+        ui.dark_mode().bind_value_from(self.settings, 'dark_mode')
         ui.colors(primary = COLORS.PRIMARY, secondary = COLORS.SECONDARY, accent = COLORS.ACCENT, dark = COLORS.DARK,
                   positive = COLORS.POSITIVE, negative = COLORS.NEGATIVE, info = COLORS.INFO, warning = COLORS.WARNING)
         ui.add_head_html(HTML.FLEX_GROW)
@@ -68,6 +78,10 @@ class Page(ABC, ui.page):
     def update_url_history(self) -> None:
         if self.url_history[0] != self.URL:
             self.url_history = self.URL
+
+    @property
+    def show_tips(self):
+        return self.settings.show_tips
 
     def build(self) -> None:
         self(self.page)

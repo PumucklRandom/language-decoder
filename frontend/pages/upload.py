@@ -38,7 +38,8 @@ class Upload(Page):
             self.update_url_history()
             ui.open(f'{URLS.DECODING}')
         else:
-            self._source_text_mis_notify()
+            ui.notify(f'Upload text file or enter some text below',
+                      type = 'negative', position = 'top')
 
     def _clear_text(self) -> None:
         # self.decoder.title = ''
@@ -67,26 +68,17 @@ class Upload(Page):
             event.content.seek(0)
             text = event.content.read().decode('utf-16')
         except Exception:
-            self._upload_error_notify()
+            ui.notify(f'Invalid input file. Use a different one or paste some text below',
+                      type = 'negative', position = 'top')
             return
         self.ui_text_box.set_value(text)
         event.sender.reset()  # noqa upload reset
-        ui.notify('Upload finished', type = 'positive', position = 'top')
+        ui.notify('Upload finished',
+                  type = 'positive', position = 'top')
 
-    @staticmethod
-    def _source_text_mis_notify() -> None:
-        ui.notify(f'Upload text file or enter some text below', type = 'negative', position = 'top')
-
-    @staticmethod
-    def _upload_error_notify() -> None:
-        ui.notify(f'Invalid input file. Use a different one or paste some text below', type = 'negative', position = 'top')
-
-    def _upload_rejected_notify(self) -> None:
-        ui.notify(f'Upload a text file with max: {self.max_file_size / 10 ** 3} KB', type = 'negative', position = 'top')
-
-    @staticmethod
-    def _upload_success_notify() -> None:
-        ui.notify('Upload finished', type = 'positive', position = 'top')
+    def _on_upload_reject(self) -> None:
+        ui.notify(f'Upload a text file with max: {self.max_file_size / 10 ** 3} KB',
+                  type = 'negative', position = 'top')
 
     @staticmethod
     def _dialog() -> ui_dialog:
@@ -109,18 +101,18 @@ class Upload(Page):
                     .style('min-width:1000px; min-height:562px; height:90vh'):
                 with ui.button(icon = 'help', on_click = self._dialog().open) \
                         .classes('absolute-top-right'):
-                    ui.tooltip('Need help?')
+                    if self.show_tips: ui.tooltip('Need help?')
                 ui.label('Upload a text file or enter some text below').style('font-size:14pt')
                 self.ui_uploader = ui.upload(
                     label = 'Select file',
                     on_upload = self._upload_handler,
-                    on_rejected = self._upload_rejected_notify,
+                    on_rejected = self._on_upload_reject,
                     max_file_size = self.max_file_size,
                     auto_upload = self.auto_upload,
                     max_files = self.max_files) \
                     .props('accept=.txt flat dense')
                 with ui.input(label = 'Title').classes(abs_top_left(130, 160)) as self.ui_input:
-                    ui.tooltip('Title of text')
+                    if self.show_tips: ui.tooltip('Title of text')
                 self.ui_text_box = ui.textarea(
                     label = 'Enter some text',
                     placeholder = 'start typing',
@@ -149,13 +141,14 @@ class Upload(Page):
                 .style('min-width:200px; font-size:12pt')
             ui.space()
             with ui.button(icon = 'save', on_click = self._update_text):
-                ui.tooltip('Save text')
+                if self.show_tips: ui.tooltip('Save text')
             ui.space()
-            with ui.button(text = 'Decode', on_click = self._open_decoding):
-                ui.tooltip('Start decoding')
+            with ui.button(text = 'DECODE', on_click = self._open_decoding):
+                if self.show_tips: ui.tooltip('Start decoding')
             with ui.button(icon = 'delete', on_click = self._clear_text) \
                     .classes('absolute-bottom-right'):
-                ui.tooltip('Clear text')
+                if self.show_tips: ui.tooltip('Clear text')
+            ui.space().style('width:100px')
             self._load_text()
 
     def page(self) -> None:

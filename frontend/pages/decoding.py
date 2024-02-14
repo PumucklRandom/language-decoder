@@ -1,7 +1,7 @@
 import asyncio
 from nicegui import ui, app, events, Client
 from fastapi.responses import Response
-from backend.config.const import URLS
+from backend.config.const import URLS, DECODE_COLS
 from backend.decoder.pdf import PDF
 from frontend.pages.ui_custom import SIZE_FACTOR, ui_dialog, table_item
 from frontend.pages.page_abc import Page
@@ -32,7 +32,8 @@ class Decoding(Page):
         self.update_url_history()
         ui.open(f'{URLS.SETTINGS}')
 
-    def _open_pdf_view(self) -> None:
+    @staticmethod
+    def _open_pdf_view() -> None:
         ui.open(f'{URLS.PDF_VIEW}', new_tab = True)
 
     def _create_dpf(self) -> str:
@@ -127,7 +128,12 @@ class Decoding(Page):
                 close_button = False,
             )
             await asyncio.to_thread(self.decoder.decode_words)
+            self.decoder.apply_dict()
             notification.dismiss()
+        self._load_table()
+
+    def _apply_dict(self):
+        self.decoder.apply_dict()
         self._load_table()
 
     @staticmethod
@@ -148,9 +154,9 @@ class Decoding(Page):
                 ui.space()
                 ui.label('The pdf file is ready!')
                 ui.label('You can either first view the document:')
-                ui.button('VIEW PDF', on_click = self._open_pdf_view)
+                ui.button(text = 'VIEW PDF', on_click = self._open_pdf_view)
                 ui.label('Or just download the document:')
-                ui.button('DOWNLOAD', on_click = lambda: ui.download(download_path))
+                ui.button(text = 'DOWNLOAD', on_click = lambda: ui.download(download_path))
                 dialog.open()
         # Cleanup download route after client disconnect
         with await self._client.disconnected():
@@ -175,25 +181,22 @@ class Decoding(Page):
     @ui.refreshable
     def _table(self) -> None:
         # TODO: custom size/width for each input element pair
-        columns = [
-            {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
-            {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
-        ]
-        self.ui_table = ui.table(columns = columns, rows = [], row_key = 'id') \
+        self.ui_table = ui.table(columns = DECODE_COLS, rows = [], row_key = 'id') \
             .props('hide-header grid')
         self.ui_table.add_slot('item', table_item(self.input_size))
         self.ui_table.on('_upd_row', self._upd_row)
 
     def _footer(self) -> None:
         with ui.footer():
-            with ui.button(icon = 'help', on_click = self._dialog().open):
-                ui.tooltip('Need help?')
             with ui.button(icon = 'save', on_click = self._save_words) \
                     .classes('absolute-center'):
-                ui.tooltip('Save decoding')
-            ui.space().style('width: 200px')
-            ui.button(text = 'Create PDF', on_click = self._pdf_dialog)
+                if self.show_tips: ui.tooltip('Save decoding')
+            ui.space().style('width: 500px')
+            ui.button(text = 'APPLY DICT', on_click = self._apply_dict)
+            ui.button(text = 'CREATE PDF', on_click = self._pdf_dialog)
             ui.space()
+            with ui.button(icon = 'help', on_click = self._dialog().open):
+                if self.show_tips: ui.tooltip('Need help?')
 
     async def page(self, client: Client) -> None:
         self._client = client

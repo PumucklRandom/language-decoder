@@ -1,14 +1,44 @@
 import os
 import yaml
 
-# Character mark patterns for reformation the source text
+DECODE_COLS = [
+    {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
+    {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
+]
+
+DICT_COLS = [
+    {'label': 'Source Words', 'name': 'key', 'field': 'key', 'required': True, 'sortable': True, 'align': 'left'},
+    {'label': 'Target Words', 'name': 'val', 'field': 'val', 'required': True, 'sortable': True, 'align': 'left'},
+]
+
+REPLACE_COLS = [
+    {'label': 'Character ', 'name': 'key', 'field': 'key', 'required': True, 'sortable': True, 'align': 'left'},
+    {'label': 'Substitute', 'name': 'val', 'field': 'val', 'required': True, 'sortable': True, 'align': 'left'},
+]
+
+PDF_COLS = [
+    {'name': 'key', 'field': 'key', 'required': True, 'align': 'left'},
+    {'name': 'val', 'field': 'val', 'required': True, 'align': 'left'},
+]
+# A mapping dict to replace language independent characters for the source text
+REPLACEMENTS = {'«': '"', '»': '"', '<<': '"', '>>': '"', '“': '"', '—': '-', '–': '-'}
+
+PDF_SETTING_LABELS = [
+    'Tab size',
+    'Use page seperator [0, 1]',
+    'Characters per line',
+    'Lines per page',
+    'Title font size',
+    'Font size',
+    'PDF width',
+    'PDF block height'
+]
+
+# Character mark patterns for reformation of the source text
 PUNCTUATIONS = '.!?'
 BEG_PATTERNS = '#$<(\[{'
 END_PATTERNS = ',;.:!?°%€>)\]}'
 QUO_PATTERNS = '"\'´`'
-
-# A mapping dict to replace language independent characters for the source text
-REPLACEMENTS = {'«': '"', '»': '"', '<<': '"', '>>': '"', '“': '"', '—': '-', '–': '-'}
 
 
 class URLS(object):

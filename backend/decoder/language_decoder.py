@@ -123,7 +123,7 @@ class LanguageDecoder(object):
         return destin_path, transl_path
 
     @staticmethod
-    def delete_destind_files(destin_path: str) -> None:
+    def delete_decoded_files(destin_path: str) -> None:
         transl_path = destin_path.replace('decode.txt', 'transl.txt')
         if os.path.isfile(destin_path):
             os.remove(destin_path)
@@ -148,10 +148,6 @@ class LanguageDecoder(object):
             print(f'Decode Text for: `{source_path}´.')
 
     @staticmethod
-    def replace_words(word_list: List[str], dictionary: dict) -> List[str]:
-        return [dictionary.get(word) if word in dictionary.keys() else word for word in word_list]
-
-    @staticmethod
     def _split_camel_case(text: str) -> str:
         # 'camelCase' -> 'camel. Case'
         i = 0
@@ -166,8 +162,6 @@ class LanguageDecoder(object):
 
     def _reformat_text(self, text: str) -> str:
         self._dicts.load(uuid = self.uuid)
-        # remove redundant whitespaces and new lines
-        text = ' '.join(text.split())
         # replace special characters with common ones
         for chars in self._dicts.replacements.keys():
             text = text.replace(chars, self._dicts.replacements.get(chars))
@@ -186,10 +180,10 @@ class LanguageDecoder(object):
         # add a dot at the end of the text in case of missing punctuation
         if not any(punctuation in text.split()[-1] for punctuation in PUNCTUATIONS):
             text += '.'
+        # remove redundant whitespaces and new lines
         return ' '.join(text.split())
 
-    def _strip_word(self, source_word: str, target_word: str) -> str:
-        target_word = source_word if target_word is None else target_word
+    def _strip_word(self, target_word: str) -> str:
         # get the number of marks in the beginning of the word
         re_com = re.compile(f'^[{self.beg_patterns + self.quo_patterns}]*')
         beg_num = len(re.search(re_com, target_word).group())
@@ -232,24 +226,30 @@ class LanguageDecoder(object):
             raise Exception
         self.target_words.clear()
         for source_word, target_word in zip(self.source_words, target_words):
-            # first strip the target words from marks
-            target_word = self._strip_word(source_word = source_word, target_word = target_word)
-            # then add missing marks from source words to target words
+            # take source word if target word is None
+            target_word = source_word if target_word is None else target_word
+            # first strip the target word from marks
+            target_word = self._strip_word(target_word = target_word)
+            # then add missing marks from source word to target word
             self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
         print(f'Decoded words!\n')
 
     def apply_dict(self) -> None:
+        if not self.dict_name:
+            return
         self._dicts.load(uuid = self.uuid)
-        dictionary = self._dicts.dictionaries.get(self.dict_name)
-        target_words = []
-        for source_word, target_word in zip(self.source_words, self.target_words):
-            # first strip the target words from marks
-            target_words.append(self._strip_word(source_word = source_word, target_word = target_word))
-        # replace words from dictionary
-        target_words = self.replace_words(word_list = target_words, dictionary = dictionary)
+        dictionary = self._dicts.dictionaries.get(self.dict_name, {})
+        target_words = self.target_words.copy()
         self.target_words.clear()
         for source_word, target_word in zip(self.source_words, target_words):
-            # add missing marks from source words to target words
+            # first strip the source word for the dictionary keys
+            source_strip = self._strip_word(target_word = source_word)
+            if source_strip in dictionary.keys():
+                # replace target word if stripped source word is key
+                target_word = dictionary.get(source_strip)
+            # then strip the target word from marks
+            target_word = self._strip_word(target_word = target_word)
+            # and add missing marks from source word to target word
             self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
 
     def decode_text_to_file(self, source_path: str = None, translate: bool = False) -> None:

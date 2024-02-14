@@ -4,6 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+nicegui = "*"
+deep-translator = "*"
+pywebview = "*"
+fpdf = "*"
 
 [dev-packages]
 
