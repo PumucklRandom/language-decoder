@@ -10,11 +10,11 @@ fullscreen: false
 frameless: false
 reload: true
 storage_secret: STORAGE_SECRET
-UPLOAD:
+upload:
   max_file_size: 100_000
   auto_upload: true
   max_files: 1
-PDF:
+pdf:
   word_space: 4
   page_sep: false
   char_lim: 74

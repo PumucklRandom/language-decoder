@@ -4,5 +4,5 @@
 __pycache__
 backend/_main.py
 *.txt
-*.json
+json/
 *.pkl

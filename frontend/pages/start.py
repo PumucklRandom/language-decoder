@@ -15,12 +15,12 @@ class Start(Page):
     def _center(self) -> None:
         with ui.column().classes('w-full items-center').style('font-size:12pt'):
             with ui.card().classes('w-[60%] items-center').style('min-width:1000px; min-height:562px; height:60vh'):
-                ui.label(text = 'Some explanations:')
-                ui.label(text = 'blabla')
+                for label in self.ui_language.START.Explanations:
+                    ui.label(text = label)
                 ui.button(text = 'START', on_click = self._open_upload)
             ui.separator()
-            ui.label(text = 'Disclaimer:')
-            ui.label(text = 'blabla')
+            for label in self.ui_language.START.Disclaimers:
+                ui.label(text = label)
 
     def page(self) -> None:
         self.__init_ui__()

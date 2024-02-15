@@ -21,20 +21,18 @@ class Dicts(object):
         """
         json_path = os.path.join(self.folder_path, f'json/{uuid}.json')
         if os.path.isfile(json_path):
-            with open(file = json_path, mode = 'r') as json_file:
+            with open(file = json_path, mode = 'r', encoding = 'utf-8') as json_file:
                 data = json.load(json_file)
-            self.replacements = data.get('replacements')
-            self.dictionaries = data.get('dictionaries')
+            self.replacements = data.get('replacements', {})
+            self.dictionaries = data.get('dictionaries', {})
         else:
-            with open(file = json_path, mode = 'w') as json_file:
-                data = {'replacements': {}, 'dictionaries': {}}
-                json.dump(data, json_file, indent = 4)
+            self.save(uuid = uuid)
 
     def save(self, uuid: Union[UUID, str]) -> None:
         """
         :param uuid: user uuid to identify correspondent dictionaries
         """
         json_path = os.path.join(self.folder_path, f'json/{uuid}.json')
-        with open(file = json_path, mode = 'w') as json_file:
+        with open(file = json_path, mode = 'w', encoding = 'utf-8') as json_file:
             data = {'replacements': self.replacements, 'dictionaries': self.dictionaries}
-            json.dump(data, json_file, indent = 4)
+            json.dump(data, json_file, ensure_ascii = False, indent = 4)

@@ -1,8 +1,8 @@
 from nicegui import ui, events
-from backend.config.const import CONFIG, URLS, REPLACE_COLS, PDF_COLS, PDF_SETTING_LABELS
+from backend.config.const import CONFIG, URLS, REPLACE_COLS, PDF_COLS
 from backend.config.const import PUNCTUATIONS, BEG_PATTERNS, END_PATTERNS, QUO_PATTERNS, REPLACEMENTS
 from backend.dicts.dictonaries import Dicts
-from frontend.pages.ui_custom import ui_dialog, TABLE, LIST
+from frontend.pages.ui_custom import ui_dialog, TABLE, LIST, load_language, get_languages
 from frontend.pages.page_abc import Page
 
 
@@ -25,15 +25,19 @@ class Settings(Page):
         # do not update url history in settings
         ui.open(f'{self.url_history[0]}')
 
-    def _reset_interface(self) -> None:
-        self.settings.show_tips = True
-        self.settings.dark_mode = True
-
     def _refresh_interface(self) -> None:
         ui.open(f'{self.URL}')
 
+    def _reset_interface(self) -> None:
+        self.settings.show_tips = True
+        self.settings.dark_mode = True
+        self.settings.language = 'english'
+
+    def _on_select(self) -> None:
+        self.ui_language = load_language(language = self._language)
+
     def _add_row(self, event: events.GenericEventArguments) -> None:
-        _id = max(row.get('id') for row in self.ui_table.rows) + 1
+        _id = max([row.get('id') for row in self.ui_table.rows] + [-1]) + 1
         if event.args:
             for i, row in enumerate(self.ui_table.rows):
                 if row.get('id') == event.args.get('id'):
@@ -59,11 +63,11 @@ class Settings(Page):
     def _load_table(self) -> None:
         self.ui_table.rows.clear()
         for i, (key, val) in enumerate(self.dicts.replacements.items()):
-            self.ui_table.rows.insert(0, {'id': i, 'key': key, 'val': val})
+            self.ui_table.rows.append({'id': i, 'key': key, 'val': val})
         self.ui_table.update()
 
     def _reset_table(self) -> None:
-        self.dicts.replacements = REPLACEMENTS
+        self.dicts.replacements = REPLACEMENTS.copy()
         self._load_table()
 
     def _update_replacements(self) -> None:
@@ -79,23 +83,23 @@ class Settings(Page):
 
     def _load_list(self) -> None:
         self.ui_list.rows.clear()
-        for i, (key, val) in enumerate(zip(PDF_SETTING_LABELS, self.pdf.values())):
+        for i, (key, val) in enumerate(zip(self.ui_language.SETTINGS.Pdf, self.pdf.values())):
             self.ui_list.rows.append({'id': i, 'key': key, 'val': float(val)})
         self.ui_list.update()
 
     def _reset_list(self) -> None:
-        self.pdf = CONFIG.PDF
+        self.pdf = CONFIG.pdf.__dict__.copy()
         self._load_list()
 
     def _update_pdf_params(self):
         vals = [row.get('val') for row in self.ui_list.rows]
         for key, val in zip(self.pdf.keys(), vals):
             if key == 'page_sep':
-                self.pdf[key] = bool(val)
+                if val: self.pdf[key] = bool(val)
             elif key in ['word_space', 'char_lim', 'line_lim']:
-                self.pdf[key] = int(val)
+                if val: self.pdf[key] = int(val)
             else:
-                self.pdf[key] = float(val)
+                if val: self.pdf[key] = float(val)
 
     def _reset_patterns(self) -> None:
         self.ui_punctuations.value = PUNCTUATIONS
@@ -111,33 +115,20 @@ class Settings(Page):
         self.decoder.end_patterns = self.ui_end_patterns.value
         self.decoder.quo_patterns = self.ui_quo_patterns.value
 
-    @staticmethod
-    def _dialog_interface() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog_interface(self) -> ui_dialog:
+        return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_interface)
 
-    @staticmethod
-    def _dialog_replacements() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog_replacements(self) -> ui_dialog:
 
-    @staticmethod
-    def _dialog_pdf_settings() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+        return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_replace)
 
-    @staticmethod
-    def _dialog_adv_settings() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog_pdf_settings(self) -> ui_dialog:
+
+        return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_adv)
+
+    def _dialog_adv_settings(self) -> ui_dialog:
+
+        return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_interface)
 
     def _header(self) -> None:
         with ui.header():
@@ -146,47 +137,54 @@ class Settings(Page):
 
     def _center(self) -> None:
         self.dicts.load(uuid = self.decoder.uuid)
-
         with ui.column().classes('w-full items-center').style('font-size:12pt'):
             with ui.tabs() as tabs:
-                panel0 = ui.tab('INTERFACE SETTINGS')
-                panel1 = ui.tab('REPLACEMENTS')
-                panel2 = ui.tab('PDF SETTINGS')
-                panel3 = ui.tab('ADVANCED SETTINGS')
+                panel0 = ui.tab(self.ui_language.SETTINGS.Panel[0])
+                panel1 = ui.tab(self.ui_language.SETTINGS.Panel[1])
+                panel2 = ui.tab(self.ui_language.SETTINGS.Panel[2])
+                panel3 = ui.tab(self.ui_language.SETTINGS.Panel[3])
             with ui.tab_panels(tabs, value = panel0, animated = True):
                 with ui.tab_panel(panel0).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_interface().open) \
                             .classes('absolute-top-right'):
-                        if self.show_tips: ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.help)
                     self._interface()
                 with ui.tab_panel(panel1).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_replacements().open) \
                             .classes('absolute-top-right'):
-                        if self.show_tips: ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.help)
                     self._table()
                     self._load_table()
                 with ui.tab_panel(panel2).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_pdf_settings().open) \
                             .classes('absolute-top-right'):
-                        if self.show_tips: ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.help)
                     self._pdf_settings()
                     self._load_list()
                 with ui.tab_panel(panel3).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_adv_settings().open) \
                             .classes('absolute-top-right'):
-                        if self.show_tips: ui.tooltip('Need help?')
+                        if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.advanced.help)
                     self._adv_settings()
 
     def _interface(self) -> None:
-        with ui.card().style('width:400px'):
-            ui.checkbox('Show tooltips').bind_value(self.settings, 'show_tips')
-            ui.checkbox('Dark mode').bind_value(self.settings, 'dark_mode')
+        with (ui.card().style('width:400px')):
+            ui.checkbox(self.ui_language.SETTINGS.Interface[0]).bind_value(self.settings, 'dark_mode')
+            ui.checkbox(self.ui_language.SETTINGS.Interface[1]).bind_value(self.settings, 'show_tips')
+            ui.select(
+                label = self.ui_language.SETTINGS.Interface[2],
+                value = 'english',
+                options = get_languages(),
+                on_change = self._on_select) \
+                .props('dense options-dense') \
+                .style('min-width:200px; font-size:12pt') \
+                .bind_value(self.settings, 'language')
         ui.separator()
-        with ui.button(icon = 'touch_app', on_click = self._refresh_interface):
-            if self.show_tips: ui.tooltip('Apply settings')
+        with ui.button(text = 'APPLY', on_click = self._refresh_interface):
+            if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.apply)
         with ui.button(icon = 'restore', on_click = self._reset_interface) \
                 .classes('absolute-bottom-left'):
-            if self.show_tips: ui.tooltip('Reset settings')
+            if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reset)
 
     def _table(self) -> None:
         self.ui_table = ui.table(columns = REPLACE_COLS, rows = [], row_key = 'id') \
@@ -200,13 +198,13 @@ class Settings(Page):
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._update_replacements):
-                if self.show_tips: ui.tooltip('Save settings')
+                if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.save)
             with ui.button(icon = 'restore', on_click = self._reset_table) \
                     .classes('absolute-bottom-left'):
-                if self.show_tips: ui.tooltip('Reset settings')
+                if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.reset)
             with ui.button(icon = 'delete', on_click = self._clear_table) \
                     .classes('absolute-bottom-right'):
-                if self.show_tips: ui.tooltip('Clear settings')
+                if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.delete)
 
     def _pdf_settings(self) -> None:
         self.ui_list = ui.table(columns = PDF_COLS, rows = [], row_key = 'id') \
@@ -216,34 +214,34 @@ class Settings(Page):
         self.ui_list.on('_upd_param', self._upd_param)
         ui.separator()
         with ui.button(icon = 'save', on_click = self._update_pdf_params):
-            if self.show_tips: ui.tooltip('Save settings')
+            if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.save)
         with ui.button(icon = 'restore', on_click = self._reset_list) \
                 .classes('absolute-bottom-left'):
-            if self.show_tips: ui.tooltip('Reset settings')
+            if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.reset)
 
     def _adv_settings(self) -> None:
         with ui.card().style('gap: 0.0rem; font-size:10pt'):
-            ui.label('Punctuations')
+            ui.label(self.ui_language.SETTINGS.Advanced[0])
             self.ui_punctuations = ui.input(value = self.decoder.punctuations) \
                 .style('width:400px; font-size:12pt')
             ui.space().style('height:15px')
-            ui.label('Beginning Patterns')
+            ui.label(self.ui_language.SETTINGS.Advanced[1])
             self.ui_beg_patterns = ui.input(value = self.decoder.beg_patterns) \
                 .style('width:400px; font-size:12pt')
             ui.space().style('height:15px')
-            ui.label('End Pattern')
+            ui.label(self.ui_language.SETTINGS.Advanced[2])
             self.ui_end_patterns = ui.input(value = self.decoder.end_patterns) \
                 .style('width:400px; font-size:12pt')
             ui.space().style('height:15px')
-            ui.label('Quotations')
+            ui.label(self.ui_language.SETTINGS.Advanced[3])
             self.ui_quo_patterns = ui.input(value = self.decoder.quo_patterns) \
                 .style('width:400px; font-size:12pt')
         ui.separator()
         with ui.button(icon = 'save', on_click = self._update_patterns):
-            if self.show_tips: ui.tooltip('Save settings')
+            if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.advanced.save)
         with ui.button(icon = 'restore', on_click = self._reset_patterns) \
                 .classes('absolute-bottom-left'):
-            if self.show_tips: ui.tooltip('Reset settings')
+            if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.reset)
 
     def page(self) -> None:
         self.__init_ui__()

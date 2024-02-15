@@ -4,7 +4,7 @@ from nicegui import ui, app
 from backend.config.const import CONFIG
 from backend.utils import utilities as utils
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui_custom import COLORS, HTML
+from frontend.pages.ui_custom import COLORS, HTML, Language, ui_language
 
 # It is very important to initialize the LanguageDecoder instance outside the initialization of the Page class,
 # so that all inherited Page classes have the same LanguageDecoder state!
@@ -12,8 +12,9 @@ language_decoder = LanguageDecoder()
 
 
 class Settings(object):
-    show_tips = True
-    dark_mode = True
+    show_tips: bool = True
+    dark_mode: bool = True
+    language: str = 'english'
 
 
 settings = Settings()
@@ -48,14 +49,15 @@ class Page(ABC, ui.page):
         super().__init__(path = url)
         self._URL: str = url
         self._url_history: URLHistory = url_history
-        self._APP: app = app
+        self._app: app = app
+        self.ui_language: Language = ui_language
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
-        self.pdf: dict = CONFIG.PDF
+        self.pdf: dict = CONFIG.pdf.__dict__.copy()
         self.settings: Settings = settings
 
     def __init_ui__(self):
-        self.decoder.uuid = self._APP.storage.browser.get('id')
+        self.decoder.uuid = self._app.storage.browser.get('id')
         ui.dark_mode().bind_value_from(self.settings, 'dark_mode')
         ui.colors(primary = COLORS.PRIMARY, secondary = COLORS.SECONDARY, accent = COLORS.ACCENT, dark = COLORS.DARK,
                   positive = COLORS.POSITIVE, negative = COLORS.NEGATIVE, info = COLORS.INFO, warning = COLORS.WARNING)
@@ -82,6 +84,10 @@ class Page(ABC, ui.page):
     @property
     def show_tips(self):
         return self.settings.show_tips
+
+    @property
+    def _language(self):
+        return self.settings.language
 
     def build(self) -> None:
         self(self.page)

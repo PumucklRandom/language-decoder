@@ -57,7 +57,7 @@ class Decoding(Page):
             )
 
         @app.get(URLS.PDF_VIEW)
-        def download():
+        def pdf_view():
             return Response(
                 content = buffer,
                 media_type = 'application/pdf',
@@ -119,7 +119,7 @@ class Decoding(Page):
             # FIXME: strange JavaScript TimeoutError with notification (over ~380 words)
             #   but applications seems to run anyway
             notification = ui.notification(
-                message = f'Decoding {len(self.decoder.source_words)} words',
+                message = f'{self.ui_language.DECODING.Messages.decoding} {len(self.decoder.source_words)}',
                 position = 'top',
                 type = 'ongoing',
                 multi_line = True,
@@ -136,12 +136,8 @@ class Decoding(Page):
         self.decoder.apply_dict()
         self._load_table()
 
-    @staticmethod
-    def _dialog() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog(self) -> ui_dialog:
+        return ui_dialog(label_list = self.ui_language.DECODING.Dialogs)
 
     async def _pdf_dialog(self) -> None:
         self._save_words()
@@ -152,15 +148,16 @@ class Decoding(Page):
                     .classes('absolute-top-right') \
                     .props('dense round size=12px')
                 ui.space()
-                ui.label('The pdf file is ready!')
-                ui.label('You can either first view the document:')
+                ui.label(self.ui_language.DECODING.Dialogs_pdf[0])
+                ui.label(self.ui_language.DECODING.Dialogs_pdf[1])
                 ui.button(text = 'VIEW PDF', on_click = self._open_pdf_view)
-                ui.label('Or just download the document:')
+                ui.label(self.ui_language.DECODING.Dialogs_pdf[2])
                 ui.button(text = 'DOWNLOAD', on_click = lambda: ui.download(download_path))
                 dialog.open()
         # Cleanup download route after client disconnect
+        # FIXME: AttributeError after some some. Applications seems to run anyway
         with await self._client.disconnected():
-            app.routes = [route for route in app.routes if route.path != download_path]
+            app.routes[:] = [route for route in app.routes if route.path != download_path]
 
     def _header(self) -> None:
         with ui.header():
@@ -190,13 +187,13 @@ class Decoding(Page):
         with ui.footer():
             with ui.button(icon = 'save', on_click = self._save_words) \
                     .classes('absolute-center'):
-                if self.show_tips: ui.tooltip('Save decoding')
+                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.save)
             ui.space().style('width: 500px')
             ui.button(text = 'APPLY DICT', on_click = self._apply_dict)
             ui.button(text = 'CREATE PDF', on_click = self._pdf_dialog)
             ui.space()
             with ui.button(icon = 'help', on_click = self._dialog().open):
-                if self.show_tips: ui.tooltip('Need help?')
+                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.help)
 
     async def page(self, client: Client) -> None:
         self._client = client

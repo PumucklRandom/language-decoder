@@ -13,9 +13,9 @@ class Upload(Page):
         self.ui_text_box: ui.textarea = None  # noqa
         self.ui_scr_select: ui.select = None  # noqa
         self.ui_tar_select: ui.select = None  # noqa
-        self.max_file_size: int = CONFIG.UPLOAD.get('max_file_size')
-        self.auto_upload: bool = CONFIG.UPLOAD.get('auto_upload')
-        self.max_files: int = CONFIG.UPLOAD.get('max_files')
+        self.max_file_size: int = CONFIG.upload.max_file_size
+        self.auto_upload: bool = CONFIG.upload.auto_upload
+        self.max_files: int = CONFIG.upload.max_files
 
     def _open_start_page(self) -> None:
         self._update_text()
@@ -38,7 +38,7 @@ class Upload(Page):
             self.update_url_history()
             ui.open(f'{URLS.DECODING}')
         else:
-            ui.notify(f'Upload text file or enter some text below',
+            ui.notify(self.ui_language.UPLOAD.Messages.decode,
                       type = 'negative', position = 'top')
 
     def _clear_text(self) -> None:
@@ -68,24 +68,20 @@ class Upload(Page):
             event.content.seek(0)
             text = event.content.read().decode('utf-16')
         except Exception:
-            ui.notify(f'Invalid input file. Use a different one or paste some text below',
+            ui.notify(self.ui_language.UPLOAD.Messages.invalid,
                       type = 'negative', position = 'top')
             return
         self.ui_text_box.set_value(text)
         event.sender.reset()  # noqa upload reset
-        ui.notify('Upload finished',
+        ui.notify(self.ui_language.UPLOAD.Messages.success,
                   type = 'positive', position = 'top')
 
     def _on_upload_reject(self) -> None:
-        ui.notify(f'Upload a text file with max: {self.max_file_size / 10 ** 3} KB',
+        ui.notify(f'{self.ui_language.UPLOAD.Messages.reject} {self.max_file_size / 10 ** 3} KB',
                   type = 'negative', position = 'top')
 
-    @staticmethod
-    def _dialog() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog(self) -> ui_dialog:
+        return ui_dialog(label_list = self.ui_language.UPLOAD.Dialogs)
 
     def _header(self) -> None:
         with ui.header():
@@ -101,21 +97,21 @@ class Upload(Page):
                     .style('min-width:1000px; min-height:562px; height:90vh'):
                 with ui.button(icon = 'help', on_click = self._dialog().open) \
                         .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip('Need help?')
-                ui.label('Upload a text file or enter some text below').style('font-size:14pt')
+                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.help)
+                ui.label(self.ui_language.UPLOAD.Uploads[0]).style('font-size:14pt')
                 self.ui_uploader = ui.upload(
-                    label = 'Select file',
+                    label = self.ui_language.UPLOAD.Uploads[1],
                     on_upload = self._upload_handler,
                     on_rejected = self._on_upload_reject,
                     max_file_size = self.max_file_size,
                     auto_upload = self.auto_upload,
                     max_files = self.max_files) \
                     .props('accept=.txt flat dense')
-                with ui.input(label = 'Title').classes(abs_top_left(130, 160)) as self.ui_input:
-                    if self.show_tips: ui.tooltip('Title of text')
+                with ui.input(label = self.ui_language.UPLOAD.Title).classes(abs_top_left(130, 160)) as self.ui_input:
+                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
                 self.ui_text_box = ui.textarea(
-                    label = 'Enter some text',
-                    placeholder = 'start typing',
+                    label = self.ui_language.UPLOAD.Input_txt[0],
+                    placeholder = self.ui_language.UPLOAD.Input_txt[1],
                     on_change = None) \
                     .classes('w-full h-full flex-grow') \
                     .style('min-width:1000px; min-height:562px; font-size:12pt')
@@ -125,7 +121,7 @@ class Upload(Page):
         languages = self.decoder.get_supported_languages()
         with ui.row():
             self.ui_scr_select = ui.select(
-                label = 'Source language',
+                label = self.ui_language.UPLOAD.Language[0],
                 value = 'auto',
                 options = ['auto'] + languages,
                 on_change = self._update_text) \
@@ -133,7 +129,7 @@ class Upload(Page):
                 .style('min-width:200px; font-size:12pt')
             ui.space()
             self.ui_tar_select = ui.select(
-                label = 'Target language',
+                label = self.ui_language.UPLOAD.Language[1],
                 value = 'english',
                 options = languages,
                 on_change = self._update_text) \
@@ -141,13 +137,13 @@ class Upload(Page):
                 .style('min-width:200px; font-size:12pt')
             ui.space()
             with ui.button(icon = 'save', on_click = self._update_text):
-                if self.show_tips: ui.tooltip('Save text')
+                if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.save)
             ui.space()
             with ui.button(text = 'DECODE', on_click = self._open_decoding):
-                if self.show_tips: ui.tooltip('Start decoding')
+                if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
             with ui.button(icon = 'delete', on_click = self._clear_text) \
                     .classes('absolute-bottom-right'):
-                if self.show_tips: ui.tooltip('Clear text')
+                if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.delete)
             ui.space().style('width:100px')
             self._load_text()
 

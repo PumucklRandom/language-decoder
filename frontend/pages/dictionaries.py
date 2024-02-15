@@ -27,7 +27,7 @@ class Dictionaries(Page):
 
     def _add_row(self, event: events.GenericEventArguments) -> None:
         if not self.decoder.dict_name:
-            ui.notify('Please select or create a dictionary',
+            ui.notify(self.ui_language.DICTIONARY.Messages.add_row,
                       type = 'negative', position = 'top')
             return
         _id = max([row.get('id') for row in self.ui_table.rows] + [-1]) + 1
@@ -61,7 +61,7 @@ class Dictionaries(Page):
     def _load_table(self) -> None:
         self.ui_table.rows.clear()
         for i, (key, val) in enumerate(self.dicts.dictionaries.get(self.decoder.dict_name, {}).items()):
-            self.ui_table.rows.insert(0, {'id': i, 'key': key, 'val': val})
+            self.ui_table.rows.append({'id': i, 'key': key, 'val': val})
         self.ui_table.update()
 
     def _select_table(self) -> None:
@@ -106,19 +106,11 @@ class Dictionaries(Page):
             vals = [row.get('val') for row in self.ui_table.rows]
             self.dicts.dictionaries[self.decoder.dict_name] = dict(zip(keys, vals))
 
-    @staticmethod
-    def _dialog_select() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog_select(self) -> ui_dialog:
+        return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_select)
 
-    @staticmethod
-    def _dialog_table() -> ui_dialog:
-        label_list = [
-            'Some tips for the user interface!'
-        ]
-        return ui_dialog(label_list = label_list)
+    def _dialog_table(self) -> ui_dialog:
+        return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_table)
 
     def _header(self) -> None:
         with ui.header():
@@ -131,10 +123,10 @@ class Dictionaries(Page):
         self.dicts.load(uuid = self.decoder.uuid)
         with ui.column().classes('w-full items-center').style('font-size:12pt'):
             with ui.card().style('width:500px'):
-                self.ui_check = ui.checkbox(text = 'rename dictionary').props('dense')
+                self.ui_check = ui.checkbox(text = self.ui_language.DICTIONARY.Selector[0]).props('dense')
                 # TODO: disable autocomplete on rename
                 self.ui_selector = ui.select(
-                    label = 'Select or create a dictionary',
+                    label = self.ui_language.DICTIONARY.Selector[1],
                     value = self.decoder.dict_name,
                     options = list(self.dicts.dictionaries.keys()),
                     with_input = True,
@@ -145,10 +137,10 @@ class Dictionaries(Page):
                     .style('width:350px')
                 with ui.button(icon = 'help', on_click = self._dialog_select().open) \
                         .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip('Need help?')
+                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
                 with ui.button(icon = 'delete', on_click = self._delete_table) \
                         .classes('absolute-bottom-right'):
-                    if self.show_tips: ui.tooltip('Delete dictionary')
+                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete)
 
             with ui.card().classes('items-center').style('width:650px'):
                 with ui.element():  # is somehow needed for the table border
@@ -156,10 +148,10 @@ class Dictionaries(Page):
                 self._load_table()
                 with ui.button(icon = 'help', on_click = self._dialog_table().open) \
                         .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip('Need help?')
+                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help_table)
                 with ui.button(icon = 'delete', on_click = self._clear_table) \
                         .classes('absolute-bottom-right'):
-                    if self.show_tips: ui.tooltip('Clear dictionary')
+                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete_table)
 
     def _table(self) -> None:
         self.ui_table = ui.table(columns = DICT_COLS, rows = [], row_key = 'id') \
@@ -178,7 +170,7 @@ class Dictionaries(Page):
             ui.space().style('height:36px')
             with ui.button(icon = 'save', on_click = self._save_dict) \
                     .classes('absolute-center'):
-                if self.show_tips: ui.tooltip('Save dictionary')
+                if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.save)
             ui.space().style('height:36px')
             # with ui.button(text = 'EXPORT', on_click = None):
             #     if self.show_tips: ui.tooltip('Import dictionary')

@@ -184,6 +184,7 @@ class LanguageDecoder(object):
         return ' '.join(text.split())
 
     def _strip_word(self, target_word: str) -> str:
+        # TODO: rewrite method to more simple
         # get the number of marks in the beginning of the word
         re_com = re.compile(f'^[{self.beg_patterns + self.quo_patterns}]*')
         beg_num = len(re.search(re_com, target_word).group())

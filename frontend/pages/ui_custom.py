@@ -1,7 +1,46 @@
+import os
+import json
 from typing import List
 from nicegui import ui
+from backend.config.const import dict_as_object
 
 SIZE_FACTOR = 10
+
+
+class Language(object):
+    def __init__(self, dictionary):
+        self.START = None
+        self.UPLOAD = None
+        self.DECODING = None
+        self.DICTIONARY = None
+        self.SETTINGS = None
+        self.__dict__.update(dictionary)
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def __str__(self) -> str:
+        return self.__dict__.__str__()
+
+
+def load_language(language: str = 'english') -> type(Language):
+    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.json')
+    if not os.path.isfile(language_path):
+        # TODO: Error Handling
+        pass
+    with open(language_path, 'r') as config_file:
+        return dict_as_object(dictionary = json.load(config_file), object_type = Language)
+
+
+def get_languages() -> List[str]:
+    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels')
+    languages = list()
+    for language_file in os.listdir(label_folder):
+        languages.append(os.path.splitext(language_file)[0])
+    return languages
+
+
+ui_language = load_language()
 
 # TODO: change default icons of ui.checkbox
 ui.select.default_props('outlined')
