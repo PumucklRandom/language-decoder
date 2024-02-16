@@ -12,8 +12,8 @@ language_decoder = LanguageDecoder()
 
 
 class Settings(object):
-    show_tips: bool = True
     dark_mode: bool = True
+    show_tips: bool = True
     language: str = 'english'
 
 
@@ -51,10 +51,10 @@ class Page(ABC, ui.page):
         self._url_history: URLHistory = url_history
         self._app: app = app
         self.ui_language: Language = ui_language
+        self.settings: Settings = settings
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
         self.pdf: dict = CONFIG.pdf.__dict__.copy()
-        self.settings: Settings = settings
 
     def __init_ui__(self):
         self.decoder.uuid = self._app.storage.browser.get('id')

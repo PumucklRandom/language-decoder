@@ -11,15 +11,15 @@ frameless: false
 reload: true
 storage_secret: STORAGE_SECRET
 upload:
-  max_file_size: 100_000
-  auto_upload: true
-  max_files: 1
+    max_file_size: 100_000
+    auto_upload: true
+    max_files: 1
 pdf:
-  word_space: 4
-  page_sep: false
-  char_lim: 74
-  line_lim: 54
-  title_size: 24
-  font_size: 13.4
-  pdf_w: 215.
-  pdf_h: 5.28
+    word_space: 4
+    page_sep: false
+    char_lim: 74
+    line_lim: 54
+    title_size: 24
+    font_size: 13.4
+    pdf_w: 215.
+    pdf_h: 5.28

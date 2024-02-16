@@ -141,7 +141,7 @@ class LanguageDecoder(object):
             try:
                 with open(file = source_path, mode = 'r', encoding = 'utf-8') as file:
                     self.source_text = file.read()
-            except IOError as e:
+            except IOError:
                 # TODO: Error handling and logger
                 self.source_text = ''
                 return
@@ -183,30 +183,19 @@ class LanguageDecoder(object):
         # remove redundant whitespaces and new lines
         return ' '.join(text.split())
 
-    def _strip_word(self, target_word: str) -> str:
-        # TODO: rewrite method to more simple
-        # get the number of marks in the beginning of the word
-        re_com = re.compile(f'^[{self.beg_patterns + self.quo_patterns}]*')
-        beg_num = len(re.search(re_com, target_word).group())
-        # get the number of marks in the end of the word
-        re_com = re.compile(f'[{self.end_patterns + self.quo_patterns}]*$')
-        end_num = len(re.search(re_com, target_word).group())
-        # if the end numbers are 0 get the length of the words
-        end_num = -len(target_word) if end_num == 0 else end_num
-        # return target word without marks
-        return target_word[beg_num:-end_num]
+    @staticmethod
+    def _strip_word(target_word: str) -> str:
+        # remove all non-letters, non-numbers and non-minus
+        return re.sub('[^-\w]*', '', target_word)
 
     def _wrap_word(self, source_word: str, target_word: str) -> str:
-        # get the number of marks in the beginning of the word
-        re_com = re.compile(f'^[{self.beg_patterns + self.quo_patterns}]*')
-        beg_num = len(re.search(re_com, source_word).group())
-        # get the number of marks in the end of the word
-        re_com = re.compile(f'[{self.end_patterns + self.quo_patterns}]*$')
-        end_num = len(re.search(re_com, source_word).group())
-        # if the end numbers are 0 get the length of the words
-        end_num = -len(source_word) if end_num == 0 else end_num
-        # add the marks from source word to target word
-        return f'{source_word[0:beg_num]}{target_word}{source_word[-end_num:]}'
+        # make sure target word is stripped
+        target_word = self._strip_word(target_word)
+        # get marks at the beginning of the word
+        beg = re.search('^\W*', source_word).group()
+        # get marks at the end of the word
+        end = re.search('\W*$', source_word).group()
+        return f'{beg}{target_word}{end}'
 
     def split_text(self) -> None:
         if len(self.source_text) == 0:
@@ -229,11 +218,9 @@ class LanguageDecoder(object):
         for source_word, target_word in zip(self.source_words, target_words):
             # take source word if target word is None
             target_word = source_word if target_word is None else target_word
-            # first strip the target word from marks
-            target_word = self._strip_word(target_word = target_word)
-            # then add missing marks from source word to target word
+            # add missing marks from source word to target word
             self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
-        print(f'Decoded words!\n')
+        print('Decoded words!\n')
 
     def apply_dict(self) -> None:
         if not self.dict_name:
@@ -248,9 +235,7 @@ class LanguageDecoder(object):
             if source_strip in dictionary.keys():
                 # replace target word if stripped source word is key
                 target_word = dictionary.get(source_strip)
-            # then strip the target word from marks
-            target_word = self._strip_word(target_word = target_word)
-            # and add missing marks from source word to target word
+            # add missing marks from source word to target word
             self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
 
     def decode_text_to_file(self, source_path: str = None, translate: bool = False) -> None:

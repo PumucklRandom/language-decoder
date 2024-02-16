@@ -42,7 +42,7 @@ class URLS(object):
 
 
 class Config(object):
-    def __init__(self, dictionary):
+    def __init__(self, dictionary) -> None:
         self.__dict__.update(dictionary)
 
     def __repr__(self) -> str:

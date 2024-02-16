@@ -155,7 +155,7 @@ class Decoding(Page):
                 ui.button(text = 'DOWNLOAD', on_click = lambda: ui.download(download_path))
                 dialog.open()
         # Cleanup download route after client disconnect
-        # FIXME: AttributeError after some some. Applications seems to run anyway
+        # FIXME: AttributeError after some time. Applications seems to run anyway
         with await self._client.disconnected():
             app.routes[:] = [route for route in app.routes if route.path != download_path]
 

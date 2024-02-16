@@ -127,36 +127,34 @@ class PDF(object):
         print(f'Convert {lines_len} lines of formatted text to pdf with {len(pages)} pages.\n')
         return pages
 
-    def _format_pdf(self, title: str, pages: List[str]):
+    def _format_pdf(self, title: str, pages: List[str]) -> None:
         first_page = True
         self.__init_fpdf__()
         pdf_title = f'    {title}'
         for p, page in enumerate(pages):
             self._fpdf.add_page()
             if first_page:
+                first_page = False
                 # add the title to the top of the first front page
                 self._fpdf.set_font(family = 'Noto', size = self.title_size)
                 self._fpdf.cell(ln = 1, txt = pdf_title, align = 'L', w = self.pdf_w, h = self.pdf_h)
                 self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
                 self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                # write formatted page
                 self._fpdf.set_font(family = 'Noto', size = self.font_size)
-                first_page = False
-            elif 0.5 * p % 2 < 1.:  # front page
+                self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
+            elif 0.5 * p % 2 < 1.:  # front pages
                 # add space to the top of the front page
-                self._fpdf.set_font(family = 'Noto', size = self.font_size)
                 self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
                 self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
                 self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
-            # write the formatted page
-            self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
-            if 0.5 * p % 2 > 1.:  # back page
-                # add space to the end of the back page
-                self._fpdf.set_font(family = 'Noto', size = self.font_size)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                # write formatted page
+                self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
+            else:  # back pages
+                # write formatted page
+                self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
 
-    def _delete_pkl_files(self):
+    def _delete_pkl_files(self) -> None:
         directory = os.path.dirname(self.font_path)
         for file in os.listdir(directory):
             if file.endswith('.pkl'):

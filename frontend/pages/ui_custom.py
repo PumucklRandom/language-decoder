@@ -33,7 +33,7 @@ def load_language(language: str = 'english') -> type(Language):
 
 
 def get_languages() -> List[str]:
-    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels')
+    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels')
     languages = list()
     for language_file in os.listdir(label_folder):
         languages.append(os.path.splitext(language_file)[0])
