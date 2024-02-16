@@ -5,7 +5,7 @@ __pycache__
 build
 dist
 LanguageDecoder.spec
-backend/main.py
+/backend/main.py
 *.txt
 json/
 *.pkl
