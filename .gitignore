@@ -2,7 +2,10 @@
 .idea
 .nicegui
 __pycache__
-backend/_main.py
+build
+dist
+LanguageDecoder.spec
+backend/main.py
 *.txt
 json/
 *.pkl

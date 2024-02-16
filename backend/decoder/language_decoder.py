@@ -75,12 +75,13 @@ class LanguageDecoder(object):
             self._pp.pprint(languages.keys())
         return list(languages.keys())
 
-    def set_languages(self) -> None:
+    def _set_languages(self) -> None:
         self._translator.source = self.source_language
         self._translator.target = self.target_language
 
-    def translate(self, text: str) -> str:
+    def _translate(self, text: str) -> str:
         try:
+            self._set_languages()
             return self._translator.translate(text)
         except RequestError as exception:
             print('Connection Error')
@@ -96,8 +97,9 @@ class LanguageDecoder(object):
             print(exception)
             return ''
 
-    def translate_batch(self, batch: List[str]) -> List[str]:
+    def _translate_batch(self, batch: List[str]) -> List[str]:
         try:
+            self._set_languages()
             return self._translator.translate_batch(batch)
         except RequestError as exception:
             print('Connection Error')
@@ -161,6 +163,7 @@ class LanguageDecoder(object):
         return text
 
     def _reformat_text(self, text: str) -> str:
+        text = ' '.join(text.split())
         self._dicts.load(uuid = self.uuid)
         # replace special characters with common ones
         for chars in self._dicts.replacements.keys():
@@ -209,7 +212,7 @@ class LanguageDecoder(object):
 
     def decode_words(self) -> None:
         print(f'Decode {len(self.source_words)} words.')
-        target_words = self.translate_batch(self.source_words)
+        target_words = self._translate_batch(self.source_words)
         if len(target_words) != len(self.source_words):
             # TODO: Error handling and logger
             print('Something went wrong with the translation.\n')
@@ -288,23 +291,23 @@ class LanguageDecoder(object):
         target_line = f'{target_line[0:-self.word_space]}{self.new_line}'
         self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
 
-        self.save_decode_text()
+        self._save_decode_text()
         if translate:
-            self.translate_text()
-            self.save_translated_text()
+            self._translate_text()
+            self._save_translated_text()
 
-    def save_decode_text(self) -> str:
+    def _save_decode_text(self) -> str:
         destin_path, _ = self._get_destin_paths(source_path = self.source_path)
         if not os.path.isfile(destin_path) and self.decode_text:
             with open(file = destin_path, mode = 'w', encoding = 'utf-8') as file:
                 file.write(self.decode_text)
             return destin_path
 
-    def translate_text(self) -> None:
-        self.translated_text = self.translate(self.source_text)
+    def _translate_text(self) -> None:
+        self.translated_text = self._translate(self.source_text)
         self.translated_text = textwrap.fill(self.translated_text, width = self.char_lim)
 
-    def save_translated_text(self) -> str:
+    def _save_translated_text(self) -> str:
         _, transl_path = self._get_destin_paths(source_path = self.source_path)
         if not os.path.isfile(transl_path) and self.translated_text:
             with open(file = transl_path, mode = 'w', encoding = 'utf-8') as file:

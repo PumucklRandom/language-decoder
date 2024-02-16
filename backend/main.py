@@ -9,7 +9,7 @@ def main():
     pdf = PDF()
     language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de', dict_name = 'RU2DE')
 
-    base_path = 'C:/Users/User/source/'
+    base_path = 'D:/Marlon/Русский/3 История/'
     directories = glob(os.path.join(base_path, '**/*/'), recursive = True)
     for directory in directories:
         text_files = glob(os.path.join(directory, '*.txt'))
@@ -18,7 +18,6 @@ def main():
                 language_decoder.decode_text_to_file(source_path = text_file, translate = True)
             if text_file.endswith('decode.txt'):
                 pdf.convert2pdf(decode_path = text_file)
-                # language_decoder.delete_decoded_files(decode_path=text_file)
 
 
 main()

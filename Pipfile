@@ -8,6 +8,7 @@ nicegui = "*"
 deep-translator = "*"
 pywebview = "*"
 fpdf = "*"
+pyinstaller = "*"
 
 [dev-packages]
 

@@ -36,7 +36,8 @@ def get_languages() -> List[str]:
     label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels')
     languages = list()
     for language_file in os.listdir(label_folder):
-        languages.append(os.path.splitext(language_file)[0])
+        if language_file.endswith('.json'):
+            languages.append(os.path.splitext(language_file)[0])
     return languages
 
 

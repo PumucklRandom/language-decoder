@@ -1,3 +1,4 @@
+import os
 from nicegui import ui
 from backend.config.const import CONFIG
 from frontend.pages.start import Start
@@ -21,7 +22,7 @@ def run():
         host = CONFIG.host,
         port = CONFIG.port,
         title = CONFIG.title,
-        favicon = CONFIG.favicon,
+        favicon = os.path.join(os.path.dirname(os.path.relpath(__file__)), CONFIG.favicon),
         dark = CONFIG.dark,
         reconnect_timeout = CONFIG.reconnect_timeout,
         native = CONFIG.native,
