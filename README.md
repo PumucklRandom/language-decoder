@@ -33,4 +33,4 @@ If this port is occupied, the IP address and the port can be adjusted as desired
 [Nicegui](https://nicegui.io/) for the grafical user interface\
 [Deep Translator](https://github.com/nidhaloff/deep-translator/) for the language translation\
 [FPDF](https://github.com/reingart/pyfpdf) for the pdf creation\
-[TextStudio](https://www.textstudio.com/) for the icon creation\
+[TextStudio](https://www.textstudio.com/) for the icon creation
