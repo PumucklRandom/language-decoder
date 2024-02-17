@@ -15,7 +15,7 @@ PACKAGE_PATH = os.path.dirname(os.path.relpath(__file__))
 
 class LanguageDecoder(object):
     """
-    The LanguageDecoder is used to translate a text from a source language to a given target language word by word (decoding).
+    The LanguageDecoder translates a given source language to a desired target language word by word (decoding).
     Therefor the Google translator is used to generate a decoded text file.
     After checking the decoded text file, the decoding can be converted to a pdf file.
     """
@@ -188,7 +188,7 @@ class LanguageDecoder(object):
 
     @staticmethod
     def _strip_word(target_word: str) -> str:
-        # remove all non-letters, non-numbers and non-minus
+        # remove all non-alphanumeric and non-minus characters
         return re.sub('[^-\w]*', '', target_word)
 
     def _wrap_word(self, source_word: str, target_word: str) -> str:

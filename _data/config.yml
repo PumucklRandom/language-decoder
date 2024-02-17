@@ -1,0 +1,25 @@
+host: 127.0.0.1
+port: 8080
+title: LanguageDecoder
+favicon: 'pages/icon/LD-icon.png'
+dark: true
+reconnect_timeout: 3
+native: true   # native = true (window mode)
+window_size: [1600, 1000]
+fullscreen: false  # set to false
+frameless: false  # set to false
+reload: false  # set to false for app!!! true for dev
+storage_secret: STORAGE_SECRET
+upload:
+    max_file_size: 100_000
+    auto_upload: true
+    max_files: 1
+pdf:
+    word_space: 4
+    page_sep: false
+    char_lim: 74
+    line_lim: 54
+    title_size: 24
+    font_size: 13.4
+    pdf_w: 215.
+    pdf_h: 5.28

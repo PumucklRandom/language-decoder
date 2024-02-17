@@ -6,6 +6,8 @@ build
 dist
 LanguageDecoder.spec
 /backend/main.py
+*.pkl
 *.txt
 json/
-*.pkl
+
+!requirements.txt
