@@ -2,11 +2,20 @@
     "START": {
         "Explanations": [
             "Explanation:",
-            "blabla"
+            [
+                "The LanguageDecoder translates a given source language to a desired target language word by word (decoding).",
+                "Therefor the Google translator is used in the backend.",
+                "To improve the translation, a dictionary can be created to automatically correct common translation errors.",
+                "Afterwards, the decoded text can be exported to a PDF file."
+            ],
+            "The LanguageDecoder can also be used to create language learning lessons based on the"
         ],
         "Disclaimers": [
             "Disclaimer:",
-            "blabla"
+            [
+                "The LanguegeDecoder is an open source project and runs uner the MIT licence."
+            ],
+            "To find out more about the project, visit the LanguageDecoder at"
         ]
     },
     "UPLOAD": {
@@ -112,14 +121,16 @@
             "Select language"
         ],
         "Pdf": [
-            "Tab size",
             "Use page seperator [0, 1]",
+            "Tab size between words",
             "Characters per line",
             "Lines per page",
             "Title font size",
-            "Font size",
-            "PDF width",
-            "PDF block height"
+            "Text font size",
+            "Page width",
+            "Title height",
+            "Header height",
+            "Line height"
         ],
         "Advanced": [
             "Punctuations",

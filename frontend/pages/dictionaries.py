@@ -165,15 +165,15 @@ class Dictionaries(Page):
 
     def _footer(self) -> None:
         with ui.footer():
-            # with ui.button(text = 'IMPORT', on_click = None):
-            #     if self.show_tips: ui.tooltip('Import dictionary')
+            with ui.button(text = 'IMPORT', on_click = None):
+                if self.show_tips: ui.tooltip('Import dictionary')
             ui.space().style('height:36px')
             with ui.button(icon = 'save', on_click = self._save_dict) \
                     .classes('absolute-center'):
                 if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.save)
             ui.space().style('height:36px')
-            # with ui.button(text = 'EXPORT', on_click = None):
-            #     if self.show_tips: ui.tooltip('Import dictionary')
+            with ui.button(text = 'EXPORT', on_click = None):
+                if self.show_tips: ui.tooltip('Export dictionary')
 
     def page(self) -> None:
         self.__init_ui__()

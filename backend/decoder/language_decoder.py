@@ -30,7 +30,7 @@ class LanguageDecoder(object):
                  end_patterns: str = END_PATTERNS,
                  quo_patterns: str = QUO_PATTERNS,
                  new_line: str = '\n',
-                 word_space: int = 4,
+                 tab_size: int = 4,
                  char_lim: int = 120) -> None:
 
         """
@@ -43,7 +43,7 @@ class LanguageDecoder(object):
         :param end_patterns: character patterns at the end of a word
         :param quo_patterns: character patterns for quotations
         :param new_line: new line string
-        :param word_space: the space between two words
+        :param tab_size: the tab size between two words
         :param char_lim: character limit of one line
         """
 
@@ -59,7 +59,7 @@ class LanguageDecoder(object):
         self.end_patterns = end_patterns
         self.quo_patterns = quo_patterns
         self.new_line = new_line
-        self.word_space = word_space
+        self.tab_size = tab_size
         self.char_lim = char_lim
         self.source_path = ''
         self.source_text = ''
@@ -256,14 +256,14 @@ class LanguageDecoder(object):
         self.decode_text = ''
         for source_word, target_word in zip(self.source_words, self.target_words):
             # get the length of the longest word + word_space
-            word_len = utils.lonlen([source_word, target_word]) + self.word_space
+            word_len = utils.lonlen([source_word, target_word]) + self.tab_size
             # get the length of the current line
             line_len += word_len
             # if the length of the line is too long
-            if (line_len - self.word_space) > self.char_lim:
+            if (line_len - self.tab_size) > self.char_lim:
                 # add self.new_line at the end
-                source_line = f'{source_line[0:-self.word_space]}{self.new_line}'
-                target_line = f'{target_line[0:-self.word_space]}{self.new_line}'
+                source_line = f'{source_line[0:-self.tab_size]}{self.new_line}'
+                target_line = f'{target_line[0:-self.tab_size]}{self.new_line}'
                 # combine to formatted text
                 self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
                 # set length to word length
@@ -287,8 +287,8 @@ class LanguageDecoder(object):
                 source_line += source_word.ljust(word_len, ' ')
                 target_line += target_word.ljust(word_len, ' ')
         # if the loop is finished add the last lines
-        source_line = f'{source_line[0:-self.word_space]}{self.new_line}'
-        target_line = f'{target_line[0:-self.word_space]}{self.new_line}'
+        source_line = f'{source_line[0:-self.tab_size]}{self.new_line}'
+        target_line = f'{target_line[0:-self.tab_size]}{self.new_line}'
         self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
 
         self._save_decode_text()

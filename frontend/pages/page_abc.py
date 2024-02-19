@@ -54,7 +54,7 @@ class Page(ABC, ui.page):
         self.settings: Settings = settings
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
-        self.pdf: dict = CONFIG.pdf.__dict__.copy()
+        self.pdf_params: dict = CONFIG.pdf.__dict__.copy()
 
     def __init_ui__(self):
         self.decoder.uuid = self._app.storage.browser.get('id')

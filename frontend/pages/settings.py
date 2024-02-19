@@ -83,23 +83,23 @@ class Settings(Page):
 
     def _load_list(self) -> None:
         self.ui_list.rows.clear()
-        for i, (key, val) in enumerate(zip(self.ui_language.SETTINGS.Pdf, self.pdf.values())):
+        for i, (key, val) in enumerate(zip(self.ui_language.SETTINGS.Pdf, self.pdf_params.values())):
             self.ui_list.rows.append({'id': i, 'key': key, 'val': float(val)})
         self.ui_list.update()
 
     def _reset_list(self) -> None:
-        self.pdf = CONFIG.pdf.__dict__.copy()
+        self.pdf_params = CONFIG.pdf.__dict__.copy()
         self._load_list()
 
     def _update_pdf_params(self):
         vals = [row.get('val') for row in self.ui_list.rows]
-        for key, val in zip(self.pdf.keys(), vals):
+        for key, val in zip(self.pdf_params.keys(), vals):
             if key == 'page_sep':
-                if val: self.pdf[key] = bool(val)
-            elif key in ['word_space', 'char_lim', 'line_lim']:
-                if val: self.pdf[key] = int(val)
+                if val: self.pdf_params[key] = bool(val)
+            elif key in ['tab_size', 'char_lim', 'line_lim']:
+                if val: self.pdf_params[key] = int(val)
             else:
-                if val: self.pdf[key] = float(val)
+                if val: self.pdf_params[key] = float(val)
 
     def _reset_patterns(self) -> None:
         self.ui_punctuations.value = PUNCTUATIONS
@@ -168,7 +168,8 @@ class Settings(Page):
                     self._adv_settings()
 
     def _interface(self) -> None:
-        with (ui.card().style('width:400px')):
+        with ui.card().style('width:400px'):
+            # TODO: add a translator connection check
             ui.checkbox(self.ui_language.SETTINGS.Interface[0]).bind_value(self.settings, 'dark_mode')
             ui.checkbox(self.ui_language.SETTINGS.Interface[1]).bind_value(self.settings, 'show_tips')
             ui.select(

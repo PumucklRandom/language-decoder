@@ -7,8 +7,8 @@ name = "pypi"
 nicegui = "*"
 deep-translator = "*"
 pywebview = "*"
-fpdf = "*"
 pyinstaller = "*"
+fpdf2 = "*"
 
 [dev-packages]
 

@@ -127,7 +127,7 @@ class HTML:
                 .q-table__top,
                 .q-table__bottom,
                 thead tr:first-child th
-                    background-color: #00b4ff
+                    background-color: #409696
                 thead tr th
                     position: sticky
                     z-index: 1
@@ -156,15 +156,15 @@ class TABLE:
     '''
     BODY = '''
         <q-tr :props="props">
-            <q-td key="key" style="background-color:#242A30" :props="props">
+            <q-td key="key" style="background-color:#212121" :props="props">
                 <q-input v-model="props.row.key" dense borderless debounce="200"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
-            <q-td key="val" style="background-color:#004840" :props="props">
+            <q-td key="val" style="background-color:#263238" :props="props">
                 <q-input v-model="props.row.val" dense borderless debounce="200"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
-            <q-td auto-width style="background-color:#204848">
+            <q-td auto-width style="background-color:#006064">
                 <div class="col">
                     <q-btn icon="remove" size="8px" dense round color="primary"
                     @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>

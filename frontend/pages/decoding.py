@@ -39,7 +39,7 @@ class Decoding(Page):
     def _create_dpf(self) -> str:
         title = self.decoder.title if self.decoder.title else 'decoded'
         download_path = f'{URLS.DOWNLOAD}{self.decoder.uuid}.pdf'
-        pdf = PDF(**self.pdf)
+        pdf = PDF(**self.pdf_params)
         buffer = pdf.convert2pdf(
             title = self.decoder.title,
             source_words = self.decoder.source_words,
@@ -174,6 +174,12 @@ class Decoding(Page):
                 self._table()  # noqa
         self._preload_table()
         await self._decode_words()
+        with ui.row().classes('absolute-top-right').style('gap:0.0rem'):
+            with ui.column().style('gap:0.0rem'):
+                ui.space().style('height:5px')
+                with ui.button(icon = 'help', on_click = self._dialog().open).props('dense'):
+                    if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.help).style('width:70px')
+            ui.space().style('width:5px')
 
     @ui.refreshable
     def _table(self) -> None:
@@ -185,15 +191,17 @@ class Decoding(Page):
 
     def _footer(self) -> None:
         with ui.footer():
+            with ui.button(text = 'IMPORT', on_click = None):
+                if self.show_tips: ui.tooltip('Import words')
             with ui.button(icon = 'save', on_click = self._save_words) \
                     .classes('absolute-center'):
                 if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.save)
-            ui.space().style('width: 500px')
+            ui.space().style('width: 400px')
             ui.button(text = 'APPLY DICT', on_click = self._apply_dict)
             ui.button(text = 'CREATE PDF', on_click = self._pdf_dialog)
             ui.space()
-            with ui.button(icon = 'help', on_click = self._dialog().open):
-                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.help)
+            with ui.button(text = 'Export', on_click = None):
+                if self.show_tips: ui.tooltip('Export words')
 
     async def page(self, client: Client) -> None:
         self._client = client

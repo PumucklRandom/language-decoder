@@ -3,9 +3,9 @@
 ## Language Decoder
 
 The LanguageDecoder translates a given source language to a desired target language word by word (decoding). Therefor the Google translator is used in the backend. 
-To improve the translation, a dictionary can be created to automatically correct common translation errors. Afterwards, the decoded text can be exported to a PDF.
+To improve the translation, a dictionary can be created to automatically correct common translation errors. Afterwards, the decoded text can be exported to a PDF file.
 
-The LanguageDecoder can also be used to create language learning lessons based on the [Birkenbihl method.](https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/)
+The LanguageDecoder can also be used to create language learning lessons based on the [Birkenbihl approach.](https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/)
 
 ![Upload](_data/upload.png)
 ![Decoding](_data/decoding.png)
@@ -32,5 +32,5 @@ If this port is occupied, the IP address and the port can be adjusted as desired
 ### Credits
 [Nicegui](https://nicegui.io/) for the grafical user interface\
 [Deep Translator](https://github.com/nidhaloff/deep-translator/) for the language translation\
-[FPDF](https://github.com/reingart/pyfpdf) for the pdf creation\
+[FPDF2](https://github.com/py-pdf/fpdf2/) for the pdf creation\
 [TextStudio](https://www.textstudio.com/) for the icon creation

@@ -15,11 +15,13 @@ upload:
     auto_upload: true
     max_files: 1
 pdf:
-    word_space: 4
     page_sep: false
-    char_lim: 74
+    tab_size: 4
+    char_lim: 75
     line_lim: 54
     title_size: 24
-    font_size: 13.4
-    pdf_w: 215.
-    pdf_h: 5.28
+    font_size: 13.2
+    width: 215
+    title_height: 6.2
+    header_height: 14.2
+    line_height: 5.3

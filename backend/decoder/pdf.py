@@ -9,32 +9,36 @@ class PDF(object):
     def __init__(self,
                  font_path: str = '../fonts/NotoMono/NotoMono.ttf',
                  new_line: str = '\n',
-                 word_space: int = 4,
                  page_sep: bool = False,
-                 char_lim: int = 74,
+                 tab_size: int = 4,
+                 char_lim: int = 75,
                  line_lim: int = 54,
-                 title_size: int = 24,
-                 font_size: int = 13.4,
-                 pdf_w: float = 215.,
-                 pdf_h: float = 5.28) -> None:
+                 title_size: float = 24,
+                 font_size: float = 13.2,
+                 width: float = 215.,
+                 title_height: float = 6.2,
+                 header_height: float = 14.2,
+                 line_height: float = 5.3) -> None:
 
         """
         :param font_path: path to the font used for the pdf (monospace font recommended)
         :param new_line: new line string
-        :param word_space: the space between two words
         :param page_sep: optional pdf page seperator activation
-        :param char_lim: character limit of one line (max: 74)
+        :param tab_size: the tab size between two words
+        :param char_lim: character limit of one line (max: 75)
         :param line_lim: lines limit of one page (max: 54) reduce in steps of 3
         :param title_size: font size of the title (max: 24)
-        :param font_size: font size of the text (max: 13.4)
-        :param pdf_w: width of the pdf text field (min 215)
-        :param pdf_h: height for each pdf line (5.18 - 5.28)
+        :param font_size: font size of the text (max: 13.2)
+        :param width: width of the pdf text field (min 215)
+        :param title_height: height for the pdf title (max 6.2)
+        :param header_height: height for the pdf header/footer (14.2)
+        :param line_height: height for each pdf line (5.3)
         """
 
         self.font_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), font_path)
         self.new_line = new_line
-        self.word_space = word_space
         self.page_sep = ''
+        self.tab_size = tab_size
         self.char_lim = char_lim
         if page_sep:
             self.page_sep = '|'
@@ -42,15 +46,17 @@ class PDF(object):
         self.line_lim = line_lim
         self.title_size = title_size
         self.font_size = font_size
-        self.pdf_w = pdf_w
-        self.pdf_h = pdf_h
+        self.width = width
+        self.title_height = title_height
+        self.header_height = header_height
+        self.line_height = line_height
         self._fpdf: FPDF
 
     def __init_fpdf__(self) -> FPDF:
         self._fpdf = FPDF(format = 'A4', orientation = 'P', unit = 'mm')
-        self._fpdf.add_font(family = 'Noto', fname = self.font_path, uni = True)
+        self._fpdf.add_font(family = 'Noto', fname = self.font_path)
         self._fpdf.set_auto_page_break(auto = False, margin = 0)
-        self._fpdf.set_margins(left = -1, top = 1, right = -1)
+        self._fpdf.set_margins(left = -0.8, top = 2, right = -1)
         return self._fpdf
 
     @staticmethod
@@ -90,14 +96,14 @@ class PDF(object):
         pdf_lines = list()
         for source_word, target_word in zip(source_words, target_words):
             # get the length of the longest word + word_space
-            word_len = utils.lonlen([source_word, target_word]) + self.word_space
+            word_len = utils.lonlen([source_word, target_word]) + self.tab_size
             # get the length of the current line
             line_len += word_len
             # if the length of the line is too long
-            if (line_len - self.word_space) > self.char_lim:
+            if (line_len - self.tab_size) > self.char_lim:
                 # replace the word_space with self.new_line and append to pdf lines
-                pdf_lines.append(f'{source_line[0:-self.word_space]}{self.new_line}')
-                pdf_lines.append(f'{target_line[0:-self.word_space]}{self.new_line}')
+                pdf_lines.append(f'{source_line[0:-self.tab_size]}{self.new_line}')
+                pdf_lines.append(f'{target_line[0:-self.tab_size]}{self.new_line}')
                 pdf_lines.append(self.new_line)
                 # reset length and lines
                 line_len = word_len
@@ -107,8 +113,8 @@ class PDF(object):
             source_line += source_word.ljust(word_len, ' ')
             target_line += target_word.ljust(word_len, ' ')
         # if the loop is finished create the last lines
-        pdf_lines.append(f'{source_line[0:-self.word_space]}{self.new_line}')
-        pdf_lines.append(f'{target_line[0:-self.word_space]}{self.new_line}')
+        pdf_lines.append(f'{source_line[0:-self.tab_size]}{self.new_line}')
+        pdf_lines.append(f'{target_line[0:-self.tab_size]}{self.new_line}')
         # pdf_lines.append(self.new_line)
         return pdf_lines
 
@@ -137,29 +143,22 @@ class PDF(object):
                 first_page = False
                 # add the title to the top of the first front page
                 self._fpdf.set_font(family = 'Noto', size = self.title_size)
-                self._fpdf.cell(ln = 1, txt = pdf_title, align = 'L', w = self.pdf_w, h = self.pdf_h)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self._fpdf.cell(text = pdf_title, w = self.width, h = self.title_height,
+                                new_x = 'LMARGIN', new_y = 'NEXT')
+                self._fpdf.cell(text = '', w = self.width, h = self.header_height - self.title_height,
+                                new_x = 'LMARGIN', new_y = 'NEXT')
                 # write formatted page
                 self._fpdf.set_font(family = 'Noto', size = self.font_size)
-                self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self._fpdf.multi_cell(text = page, w = self.width, h = self.line_height)
             elif 0.5 * p % 2 < 1.:  # front pages
                 # add space to the top of the front page
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
-                self._fpdf.cell(ln = 1, txt = '', align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self._fpdf.cell(text = '', w = self.width, h = self.header_height,
+                                new_x = 'LMARGIN', new_y = 'NEXT')
                 # write formatted page
-                self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
+                self._fpdf.multi_cell(text = page, w = self.width, h = self.line_height)
             else:  # back pages
                 # write formatted page
-                self._fpdf.multi_cell(txt = page, align = 'L', w = self.pdf_w, h = self.pdf_h)
-
-    def _delete_pkl_files(self) -> None:
-        directory = os.path.dirname(self.font_path)
-        for file in os.listdir(directory):
-            if file.endswith('.pkl'):
-                file_path = os.path.join(directory, file)
-                os.remove(file_path)
+                self._fpdf.multi_cell(text = page, w = self.width, h = self.line_height)
 
     def convert2pdf(self, title: str = '', source_words: list = None, target_words: list = None,
                     decode_path: str = '') -> Union[None, str, bytes]:
@@ -177,11 +176,9 @@ class PDF(object):
         if pdf_path:
             if not os.path.isfile(pdf_path):
                 # save pdf as file
-                self._fpdf.output(pdf_path, dest = 'F')  # noqa
-                self._delete_pkl_files()
+                self._fpdf.output(pdf_path)
                 return pdf_path
         else:
-            # save pdf as string
-            buffer: str = self._fpdf.output(dest = 'S')  # noqa
-            self._delete_pkl_files()
-            return buffer.encode('latin1')
+            # save pdf as bytes
+            buffer = bytes(self._fpdf.output())
+            return buffer

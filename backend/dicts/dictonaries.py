@@ -25,7 +25,7 @@ class Dicts(object):
         if os.path.isfile(json_path):
             with open(file = json_path, mode = 'r', encoding = 'utf-8') as json_file:
                 data = json.load(json_file)
-            self.replacements = data.get('replacements', {})
+            self.replacements = data.get('replacements', REPLACEMENTS)
             self.dictionaries = data.get('dictionaries', {})
         else:
             self.save(uuid = uuid)
