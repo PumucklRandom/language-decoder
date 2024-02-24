@@ -1,7 +1,9 @@
 from typing import List
+from urllib import parse
 from abc import ABC, abstractmethod
-from nicegui import ui, app
-from backend.config.const import CONFIG
+from nicegui import ui, app, Client
+from fastapi.responses import Response
+from backend.config.const import URLS, CONFIG
 from backend.utils import utilities as utils
 from backend.decoder.language_decoder import LanguageDecoder
 from frontend.pages.ui_custom import COLORS, HTML, Language, ui_language
@@ -15,6 +17,11 @@ class Settings(object):
     dark_mode: bool = True
     show_tips: bool = True
     language: str = 'english'
+    proxy_http: str = ''
+    proxy_https: str = ''
+
+    def get_proxies(self):
+        return {'http': self.proxy_http, 'https': self.proxy_https}
 
 
 settings = Settings()
@@ -49,15 +56,16 @@ class Page(ABC, ui.page):
         super().__init__(path = url)
         self._URL: str = url
         self._url_history: URLHistory = url_history
-        self._app: app = app
         self.ui_language: Language = ui_language
         self.settings: Settings = settings
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
         self.pdf_params: dict = CONFIG.pdf.__dict__.copy()
 
-    def __init_ui__(self):
-        self.decoder.uuid = self._app.storage.browser.get('id')
+    def __init_ui__(self, client: Client = None):
+        if client:
+            client.on_disconnect(handler = lambda: self.del_app_routes(url = URLS.DOWNLOAD))
+        self.decoder.uuid = app.storage.browser.get('id')
         ui.dark_mode().bind_value_from(self.settings, 'dark_mode')
         ui.colors(primary = COLORS.PRIMARY, secondary = COLORS.SECONDARY, accent = COLORS.ACCENT, dark = COLORS.DARK,
                   positive = COLORS.POSITIVE, negative = COLORS.NEGATIVE, info = COLORS.INFO, warning = COLORS.WARNING)
@@ -88,6 +96,45 @@ class Page(ABC, ui.page):
     @property
     def _language(self):
         return self.settings.language
+
+    @staticmethod
+    def _add_app_route(route: str, content: any, file_type: str, disposition: str, filename: str, ) -> None:
+        @app.get(route)
+        def app_route():
+            return Response(
+                content = content,
+                media_type = f'application/{file_type}',
+                headers = {
+                    'Content-Disposition': f'{disposition}; filename={parse.quote(filename)}.{file_type}'
+                },
+            )
+
+    @staticmethod
+    def _del_app_route(route: str) -> None:
+        app.routes[:] = [app_route for app_route in app.routes if app_route.path != route]
+
+    @staticmethod
+    def del_app_routes(url: str) -> None:
+        for route in app.routes:
+            if route.path.startswith(url):
+                app.routes.remove(route)
+
+    def upd_app_route(self, url: str, content: any, file_type: str,
+                      filename: str, disposition: str = 'attachment') -> str:
+        route = f'{url}{self.decoder.uuid}'
+        if disposition == 'attachment':
+            route = f'{route}{self.decoder.uuid}.{file_type}'
+        else:
+            route = f'{route}{self.decoder.uuid}/'
+        self._del_app_route(route = route)
+        self._add_app_route(
+            route = route,
+            content = content,
+            file_type = file_type,
+            disposition = disposition,
+            filename = filename
+        )
+        return route
 
     def build(self) -> None:
         self(self.page)

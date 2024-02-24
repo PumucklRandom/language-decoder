@@ -2,6 +2,7 @@
 .idea
 .nicegui
 __pycache__
+logs
 build
 dist
 LanguageDecoder.spec

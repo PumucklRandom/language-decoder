@@ -1,3 +1,4 @@
+import pathlib
 from nicegui import ui, events
 from backend.config.const import CONFIG, URLS
 from frontend.pages.ui_custom import ui_dialog, abs_top_left
@@ -34,12 +35,12 @@ class Upload(Page):
 
     def _open_decoding(self) -> None:
         self._update_text()
-        if self.decoder.source_text:
-            self.update_url_history()
-            ui.open(f'{URLS.DECODING}')
-        else:
-            ui.notify(self.ui_language.UPLOAD.Messages.decode,
-                      type = 'negative', position = 'top')
+        # if self.decoder.source_text:
+        self.update_url_history()
+        ui.open(f'{URLS.DECODING}')
+        # else:
+        #     ui.notify(self.ui_language.UPLOAD.Messages.decode,
+        #               type = 'warning', position = 'top')
 
     def _clear_text(self) -> None:
         # self.decoder.title = ''
@@ -69,8 +70,9 @@ class Upload(Page):
             text = event.content.read().decode('utf-16')
         except Exception:
             ui.notify(self.ui_language.UPLOAD.Messages.invalid,
-                      type = 'negative', position = 'top')
+                      type = 'warning', position = 'top')
             return
+        self.ui_input.set_value(pathlib.Path(event.name).stem)
         self.ui_text_box.set_value(text)
         event.sender.reset()  # noqa upload reset
         ui.notify(self.ui_language.UPLOAD.Messages.success,
@@ -78,7 +80,7 @@ class Upload(Page):
 
     def _on_upload_reject(self) -> None:
         ui.notify(f'{self.ui_language.UPLOAD.Messages.reject} {self.max_file_size / 10 ** 3} KB',
-                  type = 'negative', position = 'top')
+                  type = 'warning', position = 'top')
 
     def _dialog(self) -> ui_dialog:
         return ui_dialog(label_list = self.ui_language.UPLOAD.Dialogs)
@@ -123,16 +125,14 @@ class Upload(Page):
             self.ui_scr_select = ui.select(
                 label = self.ui_language.UPLOAD.Language[0],
                 value = 'auto',
-                options = ['auto'] + languages,
-                on_change = self._update_text) \
+                options = ['auto'] + languages) \
                 .props('dense options-dense') \
                 .style('min-width:200px; font-size:12pt')
             ui.space()
             self.ui_tar_select = ui.select(
                 label = self.ui_language.UPLOAD.Language[1],
                 value = 'english',
-                options = languages,
-                on_change = self._update_text) \
+                options = languages) \
                 .props('dense options-dense') \
                 .style('min-width:200px; font-size:12pt')
             ui.space()

@@ -1,7 +1,8 @@
+import pathlib
 import asyncio
-from nicegui import ui, app, events, Client
-from fastapi.responses import Response
-from backend.config.const import URLS, DECODE_COLS
+from typing import Tuple
+from nicegui import ui, events, Client
+from backend.config.const import CONFIG, URLS, DECODE_COLS
 from backend.decoder.pdf import PDF
 from frontend.pages.ui_custom import SIZE_FACTOR, ui_dialog, table_item
 from frontend.pages.page_abc import Page
@@ -11,62 +12,35 @@ class Decoding(Page):
 
     def __init__(self) -> None:
         super().__init__(url = URLS.DECODING)
-        self._client = None
         self.ui_table: ui.table = None  # noqa
         self.input_size: int = 100
         self.s_hash: int = 0
         self.d_hash: int = 0
+        self.max_file_size: int = CONFIG.upload.max_file_size
+        self.auto_upload: bool = CONFIG.upload.auto_upload
+        self.max_files: int = CONFIG.upload.max_files
 
     def _open_upload(self) -> None:
         self._update_words()
+        self.del_app_routes(url = URLS.DOWNLOAD)
         self.update_url_history()
         ui.open(f'{URLS.UPLOAD}')
 
     def _open_dictionaries(self) -> None:
         self._update_words()
+        self.del_app_routes(url = URLS.DOWNLOAD)
         self.update_url_history()
         ui.open(f'{URLS.DICTIONARIES}')
 
     def _open_settings(self) -> None:
         self._update_words()
+        self.del_app_routes(url = URLS.DOWNLOAD)
         self.update_url_history()
         ui.open(f'{URLS.SETTINGS}')
 
     @staticmethod
-    def _open_pdf_view() -> None:
-        ui.open(f'{URLS.PDF_VIEW}', new_tab = True)
-
-    def _create_dpf(self) -> str:
-        title = self.decoder.title if self.decoder.title else 'decoded'
-        download_path = f'{URLS.DOWNLOAD}{self.decoder.uuid}.pdf'
-        pdf = PDF(**self.pdf_params)
-        buffer = pdf.convert2pdf(
-            title = self.decoder.title,
-            source_words = self.decoder.source_words,
-            target_words = self.decoder.target_words
-        )
-
-        @app.get(download_path)
-        def download():
-            return Response(
-                content = buffer,
-                media_type = 'application/pdf',
-                headers = {
-                    'Content-Disposition': f'attachment; filename={title}.pdf'
-                },
-            )
-
-        @app.get(URLS.PDF_VIEW)
-        def pdf_view():
-            return Response(
-                content = buffer,
-                media_type = 'application/pdf',
-                headers = {
-                    'Content-Disposition': f'inline; filename={title}.pdf'
-                },
-            )
-
-        return download_path
+    def _open_pdf_view(pdf_view_path: str) -> None:
+        ui.open(f'{pdf_view_path}', new_tab = True)
 
     def _upd_row(self, event: events.GenericEventArguments) -> None:
         for row in self.ui_table.rows:
@@ -128,20 +102,57 @@ class Decoding(Page):
                 close_button = False,
             )
             await asyncio.to_thread(self.decoder.decode_words)
-            self.decoder.apply_dict()
+            self._apply_dict()
             notification.dismiss()
+            return
         self._load_table()
 
     def _apply_dict(self):
         self.decoder.apply_dict()
         self._load_table()
 
+    async def _export(self):
+        self._update_words()
+        filename = self.decoder.title if self.decoder.title else 'decoded'
+        content = self.decoder.export()
+        route = self.upd_app_route(
+            url = URLS.DOWNLOAD,
+            content = content,
+            file_type = 'json',
+            filename = filename,
+        )
+        ui.download(route)
+
+    def _create_dpf(self) -> Tuple[str, str]:
+        # TODO: maybe cache the content
+        filename = self.decoder.title if self.decoder.title else 'decoded'
+        pdf = PDF(**self.pdf_params)
+        content = pdf.convert2pdf(
+            title = self.decoder.title,
+            source_words = self.decoder.source_words,
+            target_words = self.decoder.target_words
+        )
+        route_view = self.upd_app_route(
+            url = URLS.DOWNLOAD,
+            content = content,
+            file_type = 'pdf',
+            filename = filename,
+            disposition = 'inline'
+        )
+        route_down = self.upd_app_route(
+            url = URLS.DOWNLOAD,
+            content = content,
+            file_type = 'pdf',
+            filename = filename
+        )
+        return route_view, route_down
+
     def _dialog(self) -> ui_dialog:
         return ui_dialog(label_list = self.ui_language.DECODING.Dialogs)
 
     async def _pdf_dialog(self) -> None:
         self._save_words()
-        download_path = self._create_dpf()
+        route_view, route_down = self._create_dpf()
         with ui.dialog() as dialog:
             with ui.card().classes('items-center'):
                 ui.button(icon = 'close', on_click = dialog.close) \
@@ -150,14 +161,47 @@ class Decoding(Page):
                 ui.space()
                 ui.label(self.ui_language.DECODING.Dialogs_pdf[0])
                 ui.label(self.ui_language.DECODING.Dialogs_pdf[1])
-                ui.button(text = 'VIEW PDF', on_click = self._open_pdf_view)
+                ui.button(text = 'VIEW PDF', on_click = lambda: self._open_pdf_view(route_view))
                 ui.label(self.ui_language.DECODING.Dialogs_pdf[2])
-                ui.button(text = 'DOWNLOAD', on_click = lambda: ui.download(download_path))
+                ui.button(text = 'DOWNLOAD', on_click = lambda: ui.download(route_down))
                 dialog.open()
-        # Cleanup download route after client disconnect
-        # FIXME: AttributeError after some time. Applications seems to run anyway
-        with await self._client.disconnected():
-            app.routes[:] = [route for route in app.routes if route.path != download_path]
+
+    def _on_upload_reject(self) -> None:
+        ui.notify(f'{self.ui_language.DECODING.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+                  type = 'warning', position = 'top')
+
+    def _upload_handler(self, event: events.UploadEventArguments) -> None:
+        try:
+            data = event.content.read().decode('utf-8')
+        except Exception:
+            ui.notify(self.ui_language.DECODING.Messages.invalid,
+                      type = 'warning', position = 'top')
+            return
+        self.decoder.title = pathlib.Path(event.name).stem
+        status = self.decoder.import_(data = data)
+        if status:
+            self._load_table()
+        else:
+            ui.notify(self.ui_language.DECODING.Messages.invalid,
+                      type = 'warning', position = 'top')
+        event.sender.reset()  # noqa upload reset
+
+    def _import(self) -> None:
+        with ui.dialog() as dialog:
+            with ui.card().classes('items-center'):
+                ui.button(icon = 'close', on_click = dialog.close) \
+                    .classes('absolute-top-right') \
+                    .props('dense round size=12px')
+                ui.label(text = self.ui_language.DECODING.Dialogs_import[0])
+                ui.upload(
+                    label = self.ui_language.DECODING.Dialogs_import[1],
+                    on_upload = self._upload_handler,
+                    on_rejected = self._on_upload_reject,
+                    max_file_size = self.max_file_size,
+                    auto_upload = self.auto_upload,
+                    max_files = self.max_files) \
+                    .props('accept=.json flat dense')
+            dialog.open()
 
     def _header(self) -> None:
         with ui.header():
@@ -191,21 +235,23 @@ class Decoding(Page):
 
     def _footer(self) -> None:
         with ui.footer():
-            with ui.button(text = 'IMPORT', on_click = None):
+            ui.space()
+            with ui.button(text = 'IMPORT', on_click = self._import):
                 if self.show_tips: ui.tooltip('Import words')
-            with ui.button(icon = 'save', on_click = self._save_words) \
-                    .classes('absolute-center'):
-                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.save)
-            ui.space().style('width: 400px')
+            ui.space()
             ui.button(text = 'APPLY DICT', on_click = self._apply_dict)
+            ui.space()
+            with ui.button(icon = 'save', on_click = self._save_words):
+                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.save)
+            ui.space()
             ui.button(text = 'CREATE PDF', on_click = self._pdf_dialog)
             ui.space()
-            with ui.button(text = 'Export', on_click = None):
+            with ui.button(text = 'Export', on_click = self._export):
                 if self.show_tips: ui.tooltip('Export words')
+            ui.space()
 
     async def page(self, client: Client) -> None:
-        self._client = client
-        self.__init_ui__()
+        self.__init_ui__(client = client)
         await self._center()
         self._header()
         self._footer()

@@ -1,5 +1,6 @@
 from nicegui import ui
 from backend.config.const import URLS
+from backend.logger.logger import logger
 from frontend.pages.page_abc import Page
 
 

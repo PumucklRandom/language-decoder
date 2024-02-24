@@ -2,6 +2,9 @@ import os
 import json
 from typing import List
 from nicegui import ui
+from backend.config.const import CONFIG
+from backend.error.error import UIPageError
+from backend.logger.logger import logger
 from backend.config.const import dict_as_object
 
 SIZE_FACTOR = 10
@@ -23,15 +26,6 @@ class Language(object):
         return self.__dict__.__str__()
 
 
-def load_language(language: str = 'english') -> type(Language):
-    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.json')
-    if not os.path.isfile(language_path):
-        # TODO: Error Handling
-        pass
-    with open(language_path, 'r') as config_file:
-        return dict_as_object(dictionary = json.load(config_file), object_type = Language)
-
-
 def get_languages() -> List[str]:
     label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels')
     languages = list()
@@ -41,11 +35,29 @@ def get_languages() -> List[str]:
     return languages
 
 
+def load_language(language: str = 'english') -> type(Language):
+    logger.info('load language')
+    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.json')
+    if not os.path.isfile(language_path):
+        message = f'Language file not found at "{language_path}"'
+        logger.critical(message)
+        raise UIPageError(message)
+    try:
+        with open(language_path, 'r') as config_file:
+            language = dict_as_object(dictionary = json.load(config_file), object_type = Language)
+            logger.info('parsed language')
+            return language
+    except Exception as e:
+        message = f'Could not parse language file with exception:\n{e}'
+        logger.critical(message)
+        raise UIPageError(message)
+
+
 ui_language = load_language()
 
 # TODO: change default icons of ui.checkbox
 ui.select.default_props('outlined')
-ui.input.default_props('dense outlined debounce="200"')
+ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 
 
 def ui_dialog(label_list: List[str]) -> ui.dialog:
@@ -96,11 +108,11 @@ def table_item(input_size: int) -> str:
     return f'''
         <div class="column" style="width:{input_size}px; height:70px" :props="props">
             <div class="col">
-                <q-input v-model="props.row.source" dense outlined debounce="200" bg-color=grey-10
+                <q-input v-model="props.row.source" dense outlined debounce="{CONFIG.debounce}" bg-color=grey-10
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </div>
             <div class="col-xl-7">
-                <q-input v-model="props.row.target" dense outlined debounce="200" bg-color=blue-grey-10
+                <q-input v-model="props.row.target" dense outlined debounce="{CONFIG.debounce}" bg-color=blue-grey-10
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </div>
         </div>
@@ -154,14 +166,14 @@ class TABLE:
             </q-th>
         </q-tr>
     '''
-    BODY = '''
+    BODY = f'''
         <q-tr :props="props">
             <q-td key="key" style="background-color:#212121" :props="props">
-                <q-input v-model="props.row.key" dense borderless debounce="200"
+                <q-input v-model="props.row.key" dense borderless debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
             <q-td key="val" style="background-color:#263238" :props="props">
-                <q-input v-model="props.row.val" dense borderless debounce="200"
+                <q-input v-model="props.row.val" dense borderless debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
             <q-td auto-width style="background-color:#006064">
@@ -181,11 +193,11 @@ class TABLE:
 
 
 class LIST:
-    BODY = '''
+    BODY = f'''
         <q-tr :props="props">
             <q-td key="key" :props="props">
-                {{ props.row.key }}
-                <q-input v-model="props.row.val" type="number" dense outlined debounce="200"
+                {{{{ props.row.key }}}}
+                <q-input v-model="props.row.val" type="number" dense outlined debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_param', props.row)"/>
             </q-td>
         </q-tr>

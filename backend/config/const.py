@@ -1,6 +1,8 @@
 import os
 import yaml
 import json
+from backend.error.error import ConfigError
+from backend.logger.logger import logger
 
 DECODE_COLS = [
     {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
@@ -37,7 +39,6 @@ class URLS(object):
     DECODING = '/decoding/'
     DICTIONARIES = '/dictionaries/'
     SETTINGS = '/settings/'
-    PDF_VIEW = '/pdf-view/'
     DOWNLOAD = '/download/'
 
 
@@ -57,12 +58,21 @@ def dict_as_object(dictionary: dict, object_type: type(object)) -> object:
 
 
 def load_config(config_path: str = 'config.yml') -> type(Config):
+    logger.info('load config')
     config_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), config_path)
     if not os.path.isfile(config_path):
-        # TODO: Error Handling
-        pass
-    with open(config_path, 'r') as config_file:
-        return dict_as_object(dictionary = yaml.safe_load(config_file), object_type = Config)
+        message = f'Config file not found at "{config_path}"'
+        logger.critical(message)
+        raise ConfigError(message)
+    try:
+        with open(config_path, 'r') as config_file:
+            config = dict_as_object(dictionary = yaml.safe_load(config_file), object_type = Config)
+            logger.info('parsed config')
+            return config
+    except Exception as exception:
+        message = f'Could not parse config file with exception:\n{exception}'
+        logger.critical(message)
+        raise ConfigError(message)
 
 
 CONFIG = load_config()

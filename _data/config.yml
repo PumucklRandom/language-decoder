@@ -10,6 +10,7 @@ fullscreen: false  # set to false
 frameless: false  # set to false
 reload: false  # set to false for app!!! true for dev
 storage_secret: STORAGE_SECRET
+debounce: 200
 upload:
     max_file_size: 100_000
     auto_upload: true

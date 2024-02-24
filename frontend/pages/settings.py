@@ -1,6 +1,9 @@
 from nicegui import ui, events
+
 from backend.config.const import CONFIG, URLS, REPLACE_COLS, PDF_COLS
 from backend.config.const import PUNCTUATIONS, BEG_PATTERNS, END_PATTERNS, QUO_PATTERNS, REPLACEMENTS
+from backend.error.error import DecoderError
+from backend.logger.logger import logger
 from backend.dicts.dictonaries import Dicts
 from frontend.pages.ui_custom import ui_dialog, TABLE, LIST, load_language, get_languages
 from frontend.pages.page_abc import Page
@@ -26,12 +29,27 @@ class Settings(Page):
         ui.open(f'{self.url_history[0]}')
 
     def _refresh_interface(self) -> None:
+        self.decoder.proxies = self.settings.get_proxies()
         ui.open(f'{self.URL}')
 
     def _reset_interface(self) -> None:
         self.settings.show_tips = True
         self.settings.dark_mode = True
         self.settings.language = 'english'
+
+    def _connection_check(self):
+        try:
+            self.decoder.translate_source(source = 'test')
+            ui.notify(self.ui_language.SETTINGS.Messages.connect_check[0],
+                      type = 'positive', position = 'top')
+        except DecoderError as exception:
+            ui.notify(exception.message,
+                      type = 'warning', position = 'top')
+        except Exception as exception:
+            message = 'Connection failed!'
+            logger.error(f'{message} with exception:\n{exception}')
+            ui.notify(self.ui_language.SETTINGS.Messages.connect_check[1],
+                      type = 'warning', position = 'top')
 
     def _on_select(self) -> None:
         self.ui_language = load_language(language = self._language)
@@ -180,6 +198,9 @@ class Settings(Page):
                 .props('dense options-dense') \
                 .style('min-width:200px; font-size:12pt') \
                 .bind_value(self.settings, 'language')
+            ui.input(label = 'http proxy', placeholder = 'ip-address:port').bind_value(self.settings, 'proxy_http')
+            ui.input(label = 'https proxy', placeholder = 'ip-address:port').bind_value(self.settings, 'proxy_https')
+            ui.button(text = 'CHECK CONNECTION', on_click = self._connection_check)
         ui.separator()
         with ui.button(text = 'APPLY', on_click = self._refresh_interface):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.apply)

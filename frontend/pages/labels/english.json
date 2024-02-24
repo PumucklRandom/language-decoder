@@ -13,7 +13,7 @@
         "Disclaimers": [
             "Disclaimer:",
             [
-                "The LanguegeDecoder is an open source project and runs uner the MIT licence."
+                "The LanguageDecoder is an open source project and runs under the MIT licence."
             ],
             "To find out more about the project, visit the LanguageDecoder at"
         ]
@@ -24,7 +24,7 @@
             ""
         ],
         "Uploads": [
-            "Upload a text file or enter some text below",
+            "Upload a text file or enter some text below.",
             "Select file"
         ],
         "Title": "Title",
@@ -37,9 +37,9 @@
             "Target language"
         ],
         "Messages": {
-            "decode": "Upload text file or enter some text below",
-            "invalid": "Invalid input file. Use a different one or paste some text below",
-            "success": "Upload finished",
+            "decode": "Upload a text file or enter some text below.",
+            "invalid": "Invalid text file. Use a different one or paste some text below.",
+            "success": "Upload finished.",
             "reject": "Upload a text file with max:"
         },
         "Tips": {
@@ -52,16 +52,21 @@
     },
     "DECODING": {
         "Dialogs": [
-            "Some tips for the user interface!",
-            ""
+            "Some tips for the user interface!"
         ],
         "Dialogs_pdf": [
             "The pdf file is ready!",
             "You can either first view the document:",
             "Or just download the document:"
         ],
+        "Dialogs_import": [
+            "Upload a previously exported json file.",
+            "Select file"
+        ],
         "Messages": {
-            "decoding": "Decoding words:"
+            "decoding": "Decoding words:",
+            "reject": "Upload a json file with max:",
+            "invalid": "Invalid json file. Upload a previously exported json file."
         },
         "Tips": {
             "help": "Need help?",
@@ -78,11 +83,11 @@
             ""
         ],
         "Selector": [
-            "rename dictionary",
+            "Rename dictionary",
             "Select or create a dictionary"
         ],
         "Messages": {
-            "add_row": "Please select or create a dictionary"
+            "add_row": "Please select or create a dictionary."
         },
         "Tips": {
             "help": "Need help?",
@@ -138,6 +143,12 @@
             "End Pattern",
             "Quotations"
         ],
+        "Messages": {
+            "connect_check": [
+                "Connection successful",
+                "500 Internal server error"
+            ]
+        },
         "Tips": {
             "interface": {
                 "help": "Need help?",

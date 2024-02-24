@@ -1,8 +1,18 @@
 import os
+import shutil
 import subprocess
 import pathlib
 import zipfile
 import nicegui
+
+
+def del_previous_build():
+    if os.path.isdir('./build'):
+        shutil.rmtree('./build')
+    if os.path.isdir('./dist'):
+        shutil.rmtree('./dist')
+    if os.path.isfile('./LanguageDecoder.spec'):
+        os.remove('./LanguageDecoder.spec')
 
 
 def zip_directory(zip_file_path: str, source_directory: str):
@@ -15,21 +25,22 @@ def zip_directory(zip_file_path: str, source_directory: str):
             zf.write(file_path, file_path.relative_to(source_path.parent))
 
 
-cmd = [
-    'pyinstaller', '__main__.py',
-    '--name', 'LanguageDecoder',
-    '--windowed',  # set ui.run(native=True)!!!
-    '--icon', 'frontend/pages/icon/LD-icon.png',
-    '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
-    '--add-data', f'_data/config.yml{os.pathsep}backend/config/',
-    '--add-data', f'backend/fonts/{os.pathsep}backend/fonts/',
-    '--add-data', f'frontend/pages/icon/{os.pathsep}frontend/pages/icon/',
-    '--add-data', f'frontend/pages/labels/{os.pathsep}frontend/pages/labels/',
-    '-y'
-]
 try:
+    del_previous_build()
+    cmd = [
+        'pyinstaller', '__main__.py',
+        '--name', 'LanguageDecoder',
+        '--windowed',  # set ui.run(native=True)!!!
+        '--icon', 'frontend/pages/icon/LD-icon.png',
+        '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
+        '--add-data', f'_data/config.yml{os.pathsep}backend/config/',
+        '--add-data', f'backend/fonts/{os.pathsep}backend/fonts/',
+        '--add-data', f'frontend/pages/icon/{os.pathsep}frontend/pages/icon/',
+        '--add-data', f'frontend/pages/labels/{os.pathsep}frontend/pages/labels/',
+        '-y'
+    ]
     subprocess.run(cmd, shell = False, check = True)
     zip_directory(zip_file_path = 'LanguageDecoder.zip', source_directory = 'dist/LanguageDecoder/')
     print('Successfully build application')
-except Exception as e:
-    print(f'Building application failed with:\n{e}')
+except Exception as exception:
+    print(f'Building application failed with:\n{exception}')
