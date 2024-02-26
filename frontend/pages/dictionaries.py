@@ -28,7 +28,7 @@ class Dictionaries(Page):
     def _add_row(self, event: events.GenericEventArguments) -> None:
         if not self.decoder.dict_name:
             ui.notify(self.ui_language.DICTIONARY.Messages.add_row,
-                      type = 'negative', position = 'top')
+                      type = 'warning', position = 'top')
             return
         _id = max([row.get('id') for row in self.ui_table.rows] + [-1]) + 1
         if event.args:

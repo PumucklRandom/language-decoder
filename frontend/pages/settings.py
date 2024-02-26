@@ -33,9 +33,11 @@ class Settings(Page):
         ui.open(f'{self.URL}')
 
     def _reset_interface(self) -> None:
-        self.settings.show_tips = True
         self.settings.dark_mode = True
+        self.settings.show_tips = True
         self.settings.language = 'english'
+        self.settings.proxy_http = ''
+        self.settings.proxy_https = ''
 
     def _connection_check(self):
         try:

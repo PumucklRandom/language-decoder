@@ -222,7 +222,7 @@ class LanguageDecoder(object):
     def split_text(self) -> None:
         try:
             if len(self.source_text) == 0:
-                message = f'Source Text is empty'
+                message = 'Source Text is empty'
                 logger.error(message)
                 raise DecoderError(message)
             # reformat text for translator

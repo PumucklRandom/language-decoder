@@ -7,8 +7,10 @@ build
 dist
 LanguageDecoder.spec
 /backend/main.py
+*.json
 *.pkl
 *.txt
-json/
+*.pfx
 
+!/frontend/pages/labels/*.json
 !requirements.txt
