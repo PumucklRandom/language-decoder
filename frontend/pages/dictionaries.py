@@ -1,7 +1,7 @@
-from nicegui import ui, events
-from backend.config.const import URLS, DICT_COLS
+from nicegui import ui
+from backend.config.config import URLS
 from backend.dicts.dictonaries import Dicts
-from frontend.pages.ui_custom import ui_dialog, TABLE
+from frontend.pages.ui_custom import ui_dialog, UITable, DICT_COLS
 from frontend.pages.page_abc import Page
 
 
@@ -10,9 +10,9 @@ class Dictionaries(Page):
     def __init__(self) -> None:
         super().__init__(url = URLS.DICTIONARIES)
         self.dicts: Dicts = Dicts()
-        self.ui_selector: ui.select = None  # noqa
         self.ui_check: ui.checkbox = None  # noqa
-        self.ui_table: ui.table = None  # noqa
+        self.ui_selector: ui.select = None  # noqa
+        self.ui_table: UITable = None  # noqa
 
     def _open_previous_url(self) -> None:
         self._save_dict()
@@ -25,29 +25,6 @@ class Dictionaries(Page):
         self.update_url_history()
         ui.open(f'{URLS.SETTINGS}')
 
-    def _add_row(self, event: events.GenericEventArguments) -> None:
-        if not self.decoder.dict_name:
-            ui.notify(self.ui_language.DICTIONARY.Messages.add_row,
-                      type = 'warning', position = 'top')
-            return
-        _id = max([row.get('id') for row in self.ui_table.rows] + [-1]) + 1
-        if event.args:
-            for i, row in enumerate(self.ui_table.rows):
-                if row.get('id') == event.args.get('id'):
-                    self.ui_table.rows.insert(i + 1, {'id': _id, 'key': '', 'val': ''})
-        else:
-            self.ui_table.rows.insert(0, {'id': _id, 'key': '', 'val': ''})
-        self.ui_table.update()
-
-    def _del_row(self, event: events.GenericEventArguments) -> None:
-        self.ui_table.rows[:] = [row for row in self.ui_table.rows if row.get('id') != event.args.get('id')]
-        self.ui_table.update()
-
-    def _upd_row(self, event: events.GenericEventArguments) -> None:
-        for row in self.ui_table.rows:
-            if row.get('id') == event.args.get('id'):
-                row.update(event.args)
-
     def _clear_table(self) -> None:
         self.dicts.dictionaries.get(self.decoder.dict_name, {}).clear()
         self.ui_table.rows.clear()
@@ -59,10 +36,7 @@ class Dictionaries(Page):
         self.ui_selector.set_value(None)
 
     def _load_table(self) -> None:
-        self.ui_table.rows.clear()
-        for i, (key, val) in enumerate(self.dicts.dictionaries.get(self.decoder.dict_name, {}).items()):
-            self.ui_table.rows.append({'id': i, 'key': key, 'val': val})
-        self.ui_table.update()
+        self.ui_table.load_table(self.dicts.dictionaries.get(self.decoder.dict_name, {}))
 
     def _select_table(self) -> None:
         if self.ui_selector:
@@ -102,9 +76,7 @@ class Dictionaries(Page):
 
     def _update_dict(self) -> None:
         if self.decoder.dict_name:
-            keys = [row.get('key') for row in self.ui_table.rows]
-            vals = [row.get('val') for row in self.ui_table.rows]
-            self.dicts.dictionaries[self.decoder.dict_name] = dict(zip(keys, vals))
+            self.dicts.dictionaries[self.decoder.dict_name] = self.ui_table.get_values(as_dict = True)
 
     def _dialog_select(self) -> ui_dialog:
         return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_select)
@@ -124,7 +96,7 @@ class Dictionaries(Page):
         with ui.column().classes('w-full items-center').style('font-size:12pt'):
             with ui.card().style('width:500px'):
                 self.ui_check = ui.checkbox(text = self.ui_language.DICTIONARY.Selector[0]).props('dense')
-                # TODO: disable autocomplete on rename
+                # TODO: disable filtering options on rename
                 self.ui_selector = ui.select(
                     label = self.ui_language.DICTIONARY.Selector[1],
                     value = self.decoder.dict_name,
@@ -145,7 +117,6 @@ class Dictionaries(Page):
             with ui.card().classes('items-center').style('width:650px'):
                 with ui.element():  # is somehow needed for the table border
                     self._table()
-                self._load_table()
                 with ui.button(icon = 'help', on_click = self._dialog_table().open) \
                         .classes('absolute-top-right'):
                     if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help_table)
@@ -154,14 +125,8 @@ class Dictionaries(Page):
                     if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete_table)
 
     def _table(self) -> None:
-        self.ui_table = ui.table(columns = DICT_COLS, rows = [], row_key = 'id') \
-            .props('flat bordered separator=cell') \
-            .style('min-width:500px; max-height:80vh')
-        self.ui_table.add_slot('header', TABLE.HEADER)
-        self.ui_table.add_slot('body', TABLE.BODY)
-        self.ui_table.on('_upd_row', self._upd_row)
-        self.ui_table.on('_del_row', self._del_row)
-        self.ui_table.on('_add_row', self._add_row)
+        self.ui_table = UITable(columns = DICT_COLS).style('min-width:500px; max-height:80vh')
+        self._load_table()
 
     def _footer(self) -> None:
         with ui.footer():

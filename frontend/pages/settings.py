@@ -1,11 +1,11 @@
-from nicegui import ui, events
-
-from backend.config.const import CONFIG, URLS, REPLACE_COLS, PDF_COLS
-from backend.config.const import PUNCTUATIONS, BEG_PATTERNS, END_PATTERNS, QUO_PATTERNS, REPLACEMENTS
+from nicegui import ui
+from copy import copy
+from backend.config.config import URLS, CONFIG, load_language, get_languages
+from backend.config.config import REPLACEMENTS
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.dicts.dictonaries import Dicts
-from frontend.pages.ui_custom import ui_dialog, TABLE, LIST, load_language, get_languages
+from frontend.pages.ui_custom import ui_dialog, UITable, UIList, REPLACE_COLS
 from frontend.pages.page_abc import Page
 
 
@@ -14,17 +14,14 @@ class Settings(Page):
     def __init__(self) -> None:
         super().__init__(url = URLS.SETTINGS)
         self.dicts: Dicts = Dicts()
-        self.ui_list: ui.table = None  # noqa
-        self.ui_table: ui.table = None  # noqa
-        self.ui_punctuations: ui.input = None  # noqa
-        self.ui_beg_patterns: ui.input = None  # noqa
-        self.ui_end_patterns: ui.input = None  # noqa
-        self.ui_quo_patterns: ui.input = None  # noqa
+        self.ui_table: UITable = None  # noqa
+        self.ui_pdf_list: UIList = None  # noqa
+        self.ui_adv_list: UIList = None  # noqa
 
     def _open_previous_url(self) -> None:
         self._update_replacements()
         self._update_pdf_params()
-        self._update_patterns()
+        self._update_adv_params()
         # do not update url history in settings
         ui.open(f'{self.url_history[0]}')
 
@@ -35,6 +32,7 @@ class Settings(Page):
     def _reset_interface(self) -> None:
         self.settings.dark_mode = True
         self.settings.show_tips = True
+        self.decoder.reformatting = True
         self.settings.language = 'english'
         self.settings.proxy_http = ''
         self.settings.proxy_https = ''
@@ -56,84 +54,49 @@ class Settings(Page):
     def _on_select(self) -> None:
         self.ui_language = load_language(language = self._language)
 
-    def _add_row(self, event: events.GenericEventArguments) -> None:
-        _id = max([row.get('id') for row in self.ui_table.rows] + [-1]) + 1
-        if event.args:
-            for i, row in enumerate(self.ui_table.rows):
-                if row.get('id') == event.args.get('id'):
-                    self.ui_table.rows.insert(i + 1, {'id': _id, 'key': '', 'val': ''})
-        else:
-            self.ui_table.rows.insert(0, {'id': _id, 'key': '', 'val': ''})
-        self.ui_table.update()
-
-    def _del_row(self, event: events.GenericEventArguments) -> None:
-        self.ui_table.rows[:] = [row for row in self.ui_table.rows if row.get('id') != event.args.get('id')]
-        self.ui_table.update()
-
-    def _upd_row(self, event: events.GenericEventArguments) -> None:
-        for row in self.ui_table.rows:
-            if row.get('id') == event.args.get('id'):
-                row.update(event.args)
-
     def _clear_table(self) -> None:
         self.dicts.replacements.clear()
         self.ui_table.rows.clear()
         self.ui_table.update()
-
-    def _load_table(self) -> None:
-        self.ui_table.rows.clear()
-        for i, (key, val) in enumerate(self.dicts.replacements.items()):
-            self.ui_table.rows.append({'id': i, 'key': key, 'val': val})
-        self.ui_table.update()
+        self._update_replacements()
 
     def _reset_table(self) -> None:
         self.dicts.replacements = REPLACEMENTS.copy()
-        self._load_table()
+        self.ui_table.load_table(self.dicts.replacements)
+        self._update_replacements()
 
     def _update_replacements(self) -> None:
-        keys = [row.get('key') for row in self.ui_table.rows]
-        vals = [row.get('val') for row in self.ui_table.rows]
-        self.dicts.replacements = dict(zip(keys, vals))
+        self.dicts.replacements = self.ui_table.get_values(as_dict = True)
         self.dicts.save(uuid = self.decoder.uuid)
 
-    def _upd_param(self, event: events.GenericEventArguments) -> None:
-        for row in self.ui_list.rows:
-            if row.get('id') == event.args.get('id'):
-                row.update(event.args)
+    def _load_pdf_list(self) -> None:
+        self.ui_pdf_list.load_table(self.ui_language.SETTINGS.Pdf, self.pdf_params.values())
 
-    def _load_list(self) -> None:
-        self.ui_list.rows.clear()
-        for i, (key, val) in enumerate(zip(self.ui_language.SETTINGS.Pdf, self.pdf_params.values())):
-            self.ui_list.rows.append({'id': i, 'key': key, 'val': float(val)})
-        self.ui_list.update()
-
-    def _reset_list(self) -> None:
-        self.pdf_params = CONFIG.pdf.__dict__.copy()
-        self._load_list()
+    def _reset_pdf_list(self) -> None:
+        self.pdf_params = CONFIG.Pdf.__dict__.copy()
+        self._load_pdf_list()
 
     def _update_pdf_params(self):
-        vals = [row.get('val') for row in self.ui_list.rows]
-        for key, val in zip(self.pdf_params.keys(), vals):
+        _, values = self.ui_pdf_list.get_values()
+        for key, val in zip(self.pdf_params.keys(), values):
             if key == 'page_sep':
-                if val: self.pdf_params[key] = bool(val)
+                if val >= 0: self.pdf_params[key] = bool(val)
             elif key in ['tab_size', 'char_lim', 'line_lim']:
-                if val: self.pdf_params[key] = int(val)
+                if val > 0: self.pdf_params[key] = int(val)
             else:
-                if val: self.pdf_params[key] = float(val)
+                if val > 0: self.pdf_params[key] = val
 
-    def _reset_patterns(self) -> None:
-        self.ui_punctuations.value = PUNCTUATIONS
-        self.ui_beg_patterns.value = BEG_PATTERNS
-        self.ui_end_patterns.value = END_PATTERNS
-        self.ui_quo_patterns.value = QUO_PATTERNS
-        self.decoder.punctuations = PUNCTUATIONS
-        self._update_patterns()
+    def _load_adv_list(self) -> None:
+        self.ui_adv_list.load_table(self.ui_language.SETTINGS.Advanced, self.decoder.regex.__dict__.values())
 
-    def _update_patterns(self) -> None:
-        self.decoder.punctuations = self.ui_punctuations.value
-        self.decoder.beg_patterns = self.ui_beg_patterns.value
-        self.decoder.end_patterns = self.ui_end_patterns.value
-        self.decoder.quo_patterns = self.ui_quo_patterns.value
+    def _reset_adv_list(self) -> None:
+        self.decoder.regex = copy(CONFIG.Regex)
+        self._load_adv_list()
+
+    def _update_adv_params(self):
+        _, values = self.ui_adv_list.get_values()
+        for key, val in zip(self.decoder.regex.__dict__.keys(), values):
+            self.decoder.regex.__setattr__(key, val)
 
     def _dialog_interface(self) -> ui_dialog:
         return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_interface)
@@ -173,14 +136,12 @@ class Settings(Page):
                     with ui.button(icon = 'help', on_click = self._dialog_replacements().open) \
                             .classes('absolute-top-right'):
                         if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.help)
-                    self._table()
-                    self._load_table()
+                    self._replacements()
                 with ui.tab_panel(panel2).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_pdf_settings().open) \
                             .classes('absolute-top-right'):
                         if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.help)
                     self._pdf_settings()
-                    self._load_list()
                 with ui.tab_panel(panel3).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_adv_settings().open) \
                             .classes('absolute-top-right'):
@@ -189,17 +150,19 @@ class Settings(Page):
 
     def _interface(self) -> None:
         with ui.card().style('width:400px'):
-            # TODO: add a translator connection check
             ui.checkbox(self.ui_language.SETTINGS.Interface[0]).bind_value(self.settings, 'dark_mode')
             ui.checkbox(self.ui_language.SETTINGS.Interface[1]).bind_value(self.settings, 'show_tips')
+            ui.checkbox(self.ui_language.SETTINGS.Interface[2]).bind_value(self.decoder, 'reformatting')
             ui.select(
-                label = self.ui_language.SETTINGS.Interface[2],
+                label = self.ui_language.SETTINGS.Interface[3],
                 value = 'english',
                 options = get_languages(),
                 on_change = self._on_select) \
                 .props('dense options-dense') \
                 .style('min-width:200px; font-size:12pt') \
                 .bind_value(self.settings, 'language')
+            ui.separator()
+            ui.label(text = self.ui_language.SETTINGS.Interface[4])
             ui.input(label = 'http proxy', placeholder = 'ip-address:port').bind_value(self.settings, 'proxy_http')
             ui.input(label = 'https proxy', placeholder = 'ip-address:port').bind_value(self.settings, 'proxy_https')
             ui.button(text = 'CHECK CONNECTION', on_click = self._connection_check)
@@ -210,15 +173,8 @@ class Settings(Page):
                 .classes('absolute-bottom-left'):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reset)
 
-    def _table(self) -> None:
-        self.ui_table = ui.table(columns = REPLACE_COLS, rows = [], row_key = 'id') \
-            .props('flat bordered separator=cell') \
-            .style('min-width:450px; max-height:80vh;')
-        self.ui_table.add_slot('header', TABLE.HEADER)
-        self.ui_table.add_slot('body', TABLE.BODY)
-        self.ui_table.on('_upd_row', self._upd_row)
-        self.ui_table.on('_del_row', self._del_row)
-        self.ui_table.on('_add_row', self._add_row)
+    def _replacements(self) -> None:
+        self.ui_table = UITable(columns = REPLACE_COLS).style('min-width:450px; max-height:80vh')
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._update_replacements):
@@ -229,43 +185,27 @@ class Settings(Page):
             with ui.button(icon = 'delete', on_click = self._clear_table) \
                     .classes('absolute-bottom-right'):
                 if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.delete)
+        self.ui_table.load_table(self.dicts.replacements)
 
     def _pdf_settings(self) -> None:
-        self.ui_list = ui.table(columns = PDF_COLS, rows = [], row_key = 'id') \
-            .props('hide-header separator=none') \
-            .style('min-width:400px')
-        self.ui_list.add_slot('body', LIST.BODY)
-        self.ui_list.on('_upd_param', self._upd_param)
+        self.ui_pdf_list = UIList(val_type = 'number')
         ui.separator()
         with ui.button(icon = 'save', on_click = self._update_pdf_params):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.save)
-        with ui.button(icon = 'restore', on_click = self._reset_list) \
+        with ui.button(icon = 'restore', on_click = self._reset_pdf_list) \
                 .classes('absolute-bottom-left'):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.reset)
+        self._load_pdf_list()
 
     def _adv_settings(self) -> None:
-        with ui.card().style('gap: 0.0rem; font-size:10pt'):
-            ui.label(self.ui_language.SETTINGS.Advanced[0])
-            self.ui_punctuations = ui.input(value = self.decoder.punctuations) \
-                .style('width:400px; font-size:12pt')
-            ui.space().style('height:15px')
-            ui.label(self.ui_language.SETTINGS.Advanced[1])
-            self.ui_beg_patterns = ui.input(value = self.decoder.beg_patterns) \
-                .style('width:400px; font-size:12pt')
-            ui.space().style('height:15px')
-            ui.label(self.ui_language.SETTINGS.Advanced[2])
-            self.ui_end_patterns = ui.input(value = self.decoder.end_patterns) \
-                .style('width:400px; font-size:12pt')
-            ui.space().style('height:15px')
-            ui.label(self.ui_language.SETTINGS.Advanced[3])
-            self.ui_quo_patterns = ui.input(value = self.decoder.quo_patterns) \
-                .style('width:400px; font-size:12pt')
+        self.ui_adv_list = UIList(val_type = 'text')
         ui.separator()
-        with ui.button(icon = 'save', on_click = self._update_patterns):
+        with ui.button(icon = 'save', on_click = self._update_adv_params):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.advanced.save)
-        with ui.button(icon = 'restore', on_click = self._reset_patterns) \
+        with ui.button(icon = 'restore', on_click = self._reset_adv_list) \
                 .classes('absolute-bottom-left'):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.reset)
+        self._load_adv_list()
 
     def page(self) -> None:
         self.__init_ui__()

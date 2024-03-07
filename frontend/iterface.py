@@ -1,6 +1,6 @@
 import os
 from nicegui import ui
-from backend.config.const import CONFIG
+from backend.config.config import CONFIG
 from frontend.pages.start import Start
 from frontend.pages.upload import Upload
 from frontend.pages.decoding import Decoding

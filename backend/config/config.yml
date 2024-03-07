@@ -1,21 +1,21 @@
-host: 127.0.0.1
+host: '127.0.0.1'
 port: 8080
-title: LanguageDecoder
+title: 'LanguageDecoder'
 favicon: 'pages/icon/LD-icon.png'
 dark: true
 reconnect_timeout: 3
 native: false   # native = true (window mode)
-window_size: null  # [1600, 1000]
+window_size: null  # (1600, 1000)
 fullscreen: false  # set to false
 frameless: false  # set to false
 reload: true  # set to false for app!!! true for dev
-storage_secret: STORAGE_SECRET
+storage_secret: 'STORAGE_SECRET'
 debounce: 200
-upload:
+Upload:
     max_file_size: 100_000
     auto_upload: true
     max_files: 1
-pdf:
+Pdf:
     page_sep: false
     tab_size: 4
     char_lim: 75
@@ -26,3 +26,11 @@ pdf:
     title_height: 6.2
     header_height: 14.2
     line_height: 5.3
+Regex:
+    puncts: '.!?'
+    begins: '#$'
+    ending: ';?°%'
+    digits: '.,:!€'
+    opens: '<(\[{'
+    close: '>)\]}'
+    quotes: '"´`'

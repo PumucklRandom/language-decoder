@@ -3,14 +3,15 @@ from urllib import parse
 from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
-from backend.config.const import URLS, CONFIG
+from backend.config.config import URLS, CONFIG, Language, load_language
 from backend.utils import utilities as utils
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui_custom import COLORS, HTML, Language, ui_language
+from frontend.pages.ui_custom import COLORS, HTML
 
 # It is very important to initialize the LanguageDecoder instance outside the initialization of the Page class,
 # so that all inherited Page classes have the same LanguageDecoder state!
 language_decoder = LanguageDecoder()
+ui_language = load_language()
 
 
 class Settings(object):
@@ -60,7 +61,7 @@ class Page(ABC, ui.page):
         self.settings: Settings = settings
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
-        self.pdf_params: dict = CONFIG.pdf.__dict__.copy()
+        self.pdf_params: dict = CONFIG.Pdf.__dict__.copy()
 
     def __init_ui__(self, client: Client = None):
         if client:

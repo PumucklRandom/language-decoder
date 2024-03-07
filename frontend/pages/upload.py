@@ -1,6 +1,6 @@
 import pathlib
 from nicegui import ui, events
-from backend.config.const import CONFIG, URLS
+from backend.config.config import URLS, CONFIG
 from frontend.pages.ui_custom import ui_dialog, abs_top_left
 from frontend.pages.page_abc import Page
 
@@ -14,9 +14,9 @@ class Upload(Page):
         self.ui_text_box: ui.textarea = None  # noqa
         self.ui_scr_select: ui.select = None  # noqa
         self.ui_tar_select: ui.select = None  # noqa
-        self.max_file_size: int = CONFIG.upload.max_file_size
-        self.auto_upload: bool = CONFIG.upload.auto_upload
-        self.max_files: int = CONFIG.upload.max_files
+        self.max_file_size: int = CONFIG.Upload.max_file_size
+        self.auto_upload: bool = CONFIG.Upload.auto_upload
+        self.max_files: int = CONFIG.Upload.max_files
 
     def _open_start_page(self) -> None:
         self._update_text()

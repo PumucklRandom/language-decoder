@@ -8,7 +8,7 @@ from typing import Tuple, List, Union
 from pprint import PrettyPrinter
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
-from backend.config.const import PUNCTUATIONS, BEG_PATTERNS, END_PATTERNS, QUO_PATTERNS
+from backend.config.config import CONFIG, Config
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.dicts.dictonaries import Dicts
@@ -29,28 +29,23 @@ class LanguageDecoder(object):
                  source_language: str = 'auto',
                  target_language: str = 'english',
                  dict_name: str = None,
-                 punctuations: str = PUNCTUATIONS,
-                 beg_patterns: str = BEG_PATTERNS,
-                 end_patterns: str = END_PATTERNS,
-                 quo_patterns: str = QUO_PATTERNS,
                  new_line: str = '\n',
                  tab_size: int = 4,
                  char_lim: int = 120,
-                 proxies: dict = None) -> None:
+                 reformatting: bool = True,
+                 proxies: dict = None,
+                 regex: Config.Regex = CONFIG.Regex) -> None:
 
         """
         :param uuid: user uuid to identify correspondent dictionaries
         :param source_language: the translation source language
         :param target_language: the translation target language
         :param dict_name: the name of the dictionary to select the desires dictionary
-        :param punctuations: character patterns at the end of a sentence
-        :param beg_patterns: character patterns at the beginning of a word
-        :param end_patterns: character patterns at the end of a word
-        :param quo_patterns: character patterns for quotations
         :param new_line: new line string
         :param tab_size: the tab size between two words
         :param char_lim: character limit of one line
         :param proxies: set proxies for translator
+        :param regex: a set of character patterns for regex compilations
         """
 
         self._pp = PrettyPrinter(indent = 4)
@@ -61,13 +56,11 @@ class LanguageDecoder(object):
         self._translator = self.__init_translator__()
         self._dicts = Dicts()
         self.dict_name = dict_name
-        self.punctuations = punctuations
-        self.beg_patterns = beg_patterns
-        self.end_patterns = end_patterns
-        self.quo_patterns = quo_patterns
+        self.regex = regex
         self.new_line = new_line
         self.tab_size = tab_size
         self.char_lim = char_lim
+        self.reformatting = reformatting
         self.source_path = ''
         self.source_text = ''
         self.decode_text = ''
@@ -166,40 +159,36 @@ class LanguageDecoder(object):
     @staticmethod
     def _split_camel_case(text: str) -> str:
         # 'camelCase' -> 'camel. Case'
-        i = 0
-        end = len(text) - 1
-        while i < end:
-            if text[i].islower() and text[i + 1].isupper():
-                text = f'{text[:i + 1]}. {text[i + 1:]}'
-                i += 2
-                end += 2
-            i += 1
-        return text
+        return re.sub('([a-z])([A-Z])', r'\1. \2', text)
 
     def _reformat_text(self, text: str) -> str:
         try:
-            text = ' '.join(text.split())
+            # remove new lines and add space at the end of text for regex
+            text = ' '.join(text.split()) + ' '
             self._dicts.load(uuid = self.uuid)
             # replace special characters with common ones
             for chars in self._dicts.replacements.keys():
                 text = text.replace(chars, self._dicts.replacements.get(chars))
-            # swap "quotation marks" with punctuations if quotation mark is followed by punctuation
-            text = re.sub(f'([{self.quo_patterns}])\s*([{self.punctuations}])', r'\2\1', text)
+            # swap quotes/brackets with punctuations if quotes/brackets are followed by punctuation
+            text = re.sub(f'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.puncts}])', r'\2\1', text)
             # remove any white whitespaces after "begin marks" and add one whitespace before "begin marks"
-            text = re.sub(f'([{self.beg_patterns}])\s*', r' \1', text)
-            # remove any white whitespaces before "end marks" and add one whitespace after "end marks"
-            text = re.sub(f'\s*([{self.end_patterns}])', r'\1 ', text)
-            # remove whitespaces inside "quotation mark" pairs and add whitespaces outside of pairs
-            text = re.sub(f'([{self.quo_patterns[0]}])\s*(.*?)\s*([{self.quo_patterns[0]}])', r' \1\2\3 ', text)
-            text = re.sub(f'([{self.quo_patterns[1]}])\s*(.*?)\s*([{self.quo_patterns[1]}])', r' \1\2\3 ', text)
-            text = re.sub(f'([{self.quo_patterns[2:]}])\s*(.*?)\s*([{self.quo_patterns[2:]}])', r' \1\2\3 ', text)
+            text = re.sub(f'([{self.regex.begins}{self.regex.opens}])\s*', r' \1', text)
+            # remove any white whitespaces before "ending marks" and add one whitespace after "ending marks"
+            text = re.sub(f'\s*([{self.regex.ending}{self.regex.close}])', r'\1 ', text)
+            # remove any white whitespaces before "digit marks" and
+            #   if "digit marks" are not followed by digits add one whitespace after "digit marks"
+            text = re.sub(f'\s*([{self.regex.digits}])(\D)', r'\1 \2', text)
+            # remove any whitespaces inside quote pairs and add one whitespaces outside of quote pairs
+            for quote in self.regex.quotes:
+                text = re.sub(f'([{quote}])\s*(.*?)\s*([{quote}])', r' \1\2\3 ', text)
             # add potentially missing dots
             text = self._split_camel_case(text)
+            # remove redundant whitespaces
+            text = ' '.join(text.split())
             # add a dot at the end of the text in case of missing punctuation
-            if not any(punctuation in text.split()[-1] for punctuation in PUNCTUATIONS):
+            if not any(punctuation in text.split()[-1] for punctuation in self.regex.puncts):
                 text += '.'
-            # remove redundant whitespaces and new lines
-            return ' '.join(text.split())
+            return text
         except Exception as exception:
             message = f'Could not reformat source text with exception:\n{exception}'
             logger.error(message)
@@ -219,6 +208,18 @@ class LanguageDecoder(object):
         end = re.search('\W*$', source_word).group()
         return f'{beg}{target_word}{end}'
 
+    def _split_sentences(self, text: str):
+        # spit text into sentences with consideration of quotes and brackets
+        return re.findall(f'(.*?[{self.regex.puncts}][{self.regex.close}{self.regex.quotes}]?)\s+', f'{text} ')
+
+    def decode_sentences(self):
+        scr_sentences = self._split_sentences(text = self.source_text)
+        tar_sentences = self.translate_source(scr_sentences)
+        sentences = list()
+        for source, target in zip(scr_sentences, tar_sentences):
+            sentences.extend([source, target])
+        return sentences
+
     def split_text(self) -> None:
         try:
             if len(self.source_text) == 0:
@@ -226,7 +227,10 @@ class LanguageDecoder(object):
                 logger.error(message)
                 raise DecoderError(message)
             # reformat text for translator
-            source_text = self._reformat_text(text = self.source_text)
+            if self.reformatting:
+                source_text = self._reformat_text(text = self.source_text)
+            else:
+                source_text = ' '.join(self.source_text.split())
             # split text into words
             self.source_words = source_text.split()
         except Exception as exception:
@@ -304,7 +308,7 @@ class LanguageDecoder(object):
                     source_line = source_word.ljust(word_len, ' ')
                     target_line = target_word.ljust(word_len, ' ')
                 # if a punctuation mark is at the end of the word (end of sentence)
-                elif any(punctuation in source_word for punctuation in PUNCTUATIONS):
+                elif any(punctuation in source_word for punctuation in self.regex.puncts):
                     # add word to the line and add self.new_line at the end
                     source_line = f'{source_line}{source_word}{self.new_line}'
                     target_line = f'{target_line}{target_word}{self.new_line}'
