@@ -1,8 +1,8 @@
 import pathlib
 import asyncio
-from typing import Tuple, List
+from typing import Tuple
 from nicegui import ui, events, Client
-from backend.config.config import URLS, CONFIG, SIZE_FACTOR
+from backend.config.config import URLS, SIZE_FACTOR
 from backend.decoder.pdf import PDF
 from frontend.pages.ui_custom import ui_dialog, UIGrid
 from frontend.pages.page_abc import Page
@@ -13,15 +13,15 @@ class Decoding(Page):
     def __init__(self) -> None:
         super().__init__(url = URLS.DECODING)
         self.ui_grid: UIGrid = None  # noqa
+        self.ui_find_input: ui.input = None  # noqa
+        self.ui_repl_input: ui.input = None  # noqa
+        self.find: str = ''
+        self.repl: str = ''
         self.len_words: int = 0
-        self.sentences: List[str] = []
         self.s_hash: int = 0
         self.d_hash: int = 0
         self.c_hash: int = 0
         self.content: bytes = b''
-        self.max_file_size: int = CONFIG.Upload.max_file_size
-        self.auto_upload: bool = CONFIG.Upload.auto_upload
-        self.max_files: int = CONFIG.Upload.max_files
 
     def _open_upload(self) -> None:
         self._update_words()
@@ -66,6 +66,18 @@ class Decoding(Page):
         self._table.refresh()
         self._load_table()
 
+    def _replace_words(self):
+        self._update_words()
+        self.decoder.find_replace(find = self.find, repl = self.repl)
+        self._load_table()
+
+    def _clear_replace(self):
+        self.find, self.repl = '', ''
+
+    def _refresh_replace(self):
+        self.ui_find_input.update()
+        self.ui_repl_input.update()
+
     def _set_item_size(self) -> None:
         chars = self.utils.lonlen(self.decoder.source_words + self.decoder.target_words)
         chars = 20 if chars > 20 else chars
@@ -74,6 +86,11 @@ class Decoding(Page):
     def _split_text(self) -> None:
         _hash = hash(self.decoder.source_text)
         if self.s_hash != _hash:
+            if not self.decoder.source_text:
+                self.decoder.source_words = []
+                self.decoder.target_words = []
+                self.decoder.sentences = []
+                return
             self.s_hash = _hash
             self.decoder.split_text()
             self.len_words = len(self.decoder.source_words)
@@ -94,7 +111,7 @@ class Decoding(Page):
                 close_button = False,
             )
             await asyncio.to_thread(self.decoder.decode_words)
-            self.sentences = await asyncio.to_thread(self.decoder.decode_sentences)
+            await asyncio.to_thread(self.decoder.decode_sentences)
             self._apply_dict()
             notification.dismiss()
             return
@@ -104,7 +121,7 @@ class Decoding(Page):
         self.decoder.apply_dict()
         self._load_table()
 
-    def _export(self):
+    async def _export(self):
         self._update_words()
         filename = self.decoder.title if self.decoder.title else 'decoded'
         content = self.decoder.export()
@@ -145,8 +162,8 @@ class Decoding(Page):
     def _dialog(self) -> ui_dialog:
         return ui_dialog(label_list = self.ui_language.DECODING.Dialogs)
 
-    def _dialog_sentences(self) -> ui_dialog:
-        return ui_dialog(label_list = self.sentences)
+    def _dialog_sentences(self) -> None:
+        ui_dialog(label_list = self.decoder.sentences).open()
 
     def _pdf_dialog(self) -> None:
         self._save_words()
@@ -175,9 +192,11 @@ class Decoding(Page):
             ui.notify(self.ui_language.DECODING.Messages.invalid,
                       type = 'warning', position = 'top')
             return
-        self.decoder.title = pathlib.Path(event.name).stem
         status = self.decoder.import_(data = data)
         if status:
+            self.decoder.title = pathlib.Path(event.name).stem
+            self.decoder.source_text = ' '.join(self.decoder.source_words)
+            self.d_hash = hash(f'{self.decoder.source_text}{self.decoder.source_language}{self.decoder.target_language}')
             self._load_table()
         else:
             ui.notify(self.ui_language.DECODING.Messages.invalid,
@@ -229,13 +248,18 @@ class Decoding(Page):
 
     def _footer(self) -> None:
         with ui.footer():
-            with ui.button(icon = 'find_replace', on_click = None).props('dense'):
+            with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
                 if self.show_tips: ui.tooltip('Replace')
                 with ui.menu():
                     with ui.menu_item(auto_close = False):
-                        ui.input(label = 'find')
+                        self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
                     with ui.menu_item(auto_close = False):
-                        ui.input(label = 'replace')
+                        self.ui_repl_input = ui.input(label = 'replace').bind_value(self, 'repl')
+                    with ui.menu_item(auto_close = False).style('justify-content: center'):
+                        with ui.row():
+                            ui.button(text = 'APPLY', on_click = self._replace_words).props('dense')
+                            ui.space().style('width:20px')
+                            ui.button(icon = 'delete', on_click = self._clear_replace).props('dense')
             ui.space()
             with ui.button(text = 'IMPORT', on_click = self._import):
                 if self.show_tips: ui.tooltip('Import words')
@@ -250,7 +274,7 @@ class Decoding(Page):
             with ui.button(text = 'Export', on_click = self._export):
                 if self.show_tips: ui.tooltip('Export words')
             ui.space().style()
-            with ui.button(icon = 'article', on_click = self._dialog_sentences().open).props('dense'):
+            with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
                 if self.show_tips: ui.tooltip('Sentence view')
 
     async def page(self, client: Client) -> None:

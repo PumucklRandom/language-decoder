@@ -1,7 +1,7 @@
 import os
 import yaml
 import json
-from typing import Tuple, List, Type
+from typing import Tuple, List
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
 

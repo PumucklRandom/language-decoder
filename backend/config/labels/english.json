@@ -89,8 +89,14 @@
             "Rename dictionary",
             "Select or create a dictionary"
         ],
+        "Dialogs_import": [
+            "Upload a previously exported json file.",
+            "Select file"
+        ],
         "Messages": {
-            "add_row": "Please select or create a dictionary."
+            "add_row": "Please select or create a dictionary.",
+            "reject": "Upload a json file with max:",
+            "invalid": "Invalid json file. Upload a previously exported json file."
         },
         "Tips": {
             "help": "Need help?",

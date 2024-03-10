@@ -2,16 +2,15 @@
 
 ## Language Decoder
 
-The LanguageDecoder translates a given source language to a desired target
-language word by word (decoding). Therefor the Google translator is used in the
-backend.
-To improve the translation, a dictionary can be created to automatically correct
-common translation errors. Afterwards, the decoded text can be exported to a PDF
-file.
+The LanguageDecoder translates a given text from the source language to a
+desired target language word by word (decoding). Therefor the Google translator
+is used in the backend. To improve the translation, a dictionary can be created
+to automatically correct common translation errors. Afterwards, the decoded
+text can be exported to a PDF file.
 
 The LanguageDecoder can also be used to create language learning lessons based
-on
-the [Birkenbihl approach.](https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/)
+on the
+[Birkenbihl approach.](https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/)
 
 ![Upload](_data/upload.png)
 ![Decoding](_data/decoding.png)
@@ -40,8 +39,8 @@ With the build.py file you can create your on local desktop application.
 
 The LanguageDecoder requires a common modern browser such as Edge, Chrome or
 Firefox and a free port on localhost port 8080 (127.0.0.1:8080).
-If this port is occupied, the IP address and the port can be adjusted as desired
-in the config file. (language_decoder/backend/config/config.yml)
+If this port is occupied, the IP address and the port can be adjusted as
+desired in the config file. (language_decoder/backend/config/config.yml)
 
 ### Credits
 

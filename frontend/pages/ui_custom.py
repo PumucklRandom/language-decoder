@@ -55,15 +55,18 @@ ui.select.default_props('outlined')
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 
 
-def ui_dialog(label_list: List[str]) -> ui.dialog:
+def ui_dialog(label_list: List[str], space: int = 10) -> ui.dialog:
     with ui.dialog() as dialog:
-        with ui.card():
+        with ui.card().style('min-width:300px; min-height:100px; gap:0.0rem'):
             ui.button(icon = 'close', on_click = dialog.close) \
                 .classes('absolute-top-right') \
                 .props('dense round size=12px')
-            ui.space()
+            ui.space().style(f'height:{space}px')
             for label in label_list:
-                ui.label(label)
+                if label == '\n':
+                    ui.space().style(f'height:{space}px')
+                else:
+                    ui.label(label)
     return dialog
 
 
@@ -148,8 +151,7 @@ class Table(ui.table):
             return dict(zip(keys, vals))
         return keys, vals
 
-    @staticmethod
-    def set_type(vals):
+    def set_type(self, vals):
         return vals
 
 

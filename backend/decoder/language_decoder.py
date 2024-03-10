@@ -66,6 +66,7 @@ class LanguageDecoder(object):
         self.decode_text = ''
         self.source_words = []
         self.target_words = []
+        self.sentences: List[str] = []
         self.translated_text = ''
         self.title = ''
 
@@ -208,17 +209,21 @@ class LanguageDecoder(object):
         end = re.search('\W*$', source_word).group()
         return f'{beg}{target_word}{end}'
 
-    def _split_sentences(self, text: str):
+    def _split_sentences(self, text: str) -> List[str]:
         # spit text into sentences with consideration of quotes and brackets
         return re.findall(f'(.*?[{self.regex.puncts}][{self.regex.close}{self.regex.quotes}]?)\s+', f'{text} ')
 
-    def decode_sentences(self):
+    def decode_sentences(self) -> None:
         scr_sentences = self._split_sentences(text = self.source_text)
         tar_sentences = self.translate_source(scr_sentences)
-        sentences = list()
+        self.sentences.clear()
         for source, target in zip(scr_sentences, tar_sentences):
-            sentences.extend([source, target])
-        return sentences
+            self.sentences.extend([source, target, '\n'])
+
+    def find_replace(self, find: str, repl: str):
+        for i, (source, target) in enumerate(zip(self.source_words, self.target_words)):
+            self.source_words[i] = source.replace(find, repl)
+            self.target_words[i] = target.replace(find, repl)
 
     def split_text(self) -> None:
         try:
@@ -355,12 +360,13 @@ class LanguageDecoder(object):
             return transl_path
 
     def import_(self, data: str) -> bool:
-        print('import')
         try:
             data = json.loads(data)
             if len(data.get('source')) == len(data.get('target')):
                 self.source_words = data.get('source')
                 self.target_words = data.get('target')
+                if 'sentences' in data.keys():
+                    self.sentences = data.get('sentences')
                 return True
             return False
         except Exception as exception:
@@ -371,7 +377,7 @@ class LanguageDecoder(object):
 
     def export(self, destin_path: str = '') -> Union[None, str]:
         try:
-            data = {'source': self.source_words, 'target': self.target_words}
+            data = {'source': self.source_words, 'target': self.target_words, 'sentences': self.sentences}
             data_str = json.dumps(data, ensure_ascii = False, indent = 4)
             if destin_path:
                 title = os.path.basename(destin_path).split('.')[0]

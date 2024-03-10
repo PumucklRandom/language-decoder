@@ -54,3 +54,33 @@ class Dicts(object):
             message = f'Could not save json file dict with exception:\n{exception}'
             logger.error(message)
             raise DictionaryError(message)
+
+    def import_(self, dict_name: str, data: str) -> bool:
+        try:
+            data = json.loads(data)
+            if all(isinstance(key, str) for key in data.keys()) and \
+                    all(isinstance(value, str) for value in data.values()):
+                self.dictionaries[dict_name] = data
+                return True
+            return False
+        except Exception as exception:
+            print('exception')
+            message = f'Could not parse import with exception:\n{exception}'
+            logger.error(message)
+            raise DictionaryError(message)
+
+    def export(self, dict_name: str, destin_path: str = '') -> Union[None, str]:
+        try:
+            data = self.dictionaries.get(dict_name, {})
+            data_str = json.dumps(data, ensure_ascii = False, indent = 4)
+            if destin_path:
+                title = os.path.basename(destin_path).split('.')[0]
+                path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
+                with open(file = path, mode = 'w', encoding = 'utf-8') as file:
+                    file.write(data_str)
+                return
+            return data_str
+        except Exception as exception:
+            message = f'Could not execute export with exception:\n{exception}'
+            logger.error(message)
+            raise DictionaryError(message)

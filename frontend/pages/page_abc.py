@@ -62,6 +62,9 @@ class Page(ABC, ui.page):
         self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
         self.pdf_params: dict = CONFIG.Pdf.__dict__.copy()
+        self.max_file_size: int = CONFIG.Upload.max_file_size
+        self.auto_upload: bool = CONFIG.Upload.auto_upload
+        self.max_files: int = CONFIG.Upload.max_files
 
     def __init_ui__(self, client: Client = None):
         if client:
@@ -124,9 +127,9 @@ class Page(ABC, ui.page):
                       filename: str, disposition: str = 'attachment') -> str:
         route = f'{url}{self.decoder.uuid}'
         if disposition == 'attachment':
-            route = f'{route}{self.decoder.uuid}.{file_type}'
+            route = f'{route}.{file_type}'
         else:
-            route = f'{route}{self.decoder.uuid}/'
+            route = f'{route}/'
         self._del_app_route(route = route)
         self._add_app_route(
             route = route,

@@ -10,13 +10,10 @@ class Upload(Page):
     def __init__(self) -> None:
         super().__init__(url = URLS.UPLOAD)
         self.ui_uploader: ui.upload = None  # noqa
-        self.ui_input: ui.input = None  # noqa
+        self.ui_title: ui.input = None  # noqa
         self.ui_text_box: ui.textarea = None  # noqa
         self.ui_scr_select: ui.select = None  # noqa
         self.ui_tar_select: ui.select = None  # noqa
-        self.max_file_size: int = CONFIG.Upload.max_file_size
-        self.auto_upload: bool = CONFIG.Upload.auto_upload
-        self.max_files: int = CONFIG.Upload.max_files
 
     def _open_start_page(self) -> None:
         self._update_text()
@@ -45,19 +42,19 @@ class Upload(Page):
     def _clear_text(self) -> None:
         # self.decoder.title = ''
         self.ui_uploader.reset()
-        self.ui_text_box.set_value(None)
-        self.decoder.source_text = None
+        self.ui_text_box.set_value('')
+        self.decoder.source_text = ''
         # self.decoder.source_language = 'auto'
         # self.decoder.target_language = 'english'
 
     def _load_text(self) -> None:
-        self.ui_input.set_value(self.decoder.title)
+        self.ui_title.set_value(self.decoder.title)
         self.ui_text_box.set_value(self.decoder.source_text)
         self.ui_scr_select.set_value(self.decoder.source_language)
         self.ui_tar_select.set_value(self.decoder.target_language)
 
     def _update_text(self) -> None:
-        self.decoder.title = self.ui_input.value
+        self.decoder.title = self.ui_title.value
         self.decoder.source_text = self.ui_text_box.value
         self.decoder.source_language = self.ui_scr_select.value
         self.decoder.target_language = self.ui_tar_select.value
@@ -72,7 +69,7 @@ class Upload(Page):
             ui.notify(self.ui_language.UPLOAD.Messages.invalid,
                       type = 'warning', position = 'top')
             return
-        self.ui_input.set_value(pathlib.Path(event.name).stem)
+        self.ui_title.set_value(pathlib.Path(event.name).stem)
         self.ui_text_box.set_value(text)
         event.sender.reset()  # noqa upload reset
         ui.notify(self.ui_language.UPLOAD.Messages.success,
@@ -109,7 +106,7 @@ class Upload(Page):
                     auto_upload = self.auto_upload,
                     max_files = self.max_files) \
                     .props('accept=.txt flat dense')
-                with ui.input(label = self.ui_language.UPLOAD.Title).classes(abs_top_left(130, 160)) as self.ui_input:
+                with ui.input(label = self.ui_language.UPLOAD.Title).classes(abs_top_left(130, 160)) as self.ui_title:
                     if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
                 self.ui_text_box = ui.textarea(
                     label = self.ui_language.UPLOAD.Input_txt[0],
