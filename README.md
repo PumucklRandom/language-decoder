@@ -3,7 +3,7 @@
 ## Language Decoder
 
 The LanguageDecoder translates a given text from the source language to a
-desired target language word by word (decoding). Therefor the Google translator
+desired target language word by word (decoding). Therefore the Google translator
 is used in the backend. To improve the translation, a dictionary can be created
 to automatically correct common translation errors. Afterwards, the decoded
 text can be exported to a PDF file.
@@ -22,7 +22,7 @@ To use the LanguageDecoder you can either clone the repo:
 
 ```
 git clone https://github.com/PumucklRandom/language-decoder.git
-cd language_decoder
+cd language-decoder
 ```
 
 open terminal and run:
