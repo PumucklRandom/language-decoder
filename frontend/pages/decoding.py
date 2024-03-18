@@ -196,7 +196,9 @@ class Decoding(Page):
         if status:
             self.decoder.title = pathlib.Path(event.name).stem
             self.decoder.source_text = ' '.join(self.decoder.source_words)
-            self.d_hash = hash(f'{self.decoder.source_text}{self.decoder.source_language}{self.decoder.target_language}')
+            self.d_hash = hash(
+                f'{self.decoder.source_text}{self.decoder.source_language}{self.decoder.target_language}'
+            )
             self._load_table()
         else:
             ui.notify(self.ui_language.DECODING.Messages.invalid,

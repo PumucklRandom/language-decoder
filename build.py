@@ -2,8 +2,9 @@
 How to create certificate for the application:
 
 # Create certificate
-New-SelfSignedCertificate -Type Custom -Subject "CN=PumucklRandom" -KeyUsage DigitalSignature -FriendlyName "LanguageDecoder"
-    -CertStoreLocation "Cert:/CurrentUser/My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+New-SelfSignedCertificate -Type Custom -Subject "CN=PumucklRandom" -KeyUsage DigitalSignature
+    -FriendlyName "LanguageDecoder" -CertStoreLocation "Cert:/CurrentUser/My"
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 
 # Get certificate
 Get-childitem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Subject
