@@ -56,19 +56,19 @@ class Decoding(Page):
         self.decoder.source_words = source_words
         self.decoder.target_words = target_words
 
-    def _save_words(self):
+    def _save_words(self) -> None:
         self._update_words()
         self._table.refresh()
 
-    def _replace_words(self):
+    def _replace_words(self) -> None:
         self._update_words()
         self.decoder.find_replace(find = self.find, repl = self.repl)
         self._table.refresh()
 
-    def _clear_replace(self):
+    def _clear_replace(self) -> None:
         self.find, self.repl = '', ''
 
-    def _refresh_replace(self):
+    def _refresh_replace(self) -> None:
         self.ui_find_input.update()
         self.ui_repl_input.update()
 
@@ -108,11 +108,13 @@ class Decoding(Page):
             self._apply_dict()
             notification.dismiss()
 
-    def _apply_dict(self):
+    def _apply_dict(self) -> None:
         self.decoder.apply_dict()
         self._table.refresh()
 
-    async def _export(self):
+    async def _export(self) -> None:
+        if not self.decoder.dict_name:
+            return
         self._update_words()
         filename = self.decoder.title if self.decoder.title else 'decoded'
         content = self.decoder.export()
@@ -271,7 +273,7 @@ class Decoding(Page):
             with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
                 if self.show_tips: ui.tooltip('Sentence view')
 
-    async def page(self, client: Client) -> None:
+    async def page(self, client: Client, *args, **kwargs) -> None:
         self.__init_ui__(client = client)
         await self._center()
         self._header()

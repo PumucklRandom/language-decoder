@@ -4,7 +4,7 @@ import json
 import textwrap
 import requests
 from uuid import UUID
-from typing import Tuple, List, Union, Optional
+from typing import Tuple, List, Union
 from pprint import PrettyPrinter
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
@@ -182,7 +182,7 @@ class LanguageDecoder(object):
             self.sentences.extend([source, target, '/n'])
         self.sentences.pop(-1)
 
-    def find_replace(self, find: str, repl: str):
+    def find_replace(self, find: str, repl: str) -> None:
         for i, (source, target) in enumerate(zip(self.source_words, self.target_words)):
             self.source_words[i] = source.replace(find, repl)
             self.target_words[i] = target.replace(find, repl)

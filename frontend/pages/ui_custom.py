@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Union, Tuple, Dict, List, Iterable
 from nicegui import ui, events
 from backend.config.config import CONFIG, SIZE_FACTOR
@@ -187,7 +186,7 @@ class Table(ui.table):
             if row.get('id') == event.args.get('id'):
                 row.update(event.args)
 
-    def _set_type(self, vals):
+    def _set_type(self, vals) -> List[Union[str, float]]:
         return vals
 
     def set_values(self, keys: Union[Dict, Iterable[str]],
@@ -238,7 +237,7 @@ class UITable(Table):
         </q-tr>
     '''
 
-    def _body(self):
+    def _body(self) -> str:
         return f'''
         <q-tr :props="props">
             <q-td key="key" style="background-color:{self.key_color}" :props="props">
@@ -284,7 +283,7 @@ class UIGrid(Table):
         self.props('hide-header grid')
         self.set_values(source_words, target_words)
 
-    def _set_item_size(self, words: List[str] = None):
+    def _set_item_size(self, words: List[str] = None) -> None:
         if words and isinstance(words, list):
             chars = lonlen(words)
             chars = 20 if chars > 20 else chars
@@ -317,7 +316,7 @@ class UIList(Table):
         self.props('hide-header separator=none')
         self.style('min-width:400px')
 
-    def _set_type(self, vals):
+    def _set_type(self, vals) -> List[float]:
         if self.val_type == 'number':
             return list(map(float, vals))
         return vals

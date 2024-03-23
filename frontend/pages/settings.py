@@ -37,7 +37,7 @@ class Settings(Page):
         self.settings.proxy_http = ''
         self.settings.proxy_https = ''
 
-    def _connection_check(self):
+    def _connection_check(self) -> None:
         try:
             self.decoder.translate_source(source = 'test')
             ui.notify(self.ui_language.SETTINGS.Messages.connect_check[0],
@@ -76,7 +76,7 @@ class Settings(Page):
         self.pdf_params = CONFIG.Pdf.__dict__.copy()
         self._load_pdf_list()
 
-    def _update_pdf_params(self):
+    def _update_pdf_params(self) -> None:
         _, values = self.ui_pdf_list.get_values()
         for key, val in zip(self.pdf_params.keys(), values):
             if key == 'page_sep':
@@ -93,7 +93,7 @@ class Settings(Page):
         self.decoder.regex = copy(CONFIG.Regex)
         self._load_adv_list()
 
-    def _update_adv_params(self):
+    def _update_adv_params(self) -> None:
         _, values = self.ui_adv_list.get_values()
         for key, val in zip(self.decoder.regex.__dict__.keys(), values):
             self.decoder.regex.__setattr__(key, val)

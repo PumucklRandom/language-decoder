@@ -1,7 +1,7 @@
 from frontend import iterface
 
 
-def main():
+def main() -> None:
     iterface.build()
     iterface.run()
 

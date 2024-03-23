@@ -64,7 +64,7 @@ class Page(ABC, ui.page):
         self.auto_upload: bool = CONFIG.Upload.auto_upload
         self.max_files: int = CONFIG.Upload.max_files
 
-    def __init_ui__(self, client: Client = None):
+    def __init_ui__(self, client: Client = None) -> None:
         if client:
             client.on_disconnect(handler = lambda: self.del_app_routes(url = URLS.DOWNLOAD))
         self.decoder.uuid = app.storage.browser.get('id')
@@ -93,11 +93,11 @@ class Page(ABC, ui.page):
             self.url_history = self.URL
 
     @property
-    def show_tips(self):
+    def show_tips(self) -> bool:
         return self.settings.show_tips
 
     @property
-    def _language(self):
+    def _language(self) -> str:
         return self.settings.language
 
     @staticmethod

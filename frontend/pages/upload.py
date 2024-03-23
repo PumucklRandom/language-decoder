@@ -1,6 +1,6 @@
 import pathlib
 from nicegui import ui, events
-from backend.config.config import URLS, CONFIG
+from backend.config.config import URLS
 from frontend.pages.ui_custom import ui_dialog, abs_top_left
 from frontend.pages.page_abc import Page
 

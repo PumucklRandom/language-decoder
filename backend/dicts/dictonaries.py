@@ -1,7 +1,7 @@
 import os
 import json
 from uuid import UUID
-from typing import Dict, Union, Optional
+from typing import Dict, Union
 from backend.config.config import REPLACEMENTS
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger

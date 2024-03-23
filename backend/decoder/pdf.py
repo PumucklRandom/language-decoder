@@ -192,7 +192,7 @@ class PDF(object):
 
     def _read_decode_text(self, decode_path: str) -> Tuple[Optional[List[str]], Optional[List[str]]]:
         try:
-            pdf_path, title = self._get_pdf_paths(decode_path = decode_path)
+            pdf_path, _ = self._get_pdf_paths(decode_path = decode_path)
 
             if os.path.isfile(pdf_path):
                 # logger.info(f'PDF already created at: "{pdf_path}"')

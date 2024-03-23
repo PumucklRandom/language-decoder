@@ -55,7 +55,7 @@ class Dictionaries(Page):
         self._load_table()
         self.dicts.save(uuid = self.decoder.uuid)
 
-    def _rename_table(self):
+    def _rename_table(self) -> None:
         self.ui_rename_flag.value = False
         self._remove_select_option(self.decoder.dict_name)
         self.dicts.dictionaries.pop(self.decoder.dict_name, {})
@@ -63,12 +63,12 @@ class Dictionaries(Page):
         self._save_dict()
         self.ui_selector.update()
 
-    def _deselect_table(self):
+    def _deselect_table(self) -> None:
         self.decoder.dict_name = None
         self.ui_table.rows.clear()
         self.ui_table.update()
 
-    def _remove_select_option(self, option):
+    def _remove_select_option(self, option) -> None:
         if option in self.ui_selector.options:
             self.ui_selector.options.remove(option)
 
@@ -86,7 +86,7 @@ class Dictionaries(Page):
     def _dialog_table(self) -> ui_dialog:
         return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_table)
 
-    def _export(self):
+    def _export(self) -> None:
         self._save_dict()
         content = self.dicts.export(dict_name = self.decoder.dict_name)
         route = self.upd_app_route(

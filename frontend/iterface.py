@@ -8,7 +8,7 @@ from frontend.pages.dictionaries import Dictionaries
 from frontend.pages.settings import Settings
 
 
-def build():
+def build() -> None:
     # Every page is build here
     Start().build()
     Upload().build()
@@ -17,7 +17,7 @@ def build():
     Settings().build()
 
 
-def run():
+def run() -> None:
     ui.run(
         host = CONFIG.host,
         port = CONFIG.port,

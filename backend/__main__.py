@@ -4,7 +4,7 @@ from backend.decoder.pdf import PDF
 from backend.decoder.language_decoder import LanguageDecoder
 
 
-def main():
+def main() -> None:
     # Initialise language decoder.
     pdf = PDF()
     language_decoder = LanguageDecoder(source_language = 'ru', target_language = 'de', dict_name = 'RU2DE')
