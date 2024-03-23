@@ -273,7 +273,7 @@ class Decoding(Page):
             with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
                 if self.show_tips: ui.tooltip('Sentence view')
 
-    async def page(self, client: Client, *args, **kwargs) -> None:
+    async def page(self, client: Client) -> None:
         self.__init_ui__(client = client)
         await self._center()
         self._header()
