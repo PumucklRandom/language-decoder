@@ -4,7 +4,7 @@ import json
 import textwrap
 import requests
 from uuid import UUID
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Optional
 from pprint import PrettyPrinter
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
@@ -44,6 +44,7 @@ class LanguageDecoder(object):
         :param new_line: new line string
         :param tab_size: the tab size between two words
         :param char_lim: character limit of one line
+        :param reformatting: indicator for reformatting the source text
         :param proxies: set proxies for translator
         :param regex: a set of character patterns for regex compilations
         """
@@ -61,14 +62,14 @@ class LanguageDecoder(object):
         self.tab_size = tab_size
         self.char_lim = char_lim
         self.reformatting = reformatting
-        self.source_path = ''
-        self.source_text = ''
-        self.decode_text = ''
-        self.source_words = []
-        self.target_words = []
+        self.source_path: str = ''
+        self.source_text: str = ''
+        self.decode_text: str = ''
+        self.source_words: List[str] = []
+        self.target_words: List[str] = []
         self.sentences: List[str] = []
-        self.translated_text = ''
-        self.title = ''
+        self.translated_text: str = ''
+        self.title: str = ''
 
     def __init_translator__(self) -> GoogleTranslator:
         self._translator = GoogleTranslator(
@@ -115,47 +116,6 @@ class LanguageDecoder(object):
             message = 'Unexpected Error!'
             logger.error(f'{message} with exception:\n{exception}')
             raise Exception(message)
-
-    @staticmethod
-    def _get_destin_paths(source_path: str) -> Tuple[str, str]:
-        if not os.path.isfile(source_path):
-            message = f'Text file not found at "{source_path}"'
-            logger.error(message)
-            raise DecoderError(message)
-        title = os.path.basename(source_path).split('.')[0]
-        destin_path = os.path.join(os.path.dirname(source_path), f'{title}_decode.txt')
-        transl_path = os.path.join(os.path.dirname(source_path), f'{title}_transl.txt')
-        return destin_path, transl_path
-
-    @staticmethod
-    def delete_decoded_files(destin_path: str) -> None:
-        transl_path = destin_path.replace('decode.txt', 'transl.txt')
-        if os.path.isfile(destin_path):
-            os.remove(destin_path)
-        if os.path.isfile(transl_path):
-            os.remove(transl_path)
-
-    def _read_text(self, source_path: str) -> None:
-        try:
-            if source_path:
-                self.source_path = source_path
-                destin_path, _ = self._get_destin_paths(source_path = source_path)
-                if os.path.isfile(destin_path):
-                    # logger.info(f'Text already decoded at: "{destin_path}"')
-                    self.source_text = ''
-                    return
-                try:
-                    with open(file = source_path, mode = 'r', encoding = 'utf-8') as file:
-                        self.source_text = file.read()
-                except IOError as exception:
-                    message = f'Could not open file at "{source_path}" with exception:\n{exception}'
-                    logger.error(message)
-                    raise DecoderError(message)
-            logger.info(f'Decode Text for: "{source_path}".')
-        except Exception as exception:
-            message = f'Could not read text file with:\n{exception}'
-            logger.error(message)
-            raise DecoderError(message)
 
     @staticmethod
     def _split_camel_case(text: str) -> str:
@@ -214,11 +174,13 @@ class LanguageDecoder(object):
         return re.findall(f'(.*?[{self.regex.puncts}][{self.regex.close}{self.regex.quotes}]?)\s+', f'{text} ')
 
     def decode_sentences(self) -> None:
-        scr_sentences = self._split_sentences(text = self.source_text)
+        text = ' '.join(self.source_words)
+        scr_sentences = self._split_sentences(text = text)
         tar_sentences = self.translate_source(scr_sentences)
         self.sentences.clear()
         for source, target in zip(scr_sentences, tar_sentences):
-            self.sentences.extend([source, target, '\n'])
+            self.sentences.extend([source, target, '/n'])
+        self.sentences.pop(-1)
 
     def find_replace(self, find: str, repl: str):
         for i, (source, target) in enumerate(zip(self.source_words, self.target_words)):
@@ -281,6 +243,85 @@ class LanguageDecoder(object):
                 self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
         except Exception as exception:
             message = f'Could not apply dictionary with exception:\n{exception}'
+            logger.error(message)
+            raise DecoderError(message)
+
+    def import_(self, data: str) -> None:
+        try:
+            data = json.loads(data)
+            if len(data.get('source', [])) != len(data.get('target', [])):
+                raise DecoderError('Unequal number of source and target words')
+            if any(not isinstance(scr, str) for scr in data.get('source', [])) or \
+                    any(not isinstance(tar, str) for tar in data.get('target', [])):
+                raise DecoderError('Found a non-string value in data')
+            self.source_words = data.get('source', [])
+            self.target_words = data.get('target', [])
+            if all(isinstance(sentence, str) for sentence in data.get('sentences', [])):
+                self.sentences = data.get('sentences', [])
+        except DecoderError as exception:
+            raise exception
+        except Exception as exception:
+            message = f'Could not parse import with exception:\n{exception}'
+            logger.error(message)
+            raise DecoderError(message)
+
+    def export(self, destin_path: str = '') -> str:
+        try:
+            data = {'source': self.source_words, 'target': self.target_words, 'sentences': self.sentences}
+            data_str = json.dumps(data, ensure_ascii = False, indent = 4)
+            if not destin_path:
+                return data_str
+            title = os.path.basename(destin_path).split('.')[0]
+            path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
+            with open(file = path, mode = 'w', encoding = 'utf-8') as file:
+                file.write(data_str)
+        except Exception as exception:
+            message = f'Could not execute export with exception:\n{exception}'
+            logger.error(message)
+            raise DecoderError(message)
+
+    ####################################################################################################
+    # Methods for backend only
+    ####################################################################################################
+
+    @staticmethod
+    def _get_destin_paths(source_path: str) -> Tuple[str, str]:
+        if not os.path.isfile(source_path):
+            message = f'Text file not found at "{source_path}"'
+            logger.error(message)
+            raise DecoderError(message)
+        title = os.path.basename(source_path).split('.')[0]
+        destin_path = os.path.join(os.path.dirname(source_path), f'{title}_decode.txt')
+        transl_path = os.path.join(os.path.dirname(source_path), f'{title}_transl.txt')
+        return destin_path, transl_path
+
+    @staticmethod
+    def delete_decoded_files(destin_path: str) -> None:
+        transl_path = destin_path.replace('decode.txt', 'transl.txt')
+        if os.path.isfile(destin_path):
+            os.remove(destin_path)
+        if os.path.isfile(transl_path):
+            os.remove(transl_path)
+
+    def _read_text(self, source_path: str) -> None:
+        try:
+            if source_path:
+                self.source_path = source_path
+                destin_path, _ = self._get_destin_paths(source_path = source_path)
+                if os.path.isfile(destin_path):
+                    # logger.info(f'Text already decoded at: "{destin_path}"')
+                    self.source_text = ''
+                    return
+                try:
+                    with open(file = source_path, mode = 'r', encoding = 'utf-8') as file:
+                        self.source_text = file.read()
+                except IOError as exception:
+                    message = f'Could not open file at "{source_path}" with exception:\n{exception}'
+                    logger.error(message)
+                    raise DecoderError(message)
+            logger.info(f'Decode Text for: "{source_path}".')
+        except Exception as exception:
+            message = f'Could not read text file with:\n{exception}'
             logger.error(message)
             raise DecoderError(message)
 
@@ -358,35 +399,3 @@ class LanguageDecoder(object):
             with open(file = transl_path, mode = 'w', encoding = 'utf-8') as file:
                 file.write(self.translated_text)
             return transl_path
-
-    def import_(self, data: str) -> bool:
-        try:
-            data = json.loads(data)
-            if len(data.get('source')) == len(data.get('target')):
-                self.source_words = data.get('source')
-                self.target_words = data.get('target')
-                if 'sentences' in data.keys():
-                    self.sentences = data.get('sentences')
-                return True
-            return False
-        except Exception as exception:
-            print('exception')
-            message = f'Could not parse import with exception:\n{exception}'
-            logger.error(message)
-            raise DecoderError(message)
-
-    def export(self, destin_path: str = '') -> Union[None, str]:
-        try:
-            data = {'source': self.source_words, 'target': self.target_words, 'sentences': self.sentences}
-            data_str = json.dumps(data, ensure_ascii = False, indent = 4)
-            if destin_path:
-                title = os.path.basename(destin_path).split('.')[0]
-                path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
-                with open(file = path, mode = 'w', encoding = 'utf-8') as file:
-                    file.write(data_str)
-                return
-            return data_str
-        except Exception as exception:
-            message = f'Could not execute export with exception:\n{exception}'
-            logger.error(message)
-            raise DecoderError(message)

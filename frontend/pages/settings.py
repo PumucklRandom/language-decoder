@@ -62,7 +62,7 @@ class Settings(Page):
 
     def _reset_table(self) -> None:
         self.dicts.replacements = REPLACEMENTS.copy()
-        self.ui_table.load_table(self.dicts.replacements)
+        self.ui_table.set_values(self.dicts.replacements)
         self._update_replacements()
 
     def _update_replacements(self) -> None:
@@ -70,7 +70,7 @@ class Settings(Page):
         self.dicts.save(uuid = self.decoder.uuid)
 
     def _load_pdf_list(self) -> None:
-        self.ui_pdf_list.load_table(self.ui_language.SETTINGS.Pdf, self.pdf_params.values())
+        self.ui_pdf_list.set_values(self.ui_language.SETTINGS.Pdf, self.pdf_params.values())
 
     def _reset_pdf_list(self) -> None:
         self.pdf_params = CONFIG.Pdf.__dict__.copy()
@@ -87,7 +87,7 @@ class Settings(Page):
                 if val > 0: self.pdf_params[key] = val
 
     def _load_adv_list(self) -> None:
-        self.ui_adv_list.load_table(self.ui_language.SETTINGS.Advanced, self.decoder.regex.__dict__.values())
+        self.ui_adv_list.set_values(self.ui_language.SETTINGS.Advanced, self.decoder.regex.__dict__.values())
 
     def _reset_adv_list(self) -> None:
         self.decoder.regex = copy(CONFIG.Regex)
@@ -174,7 +174,8 @@ class Settings(Page):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reset)
 
     def _replacements(self) -> None:
-        self.ui_table = UITable(columns = REPLACE_COLS).style('min-width:450px; max-height:80vh')
+        self.ui_table = UITable(columns = REPLACE_COLS, dark_mode = self.settings.dark_mode) \
+            .style('min-width:450px; max-height:80vh')
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._update_replacements):
@@ -185,7 +186,7 @@ class Settings(Page):
             with ui.button(icon = 'delete', on_click = self._clear_table) \
                     .classes('absolute-bottom-right'):
                 if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.delete)
-        self.ui_table.load_table(self.dicts.replacements)
+        self.ui_table.set_values(self.dicts.replacements)
 
     def _pdf_settings(self) -> None:
         self.ui_pdf_list = UIList(val_type = 'number')

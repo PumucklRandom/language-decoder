@@ -1,7 +1,7 @@
 import os
 import json
 from uuid import UUID
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 from backend.config.config import REPLACEMENTS
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger
@@ -24,20 +24,19 @@ class Dicts(object):
         :param uuid: user uuid to identify correspondent dictionaries
         """
         json_path = os.path.join(self.folder_path, f'{uuid}.json')
-        if os.path.isfile(json_path):
-            try:
-                with open(file = json_path, mode = 'r', encoding = 'utf-8') as json_file:
-                    data = json.load(json_file)
-                self.replacements = data.get('replacements', REPLACEMENTS)
-                self.dictionaries = data.get('dictionaries', {})
-                logger.info('parsed dictionaries')
-            except Exception as exception:
-                message = f'Could not parse json file dict with exception:\n{exception}'
-                logger.error(message)
-                raise DictionaryError(message)
-
-        else:
+        if not os.path.isfile(json_path):
             self.save(uuid = uuid)
+            return
+        try:
+            with open(file = json_path, mode = 'r', encoding = 'utf-8') as json_file:
+                data = json.load(json_file)
+            self.replacements = data.get('replacements', REPLACEMENTS)
+            self.dictionaries = data.get('dictionaries', {})
+            logger.info('parsed dictionaries')
+        except Exception as exception:
+            message = f'Could not parse json file dict with exception:\n{exception}'
+            logger.error(message)
+            raise DictionaryError(message)
 
     def save(self, uuid: Union[UUID, str]) -> None:
         """
@@ -55,31 +54,30 @@ class Dicts(object):
             logger.error(message)
             raise DictionaryError(message)
 
-    def import_(self, dict_name: str, data: str) -> bool:
+    def import_(self, dict_name: str, data: str) -> None:
         try:
             data = json.loads(data)
-            if all(isinstance(key, str) for key in data.keys()) and \
-                    all(isinstance(value, str) for value in data.values()):
-                self.dictionaries[dict_name] = data
-                return True
-            return False
+            if any(not isinstance(key, str) for key in data.keys()) or \
+                    any(not isinstance(val, str) for val in data.values()):
+                raise DictionaryError('Found a non-string value in data')
+            self.dictionaries[dict_name] = data
+        except DictionaryError as exception:
+            raise exception
         except Exception as exception:
-            print('exception')
             message = f'Could not parse import with exception:\n{exception}'
             logger.error(message)
             raise DictionaryError(message)
 
-    def export(self, dict_name: str, destin_path: str = '') -> Union[None, str]:
+    def export(self, dict_name: str, destin_path: str = '') -> str:
         try:
             data = self.dictionaries.get(dict_name, {})
             data_str = json.dumps(data, ensure_ascii = False, indent = 4)
-            if destin_path:
-                title = os.path.basename(destin_path).split('.')[0]
-                path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
-                with open(file = path, mode = 'w', encoding = 'utf-8') as file:
-                    file.write(data_str)
-                return
-            return data_str
+            if not destin_path:
+                return data_str
+            title = os.path.basename(destin_path).split('.')[0]
+            path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
+            with open(file = path, mode = 'w', encoding = 'utf-8') as file:
+                file.write(data_str)
         except Exception as exception:
             message = f'Could not execute export with exception:\n{exception}'
             logger.error(message)

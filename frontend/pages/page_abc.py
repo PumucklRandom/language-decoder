@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import URLS, CONFIG, Language, load_language
-from backend.utils import utilities as utils
 from backend.decoder.language_decoder import LanguageDecoder
 from frontend.pages.ui_custom import COLORS, HTML
 
@@ -59,7 +58,6 @@ class Page(ABC, ui.page):
         self._url_history: URLHistory = url_history
         self.ui_language: Language = ui_language
         self.settings: Settings = settings
-        self.utils: utils = utils
         self.decoder: LanguageDecoder = language_decoder
         self.pdf_params: dict = CONFIG.Pdf.__dict__.copy()
         self.max_file_size: int = CONFIG.Upload.max_file_size
@@ -71,8 +69,9 @@ class Page(ABC, ui.page):
             client.on_disconnect(handler = lambda: self.del_app_routes(url = URLS.DOWNLOAD))
         self.decoder.uuid = app.storage.browser.get('id')
         ui.dark_mode().bind_value_from(self.settings, 'dark_mode')
-        ui.colors(primary = COLORS.PRIMARY, secondary = COLORS.SECONDARY, accent = COLORS.ACCENT, dark = COLORS.DARK,
-                  positive = COLORS.POSITIVE, negative = COLORS.NEGATIVE, info = COLORS.INFO, warning = COLORS.WARNING)
+        ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
+                  dark = COLORS.DARK.VAL, positive = COLORS.POSITIVE.VAL, negative = COLORS.NEGATIVE.VAL,
+                  info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
         ui.add_head_html(HTML.FLEX_GROW)
         ui.add_head_html(HTML.HEADER_STICKY)
         print(self.decoder.uuid)

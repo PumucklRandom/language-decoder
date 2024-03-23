@@ -2,7 +2,7 @@ import pathlib
 import asyncio
 from typing import Tuple
 from nicegui import ui, events, Client
-from backend.config.config import URLS, SIZE_FACTOR
+from backend.config.config import URLS
 from backend.decoder.pdf import PDF
 from frontend.pages.ui_custom import ui_dialog, UIGrid
 from frontend.pages.page_abc import Page
@@ -22,6 +22,7 @@ class Decoding(Page):
         self.d_hash: int = 0
         self.c_hash: int = 0
         self.content: bytes = b''
+        self.preload: bool = False
 
     def _open_upload(self) -> None:
         self._update_words()
@@ -45,15 +46,10 @@ class Decoding(Page):
     def _open_pdf_view(pdf_view_path: str) -> None:
         ui.open(f'{pdf_view_path}', new_tab = True)
 
-    def _load_table(self) -> None:
-        self._set_item_size()
-        self._table.refresh()
-        self.ui_grid.load_table(self.decoder.source_words, self.decoder.target_words)
-
     def _preload_table(self) -> None:
-        self._set_item_size()
+        self.preload = True
         self._table.refresh()
-        self.ui_grid.load_table(self.decoder.source_words, [''] * self.len_words)
+        self.preload = False
 
     def _update_words(self) -> None:
         source_words, target_words = self.ui_grid.get_values()
@@ -62,14 +58,12 @@ class Decoding(Page):
 
     def _save_words(self):
         self._update_words()
-        self._set_item_size()
         self._table.refresh()
-        self._load_table()
 
     def _replace_words(self):
         self._update_words()
         self.decoder.find_replace(find = self.find, repl = self.repl)
-        self._load_table()
+        self._table.refresh()
 
     def _clear_replace(self):
         self.find, self.repl = '', ''
@@ -78,26 +72,25 @@ class Decoding(Page):
         self.ui_find_input.update()
         self.ui_repl_input.update()
 
-    def _set_item_size(self) -> None:
-        chars = self.utils.lonlen(self.decoder.source_words + self.decoder.target_words)
-        chars = 20 if chars > 20 else chars
-        self.ui_grid.item_size = chars * SIZE_FACTOR
-
     def _split_text(self) -> None:
         _hash = hash(self.decoder.source_text)
-        if self.s_hash != _hash:
-            if not self.decoder.source_text:
-                self.decoder.source_words = []
-                self.decoder.target_words = []
-                self.decoder.sentences = []
-                return
-            self.s_hash = _hash
-            self.decoder.split_text()
-            self.len_words = len(self.decoder.source_words)
+        if self.s_hash == _hash:
+            return
+        if not self.decoder.source_text:
+            self.decoder.source_words = []
+            self.decoder.target_words = []
+            self.decoder.sentences = []
+            return
+        self.s_hash = _hash
+        self.decoder.split_text()
+        self.len_words = len(self.decoder.source_words)
 
     async def _decode_words(self) -> None:
         _hash = hash(f'{self.decoder.source_text}{self.decoder.source_language}{self.decoder.target_language}')
-        if self.decoder.source_text and self.d_hash != _hash:
+        if self.d_hash == _hash:
+            self._table.refresh()
+            return
+        if self.decoder.source_text:
             self.d_hash = _hash
             # FIXME: strange JavaScript TimeoutError with notification (over ~380 words)
             #   but applications seems to run anyway
@@ -114,12 +107,10 @@ class Decoding(Page):
             await asyncio.to_thread(self.decoder.decode_sentences)
             self._apply_dict()
             notification.dismiss()
-            return
-        self._load_table()
 
     def _apply_dict(self):
         self.decoder.apply_dict()
-        self._load_table()
+        self._table.refresh()
 
     async def _export(self):
         self._update_words()
@@ -188,22 +179,18 @@ class Decoding(Page):
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
             data = event.content.read().decode('utf-8')
-        except Exception:
-            ui.notify(self.ui_language.DECODING.Messages.invalid,
-                      type = 'warning', position = 'top')
-            return
-        status = self.decoder.import_(data = data)
-        if status:
+            self.decoder.import_(data = data)
             self.decoder.title = pathlib.Path(event.name).stem
             self.decoder.source_text = ' '.join(self.decoder.source_words)
+            self.s_hash = hash(self.decoder.source_text)
             self.d_hash = hash(
                 f'{self.decoder.source_text}{self.decoder.source_language}{self.decoder.target_language}'
             )
-            self._load_table()
-        else:
-            ui.notify(self.ui_language.DECODING.Messages.invalid,
-                      type = 'warning', position = 'top')
-        event.sender.reset()  # noqa upload reset
+            self._table.refresh()
+        except Exception:
+            ui.notify(self.ui_language.DECODING.Messages.invalid, type = 'warning', position = 'top')
+        finally:
+            event.sender.reset()  # noqa upload reset
 
     def _import(self) -> None:
         with ui.dialog() as dialog:
@@ -246,7 +233,12 @@ class Decoding(Page):
 
     @ui.refreshable
     def _table(self) -> None:
-        self.ui_grid = UIGrid()
+        self.ui_grid = UIGrid(
+            source_words = self.decoder.source_words,
+            target_words = self.decoder.target_words,
+            preload = self.preload,
+            dark_mode = self.settings.dark_mode
+        )
 
     def _footer(self) -> None:
         with ui.footer():

@@ -37,22 +37,23 @@ class Dictionaries(Page):
         self.ui_selector.set_value(None)
 
     def _load_table(self) -> None:
-        self.ui_table.load_table(self.dicts.dictionaries.get(self.decoder.dict_name, {}))
+        self.ui_table.set_values(self.dicts.dictionaries.get(self.decoder.dict_name, {}))
 
     def _select_table(self) -> None:
-        if self.ui_selector:
-            if self.ui_selector.value:
-                if self.ui_rename_flag.value:
-                    self._rename_table()
-                else:
-                    self._update_dict()
-                    self.decoder.dict_name = self.ui_selector.value
-                    if self.decoder.dict_name not in self.dicts.dictionaries.keys():
-                        self.dicts.dictionaries[self.decoder.dict_name] = {}
-                    self._load_table()
-                    self.dicts.save(uuid = self.decoder.uuid)
-            else:
-                self._deselect_table()
+        if not self.ui_selector:
+            return
+        if not self.ui_selector.value:
+            self._deselect_table()
+            return
+        if self.ui_rename_flag.value:
+            self._rename_table()
+            return
+        self._update_dict()
+        self.decoder.dict_name = self.ui_selector.value
+        if self.decoder.dict_name not in self.dicts.dictionaries.keys():
+            self.dicts.dictionaries[self.decoder.dict_name] = {}
+        self._load_table()
+        self.dicts.save(uuid = self.decoder.uuid)
 
     def _rename_table(self):
         self.ui_rename_flag.value = False
@@ -103,19 +104,14 @@ class Dictionaries(Page):
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
             data = event.content.read().decode('utf-8')
-        except Exception:
-            ui.notify(self.ui_language.DICTIONARY.Messages.invalid,
-                      type = 'warning', position = 'top')
-            return
-        dict_name = pathlib.Path(event.name).stem
-        status = self.dicts.import_(dict_name = dict_name, data = data)
-        if status:
+            dict_name = pathlib.Path(event.name).stem
+            self.dicts.import_(dict_name = dict_name, data = data)
             self.ui_selector.value = dict_name
             self._load_table()
-        else:
-            ui.notify(self.ui_language.DICTIONARY.Messages.invalid,
-                      type = 'warning', position = 'top')
-        event.sender.reset()  # noqa upload reset
+        except Exception:
+            ui.notify(self.ui_language.DICTIONARY.Messages.invalid, type = 'warning', position = 'top')
+        finally:
+            event.sender.reset()  # noqa upload reset
 
     def _import(self) -> None:
         with ui.dialog() as dialog:
@@ -177,7 +173,8 @@ class Dictionaries(Page):
                     if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete_table)
 
     def _table(self) -> None:
-        self.ui_table = UITable(columns = DICT_COLS).style('min-width:500px; max-height:80vh')
+        self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.settings.dark_mode) \
+            .style('min-width:500px; max-height:80vh')
         self._load_table()
 
     def _footer(self) -> None:

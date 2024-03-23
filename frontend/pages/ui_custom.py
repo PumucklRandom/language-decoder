@@ -1,42 +1,78 @@
+from enum import Enum
 from typing import Union, Tuple, Dict, List, Iterable
 from nicegui import ui, events
-from backend.config.config import CONFIG
-
-DEFAULT_COLS = [
-    {'name': 'key', 'field': 'key', 'required': True, 'align': 'left'},
-    {'name': 'val', 'field': 'val', 'required': True, 'align': 'left'},
-]
-
-DICT_COLS = DEFAULT_COLS.copy()
-DICT_COLS[0].update({'label': 'Source Words', 'sortable': True})
-DICT_COLS[1].update({'label': 'Target Words', 'sortable': True})
-
-REPLACE_COLS = DEFAULT_COLS.copy()
-REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
-REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
+from backend.config.config import CONFIG, SIZE_FACTOR
+from backend.utils.utilities import lonlen
 
 
 class COLORS:
-    PRIMARY = '#409696'  # 5898D4 #80C8C8
-    SECONDARY = '#5A96E0'  # 26A69A
-    ACCENT = '#9632C0'  # 9C27B0
-    DARK = '#1D1D1D'  # 1D1D1D
-    POSITIVE = '#20C040'  # 21BA45
-    NEGATIVE = '#C00020'  # C10015
-    INFO = '#32C0E0'  # 31CCEC
-    WARNING = '#FFFF40'  # F2C037
+    class PRIMARY:
+        KEY = 'primary'
+        VAL = '#409696'  # 409696
+
+    class SECONDARY:
+        KEY = 'secondary'
+        VAL = '#5A96E0'
+
+    class ACCENT:
+        KEY = 'accent'
+        VAL = '#9632C0'
+
+    class DARK:
+        KEY = 'dark'
+        VAL = '#1D1D1D'
+
+    class POSITIVE:
+        KEY = 'positive'
+        VAL = '#20C040'
+
+    class NEGATIVE:
+        KEY = 'negative'
+        VAL = '#C00020'
+
+    class INFO:
+        KEY = 'info'
+        VAL = '#32C0E0'
+
+    class WARNING:
+        KEY = 'warning'
+        VAL = '#FFFF40'
+
+    class GREY_1:
+        KEY = 'grey-1'
+        VAL = '#FAFAFA'
+
+    class GREY_10:
+        KEY = 'grey-10'
+        VAL = '#212121'
+
+    class BLUE_GREY_1:
+        KEY = 'blue-grey-1'
+        VAL = '#ECEFF1'
+
+    class BLUE_GREY_10:
+        KEY = 'blue-grey-10'
+        VAL = '#263238'
+
+    class CYAN_1:
+        KEY = 'cyan-1'
+        VAL = '#E0F7FA'
+
+    class CYAN_10:
+        KEY = 'cyan-10'
+        VAL = '#006064'
 
 
 class HTML:
     FLEX_GROW = '<style>.q-textarea.flex-grow .q-field__control{height: 100%}</style>'
-    HEADER_STICKY = '''
+    HEADER_STICKY = f'''
         <style lang="sass">
             .sticky-header
                 max-height: 100vh
                 .q-table__top,
                 .q-table__bottom,
                 thead tr:first-child th
-                    background-color: #409696
+                    background-color: {COLORS.PRIMARY.KEY}
                 thead tr th
                     position: sticky
                     z-index: 1
@@ -55,9 +91,10 @@ ui.select.default_props('outlined')
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 
 
+# .style('min-width:500px; max-height:80vh', 'min-width:500px;)
 def ui_dialog(label_list: List[str], space: int = 10) -> ui.dialog:
     with ui.dialog() as dialog:
-        with ui.card().style('min-width:300px; min-height:100px; gap:0.0rem'):
+        with ui.card().classes('min-w-[80%]').style('width:200px; min-height:112px; gap:0.0rem'):
             ui.button(icon = 'close', on_click = dialog.close) \
                 .classes('absolute-top-right') \
                 .props('dense round size=12px')
@@ -65,6 +102,8 @@ def ui_dialog(label_list: List[str], space: int = 10) -> ui.dialog:
             for label in label_list:
                 if label == '\n':
                     ui.space().style(f'height:{space}px')
+                elif label == '/n':
+                    ui.separator().style(f'height:{2}px')
                 else:
                     ui.label(label)
     return dialog
@@ -102,6 +141,20 @@ def rel_top_abs_left(top: int = 0, left: int = 0) -> str:
     return f'absolute left-[{left}px] top-[{top}%] translate-x-[-50%] translate-y-[-50%]'
 
 
+DEFAULT_COLS = [
+    {'name': 'key', 'field': 'key', 'required': True, 'align': 'left'},
+    {'name': 'val', 'field': 'val', 'required': True, 'align': 'left'},
+]
+
+DICT_COLS = DEFAULT_COLS.copy()
+DICT_COLS[0].update({'label': 'Source Words', 'sortable': True})
+DICT_COLS[1].update({'label': 'Target Words', 'sortable': True})
+
+REPLACE_COLS = DEFAULT_COLS.copy()
+REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
+REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
+
+
 class Table(ui.table):
 
     def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id') -> None:
@@ -116,12 +169,13 @@ class Table(ui.table):
 
     def _add_row(self, event: events.GenericEventArguments) -> None:
         _id = max([row.get('id') for row in self.rows] + [-1]) + 1
-        if event.args:
-            for i, row in enumerate(self.rows):
-                if row.get('id') == event.args.get('id'):
-                    self.rows.insert(i + 1, {'id': _id, 'key': '', 'val': ''})
-        else:
+        if not event.args:
             self.rows.insert(0, {'id': _id, 'key': '', 'val': ''})
+            self.update()
+            return
+        for i, row in enumerate(self.rows):
+            if row.get('id') == event.args.get('id'):
+                self.rows.insert(i + 1, {'id': _id, 'key': '', 'val': ''})
         self.update()
 
     def _del_row(self, event: events.GenericEventArguments) -> None:
@@ -133,12 +187,15 @@ class Table(ui.table):
             if row.get('id') == event.args.get('id'):
                 row.update(event.args)
 
-    def load_table(self, keys: Union[Dict, Iterable[str]],
+    def _set_type(self, vals):
+        return vals
+
+    def set_values(self, keys: Union[Dict, Iterable[str]],
                    vals: Iterable[Union[str, float]] = None) -> None:
         if isinstance(keys, dict):
             vals = keys.values()
             keys = keys.keys()
-        vals = self.set_type(vals)
+        vals = self._set_type(vals)
         self.rows.clear()
         for i, (key, val) in enumerate(zip(keys, vals)):
             self.rows.append({'id': i, 'key': key, 'val': val})
@@ -146,52 +203,60 @@ class Table(ui.table):
 
     def get_values(self, as_dict: bool = False) -> Union[Dict, Tuple[List, List]]:
         keys = [row.get('key') for row in self.rows]
-        vals = self.set_type([row.get('val') for row in self.rows])
+        vals = self._set_type([row.get('val') for row in self.rows])
         if as_dict:
             return dict(zip(keys, vals))
         return keys, vals
 
-    def set_type(self, vals):
-        return vals
-
 
 class UITable(Table):
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id') -> None:
+    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
+                 row_key: str = 'id', dark_mode: bool = True) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key)
-        self.add_slot('header', self.HEADER)
-        self.add_slot('body', self.BODY)
+        if dark_mode:
+            self.key_color = COLORS.GREY_10.VAL
+            self.val_color = COLORS.BLUE_GREY_10.VAL
+            self.btn_color = COLORS.CYAN_10.VAL
+        else:
+            self.key_color = COLORS.GREY_1.VAL
+            self.val_color = COLORS.BLUE_GREY_1.VAL
+            self.btn_color = COLORS.CYAN_1.VAL
+        self.add_slot('header', self._header)
+        self.add_slot('body', self._body())
         self.props('flat bordered separator=cell')
 
-    HEADER = '''
-        <q-tr style="background-color:#409696" :props="props">
+    _header = f'''
+        <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
             <q-th v-for="col in props.cols" :key="col.field" :props="props">
-                {{ col.label }}
+                {{{{ col.label }}}}
             </q-th>
             <q-th auto-width>
-                <q-btn icon="add" size="12px" dense round color="primary" :props="props"
+                <q-btn icon="add" size="12px" dense round color="{COLORS.PRIMARY.KEY}" :props="props"
                 @click="() => $parent.$emit('_add_row')"/>
                 <!-- <q-tooltip> add row below </q-tooltip> -->
             </q-th>
         </q-tr>
     '''
-    BODY = f'''
+
+    def _body(self):
+        return f'''
         <q-tr :props="props">
-            <q-td key="key" style="background-color:#212121" :props="props">
+            <q-td key="key" style="background-color:{self.key_color}" :props="props">
                 <q-input v-model="props.row.key" dense borderless debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
-            <q-td key="val" style="background-color:#263238" :props="props">
+            <q-td key="val" style="background-color:{self.val_color}" :props="props">
                 <q-input v-model="props.row.val" dense borderless debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
-            <q-td auto-width style="background-color:#006064">
+            <q-td auto-width style="background-color:{self.btn_color}">
                 <div class="col">
-                    <q-btn icon="remove" size="8px" dense round color="primary"
+                    <q-btn icon="remove" size="8px" dense round color="{COLORS.PRIMARY.KEY}"
                     @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>
                     <!-- <q-tooltip> delete row </q-tooltip> -->
                 </div>
                 <div class="col">
-                    <q-btn icon="add" size="8px" dense round color="primary"
+                    <q-btn icon="add" size="8px" dense round color="{COLORS.PRIMARY.KEY}"
                     @click="() => $parent.$emit('_add_row', props.row)" :props="props"/>
                     <!-- <q-tooltip> add row below </q-tooltip> -->
                 </div>
@@ -201,23 +266,42 @@ class UITable(Table):
 
 
 class UIGrid(Table):
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
-                 row_key: str = 'id', item_size: int = 100) -> None:
+    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id',
+                 source_words: List[str] = None, target_words: List[str] = None,
+                 preload: bool = False, dark_mode: bool = True) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key)
-        self.item_size = item_size
+        self.item_size = 100
+        if preload:
+            target_words = [''] * len(source_words)
+        if dark_mode:
+            self.scr_color = COLORS.GREY_10.KEY
+            self.tar_color = COLORS.BLUE_GREY_10.KEY
+        else:
+            self.scr_color = COLORS.GREY_1.KEY
+            self.tar_color = COLORS.BLUE_GREY_1.KEY
+        self._set_item_size(words = source_words + target_words)
         self.add_slot('item', self._item())
         self.props('hide-header grid')
+        self.set_values(source_words, target_words)
+
+    def _set_item_size(self, words: List[str] = None):
+        if words and isinstance(words, list):
+            chars = lonlen(words)
+            chars = 20 if chars > 20 else chars
+            self.item_size = chars * SIZE_FACTOR
 
     def _item(self) -> str:
         # TODO: custom size/width for each input element pair
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
-                    <q-input v-model="props.row.key" dense outlined debounce="{CONFIG.debounce}" bg-color=grey-10
+                    <q-input v-model="props.row.key" dense outlined 
+                    debounce="{CONFIG.debounce}" bg-color={self.scr_color}
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input v-model="props.row.val" dense outlined debounce="{CONFIG.debounce}" bg-color=blue-grey-10
+                    <q-input v-model="props.row.val" dense outlined
+                    debounce="{CONFIG.debounce}" bg-color={self.tar_color}
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>
@@ -233,7 +317,7 @@ class UIList(Table):
         self.props('hide-header separator=none')
         self.style('min-width:400px')
 
-    def set_type(self, vals):
+    def _set_type(self, vals):
         if self.val_type == 'number':
             return list(map(float, vals))
         return vals

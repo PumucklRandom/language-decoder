@@ -15,6 +15,7 @@ Export-PfxCertificate -cert "Cert:/CurrentUser/My/Thumbprint" -FilePath certific
 """
 
 import os
+import re
 import shutil
 import subprocess
 import pathlib
@@ -22,7 +23,16 @@ import zipfile
 import nicegui
 
 
-def del_previous_build():
+def update_version() -> None:
+    with open('./_data/version.rc', 'r+') as file:
+        version = file.read()
+        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.4.0.0', version)
+        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 4, 0, 0', version)
+        file.seek(0)
+        file.write(version)
+
+
+def del_previous_build() -> None:
     if os.path.isdir('./build'):
         shutil.rmtree('./build')
     if os.path.isdir('./dist'):
@@ -38,11 +48,11 @@ def get_password() -> str:
             return ''
         with open(file = './_data/password.txt', mode = 'r', encoding = 'utf-8') as file:
             return file.read()
-    except Exception:
-        print(f'Could not load password from: "{pw_path}"')
+    except Exception as exception:
+        print(f'Could not load password from: "{pw_path}"\n{exception}')
 
 
-def zip_directory(zip_file_path: str, source_directory: str):
+def zip_directory(zip_file_path: str, source_directory: str) -> None:
     if os.path.isfile(zip_file_path):
         os.remove(zip_file_path)
     source_path = pathlib.Path(source_directory).expanduser()  # .resolve(strict = True)
@@ -53,6 +63,7 @@ def zip_directory(zip_file_path: str, source_directory: str):
 
 
 try:
+    update_version()
     del_previous_build()
     cmd_build = [
         'pyinstaller', '__main__.py',
