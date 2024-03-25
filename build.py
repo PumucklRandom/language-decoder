@@ -26,8 +26,8 @@ import nicegui
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.4.0.0', version)
-        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 4, 0, 0', version)
+        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.4.1.0', version)
+        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 4, 1, 0', version)
         file.seek(0)
         file.write(version)
 
@@ -69,13 +69,13 @@ try:
         'pyinstaller', '__main__.py',
         '--name', 'LanguageDecoder',
         '--windowed',  # set ui.run(native=True)!!!
-        '--icon', './frontend/pages/icon/LD-icon.png',
+        '--icon', './frontend/pages/ui/icon/LD-icon.png',
         '--version-file', '_data/version.rc',
         '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
         '--add-data', f'./_data/config.yml{os.pathsep}./backend/config/',
         '--add-data', f'./backend/fonts/{os.pathsep}./backend/fonts/',
-        '--add-data', f'./backend/config/labels/{os.pathsep}./backend/config/labels/',
-        '--add-data', f'./frontend/pages/icon/{os.pathsep}./frontend/pages/icon/',
+        '--add-data', f'./frontend/pages/ui/labels/{os.pathsep}./frontend/pages/ui/labels/',
+        '--add-data', f'./frontend/pages/ui/icon/{os.pathsep}./frontend/pages/ui/icon/',
         '--clean', '-y'
     ]
     subprocess.run(cmd_build, shell = False, check = True)

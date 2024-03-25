@@ -1,12 +1,12 @@
 from nicegui import ui
 from copy import copy
-from backend.config.config import URLS, CONFIG, load_language, get_languages
-from backend.config.config import REPLACEMENTS
+from backend.config.config import CONFIG, REPLACEMENTS
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.dicts.dictonaries import Dicts
-from frontend.pages.ui_custom import ui_dialog, UITable, UIList, REPLACE_COLS
-from frontend.pages.page_abc import Page
+from frontend.pages.ui.config import URLS, REPLACE_COLS, load_language, get_languages
+from frontend.pages.ui.custom import ui_dialog, UITable, UIList
+from frontend.pages.ui.page_abc import Page
 
 
 class Settings(Page):

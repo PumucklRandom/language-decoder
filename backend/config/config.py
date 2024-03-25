@@ -1,21 +1,9 @@
 import os
-import yaml
 import json
-from typing import Tuple, List
+import yaml
+from typing import Tuple
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
-
-SIZE_FACTOR = 10
-
-
-class URLS(object):
-    START = '/'
-    UPLOAD = '/upload/'
-    DECODING = '/decoding/'
-    DICTIONARIES = '/dictionaries/'
-    SETTINGS = '/settings/'
-    DOWNLOAD = '/download/'
-
 
 # A mapping dict to replace language independent characters for the source text
 REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '-', '–': '-'}
@@ -95,46 +83,3 @@ def load_config(config_path: str = 'config.yml') -> Config:
 
 
 CONFIG = load_config()
-
-
-class Language(object):
-    def __init__(self, dictionary):
-        self.START = None
-        self.UPLOAD = None
-        self.DECODING = None
-        self.DICTIONARY = None
-        self.SETTINGS = None
-        self.__dict__.update(dictionary)
-
-    def __repr__(self) -> str:
-        return self.__str__()
-
-    def __str__(self) -> str:
-        return self.__dict__.__str__()
-
-
-def get_languages() -> List[str]:
-    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels')
-    languages = list()
-    for language_file in os.listdir(label_folder):
-        if language_file.endswith('.json'):
-            languages.append(os.path.splitext(language_file)[0])
-    return languages
-
-
-def load_language(language: str = 'english') -> Language:
-    logger.info('load language')
-    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.json')
-    if not os.path.isfile(language_path):
-        message = f'Language file not found at "{language_path}"'
-        logger.critical(message)
-        raise ConfigError(message)
-    try:
-        with open(file = language_path, mode = 'r', encoding = 'utf-8') as config_file:
-            language = dict_as_object(dictionary = json.load(config_file), object_type = Language)
-            logger.info('parsed language')
-            return language
-    except Exception as e:
-        message = f'Could not parse language file with exception:\n{e}'
-        logger.critical(message)
-        raise ConfigError(message)

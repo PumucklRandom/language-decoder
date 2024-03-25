@@ -1,8 +1,8 @@
 import pathlib
 from nicegui import ui, events
-from backend.config.config import URLS
-from frontend.pages.ui_custom import ui_dialog, abs_top_left
-from frontend.pages.page_abc import Page
+from frontend.pages.ui.config import URLS
+from frontend.pages.ui.custom import ui_dialog, abs_top_left
+from frontend.pages.ui.page_abc import Page
 
 
 class Upload(Page):

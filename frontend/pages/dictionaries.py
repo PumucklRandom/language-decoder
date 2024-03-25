@@ -1,9 +1,9 @@
 import pathlib
 from nicegui import ui, events
-from backend.config.config import URLS
 from backend.dicts.dictonaries import Dicts
-from frontend.pages.ui_custom import ui_dialog, UITable, DICT_COLS
-from frontend.pages.page_abc import Page
+from frontend.pages.ui.config import URLS, DICT_COLS
+from frontend.pages.ui.custom import ui_dialog, UITable
+from frontend.pages.ui.page_abc import Page
 
 
 class Dictionaries(Page):
@@ -87,6 +87,8 @@ class Dictionaries(Page):
         return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_table)
 
     def _export(self) -> None:
+        if not self.decoder.dict_name:
+            return
         self._save_dict()
         content = self.dicts.export(dict_name = self.decoder.dict_name)
         route = self.upd_app_route(

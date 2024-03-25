@@ -2,10 +2,10 @@ import pathlib
 import asyncio
 from typing import Tuple
 from nicegui import ui, events, Client
-from backend.config.config import URLS
 from backend.decoder.pdf import PDF
-from frontend.pages.ui_custom import ui_dialog, UIGrid
-from frontend.pages.page_abc import Page
+from frontend.pages.ui.config import URLS
+from frontend.pages.ui.custom import ui_dialog, UIGrid
+from frontend.pages.ui.page_abc import Page
 
 
 class Decoding(Page):
@@ -113,7 +113,7 @@ class Decoding(Page):
         self._table.refresh()
 
     async def _export(self) -> None:
-        if not self.decoder.dict_name:
+        if not self.decoder.target_words:
             return
         self._update_words()
         filename = self.decoder.title if self.decoder.title else 'decoded'
@@ -247,6 +247,8 @@ class Decoding(Page):
             with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
                 if self.show_tips: ui.tooltip('Replace')
                 with ui.menu():
+                    # with ui.menu_item(auto_close = False):
+                    #     ui.toggle(['source', 'both', 'target'], value = 'both').props('dense')
                     with ui.menu_item(auto_close = False):
                         self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
                     with ui.menu_item(auto_close = False):

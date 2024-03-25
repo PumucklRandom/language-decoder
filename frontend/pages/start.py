@@ -1,6 +1,6 @@
 from nicegui import ui
-from backend.config.config import URLS
-from frontend.pages.page_abc import Page
+from frontend.pages.ui.config import URLS
+from frontend.pages.ui.page_abc import Page
 
 
 class Start(Page):
