@@ -1,6 +1,7 @@
 import os
 import json
 from typing import List
+from copy import deepcopy
 from nicegui import ui
 from backend.config.config import CONFIG, dict_as_object
 from backend.error.error import ConfigError
@@ -108,11 +109,11 @@ DEFAULT_COLS = [
     {'name': 'val', 'field': 'val', 'required': True, 'align': 'left'},
 ]
 
-DICT_COLS = DEFAULT_COLS.copy()
-DICT_COLS[0].update({'label': 'Source Words', 'sortable': True})
-DICT_COLS[1].update({'label': 'Target Words', 'sortable': True})
+DICT_COLS = deepcopy(DEFAULT_COLS)
+DICT_COLS[0].update({'label': 'Source words', 'sortable': True})
+DICT_COLS[1].update({'label': 'Target words', 'sortable': True})
 
-REPLACE_COLS = DEFAULT_COLS.copy()
+REPLACE_COLS = deepcopy(DEFAULT_COLS)
 REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
 REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
 

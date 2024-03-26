@@ -4,7 +4,7 @@ from typing import Tuple
 from nicegui import ui, events, Client
 from backend.decoder.pdf import PDF
 from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import ui_dialog, UIGrid
+from frontend.pages.ui.custom import UIGrid, ui_dialog
 from frontend.pages.ui.page_abc import Page
 
 
@@ -112,20 +112,6 @@ class Decoding(Page):
         self.decoder.apply_dict()
         self._table.refresh()
 
-    async def _export(self) -> None:
-        if not self.decoder.target_words:
-            return
-        self._update_words()
-        filename = self.decoder.title if self.decoder.title else 'decoded'
-        content = self.decoder.export()
-        route = self.upd_app_route(
-            url = URLS.DOWNLOAD,
-            content = content,
-            file_type = 'json',
-            filename = filename,
-        )
-        ui.download(route)
-
     def _create_dpf(self) -> Tuple[str, str]:
         _hash = hash(f'{self.decoder.title}{self.decoder.source_words}{self.decoder.target_words}')
         if self.c_hash != _hash:
@@ -152,28 +138,6 @@ class Decoding(Page):
         )
         return route_view, route_down
 
-    def _dialog(self) -> ui_dialog:
-        return ui_dialog(label_list = self.ui_language.DECODING.Dialogs)
-
-    def _dialog_sentences(self) -> None:
-        ui_dialog(label_list = self.decoder.sentences).open()
-
-    def _pdf_dialog(self) -> None:
-        self._save_words()
-        route_view, route_down = self._create_dpf()
-        with ui.dialog() as dialog:
-            with ui.card().classes('items-center'):
-                ui.button(icon = 'close', on_click = dialog.close) \
-                    .classes('absolute-top-right') \
-                    .props('dense round size=12px')
-                ui.space()
-                ui.label(self.ui_language.DECODING.Dialogs_pdf[0])
-                ui.label(self.ui_language.DECODING.Dialogs_pdf[1])
-                ui.button(text = 'VIEW PDF', on_click = lambda: self._open_pdf_view(route_view))
-                ui.label(self.ui_language.DECODING.Dialogs_pdf[2])
-                ui.button(text = 'DOWNLOAD', on_click = lambda: ui.download(route_down))
-                dialog.open()
-
     def _on_upload_reject(self) -> None:
         ui.notify(f'{self.ui_language.DECODING.Messages.reject} {self.max_file_size / 10 ** 3} KB',
                   type = 'warning', position = 'top')
@@ -194,6 +158,46 @@ class Decoding(Page):
         finally:
             event.sender.reset()  # noqa upload reset
 
+    def _dialog(self) -> ui_dialog:
+        return ui_dialog(label_list = self.ui_language.DECODING.Dialogs)
+
+    def _dialog_sentences(self) -> None:
+        ui_dialog(label_list = self.decoder.sentences).open()
+
+    def _pdf_dialog(self) -> None:
+        if not self.decoder.target_words:
+            return
+        self._save_words()
+        route_view, route_down = self._create_dpf()
+        with ui.dialog() as dialog:
+            with ui.card().classes('items-center'):
+                ui.button(icon = 'close', on_click = dialog.close) \
+                    .classes('absolute-top-right') \
+                    .props('dense round size=12px')
+                ui.space()
+                ui.label(self.ui_language.DECODING.Dialogs_pdf.text[0])
+                ui.label(self.ui_language.DECODING.Dialogs_pdf.text[1])
+                ui.button(text = self.ui_language.DECODING.Dialogs_pdf.view,
+                          on_click = lambda: self._open_pdf_view(route_view))
+                ui.label(self.ui_language.DECODING.Dialogs_pdf.text[2])
+                ui.button(text = self.ui_language.DECODING.Dialogs_pdf.download,
+                          on_click = lambda: ui.download(route_down))
+                dialog.open()
+
+    async def _export(self) -> None:
+        if not self.decoder.target_words:
+            return
+        self._update_words()
+        filename = self.decoder.title if self.decoder.title else 'decoded'
+        content = self.decoder.export()
+        route = self.upd_app_route(
+            url = URLS.DOWNLOAD,
+            content = content,
+            file_type = 'json',
+            filename = filename,
+        )
+        ui.download(route)
+
     def _import(self) -> None:
         with ui.dialog() as dialog:
             with ui.card().classes('items-center'):
@@ -211,12 +215,29 @@ class Decoding(Page):
                     .props('accept=.json flat dense')
             dialog.open()
 
+    def _replace(self):
+        with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
+            if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)
+            with ui.menu():
+                # with ui.menu_item(auto_close = False):
+                #     ui.toggle(['source', 'both', 'target'], value = 'both').props('dense')
+                with ui.menu_item(auto_close = False):
+                    self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
+                with ui.menu_item(auto_close = False):
+                    self.ui_repl_input = ui.input(label = 'replace').bind_value(self, 'repl')
+                with ui.menu_item(auto_close = False).style('justify-content: center'):
+                    with ui.row():
+                        ui.button(text = self.ui_language.DECODING.Footer.replace,
+                                  on_click = self._replace_words).props('dense')
+                        ui.space().style('width:20px')
+                        ui.button(icon = 'delete', on_click = self._clear_replace).props('dense')
+
     def _header(self) -> None:
         with ui.header():
-            ui.button(text = 'GO BACK TO UPLOAD', on_click = self._open_upload)
-            ui.label('DECODING').classes('absolute-center')
+            ui.button(text = self.ui_language.DECODING.Header.go_back, on_click = self._open_upload)
+            ui.label(text = self.ui_language.DECODING.Header.decoding).classes('absolute-center')
             ui.space()
-            ui.button(text = 'DICTIONARIES', on_click = self._open_dictionaries)
+            ui.button(text = self.ui_language.DECODING.Header.dictionaries, on_click = self._open_dictionaries)
             ui.button(icon = 'settings', on_click = self._open_settings)
 
     async def _center(self) -> None:
@@ -244,36 +265,23 @@ class Decoding(Page):
 
     def _footer(self) -> None:
         with ui.footer():
-            with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
-                if self.show_tips: ui.tooltip('Replace')
-                with ui.menu():
-                    # with ui.menu_item(auto_close = False):
-                    #     ui.toggle(['source', 'both', 'target'], value = 'both').props('dense')
-                    with ui.menu_item(auto_close = False):
-                        self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
-                    with ui.menu_item(auto_close = False):
-                        self.ui_repl_input = ui.input(label = 'replace').bind_value(self, 'repl')
-                    with ui.menu_item(auto_close = False).style('justify-content: center'):
-                        with ui.row():
-                            ui.button(text = 'APPLY', on_click = self._replace_words).props('dense')
-                            ui.space().style('width:20px')
-                            ui.button(icon = 'delete', on_click = self._clear_replace).props('dense')
+            self._replace()
             ui.space()
-            with ui.button(text = 'IMPORT', on_click = self._import):
-                if self.show_tips: ui.tooltip('Import words')
+            with ui.button(text = self.ui_language.DECODING.Footer.import_, on_click = self._import):
+                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.import_)
             ui.space()
-            ui.button(text = 'APPLY DICT', on_click = self._apply_dict)
+            ui.button(text = self.ui_language.DECODING.Footer.apply, on_click = self._apply_dict)
             ui.space()
             with ui.button(icon = 'save', on_click = self._save_words):
                 if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.save)
             ui.space()
-            ui.button(text = 'CREATE PDF', on_click = self._pdf_dialog)
+            ui.button(text = self.ui_language.DECODING.Footer.create, on_click = self._pdf_dialog)
             ui.space()
-            with ui.button(text = 'Export', on_click = self._export):
-                if self.show_tips: ui.tooltip('Export words')
+            with ui.button(text = self.ui_language.DECODING.Footer.export, on_click = self._export):
+                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.export)
             ui.space().style()
             with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
-                if self.show_tips: ui.tooltip('Sentence view')
+                if self.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.view)
 
     async def page(self, client: Client) -> None:
         self.__init_ui__(client = client)

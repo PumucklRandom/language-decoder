@@ -134,47 +134,50 @@ class Dictionaries(Page):
 
     def _header(self) -> None:
         with ui.header():
-            ui.button(text = 'GO BACK', on_click = self._open_previous_url)
-            ui.label('DICTIONARIES').classes('absolute-center')
+            ui.button(text = self.ui_language.DICTIONARY.Header.go_back, on_click = self._open_previous_url)
+            ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
             ui.space()
             ui.button(icon = 'settings', on_click = self._open_settings)
 
     def _center(self) -> None:
         self.dicts.load(uuid = self.decoder.uuid)
         with ui.column().classes('w-full items-center').style('font-size:12pt'):
-            with ui.card().style('width:500px'):
-                self.ui_rename_flag = ui.checkbox(
-                    text = self.ui_language.DICTIONARY.Selector[0]
-                ).props('dense')
-                # TODO: disable filtering options on rename
-                self.ui_selector = ui.select(
-                    label = self.ui_language.DICTIONARY.Selector[1],
-                    value = self.decoder.dict_name,
-                    options = list(self.dicts.dictionaries.keys()),
-                    with_input = True,
-                    new_value_mode = 'add-unique',
-                    on_change = self._select_table,
-                    clearable = True) \
-                    .props() \
-                    .style('width:350px')
-                with ui.button(icon = 'help', on_click = self._dialog_select().open) \
-                        .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
-                with ui.button(icon = 'delete', on_click = self._delete_table) \
-                        .classes('absolute-bottom-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete)
-
+            self._selector()
             with ui.card().classes('items-center').style('width:650px'):
                 with ui.element():  # is somehow needed for the table border
                     self._table()
                 with ui.button(icon = 'help', on_click = self._dialog_table().open) \
                         .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help_table)
+                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
                 with ui.button(icon = 'delete', on_click = self._clear_table) \
                         .classes('absolute-bottom-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete_table)
+                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.clear)
+
+    def _selector(self):
+        with ui.card().style('width:500px'):
+            self.ui_rename_flag = ui.checkbox(
+                text = self.ui_language.DICTIONARY.Selector.rename).props('dense')
+            # TODO: disable filtering options on rename
+            self.ui_selector = ui.select(
+                label = self.ui_language.DICTIONARY.Selector.select,
+                value = self.decoder.dict_name,
+                options = list(self.dicts.dictionaries.keys()),
+                with_input = True,
+                new_value_mode = 'add-unique',
+                on_change = self._select_table,
+                clearable = True) \
+                .props() \
+                .style('width:350px')
+            with ui.button(icon = 'help', on_click = self._dialog_select().open) \
+                    .classes('absolute-top-right'):
+                if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
+            with ui.button(icon = 'delete', on_click = self._delete_table) \
+                    .classes('absolute-bottom-right'):
+                if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete)
 
     def _table(self) -> None:
+        DICT_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
+        DICT_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
         self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.settings.dark_mode) \
             .style('min-width:500px; max-height:80vh')
         self._load_table()
@@ -182,14 +185,14 @@ class Dictionaries(Page):
     def _footer(self) -> None:
         with ui.footer():
             ui.space()
-            with ui.button(text = 'IMPORT', on_click = self._import):
-                if self.show_tips: ui.tooltip('Import dictionary')
+            with ui.button(text = self.ui_language.DICTIONARY.Footer.import_, on_click = self._import):
+                if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.import_)
             ui.space()
             with ui.button(icon = 'save', on_click = self._save_dict):
                 if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.save)
             ui.space()
-            with ui.button(text = 'EXPORT', on_click = self._export):
-                if self.show_tips: ui.tooltip('Export dictionary')
+            with ui.button(text = self.ui_language.DICTIONARY.Footer.export, on_click = self._export):
+                if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.export)
             ui.space()
 
     def page(self) -> None:

@@ -150,11 +150,11 @@ class Settings(Page):
 
     def _interface(self) -> None:
         with ui.card().style('width:400px'):
-            ui.checkbox(self.ui_language.SETTINGS.Interface[0]).bind_value(self.settings, 'dark_mode')
-            ui.checkbox(self.ui_language.SETTINGS.Interface[1]).bind_value(self.settings, 'show_tips')
-            ui.checkbox(self.ui_language.SETTINGS.Interface[2]).bind_value(self.decoder, 'reformatting')
+            ui.checkbox(self.ui_language.SETTINGS.Interface.text[0]).bind_value(self.settings, 'dark_mode')
+            ui.checkbox(self.ui_language.SETTINGS.Interface.text[1]).bind_value(self.settings, 'show_tips')
+            ui.checkbox(self.ui_language.SETTINGS.Interface.text[2]).bind_value(self.decoder, 'reformatting')
             ui.select(
-                label = self.ui_language.SETTINGS.Interface[3],
+                label = self.ui_language.SETTINGS.Interface.text[3],
                 value = 'english',
                 options = get_languages(),
                 on_change = self._on_select) \
@@ -162,18 +162,20 @@ class Settings(Page):
                 .style('min-width:200px; font-size:12pt') \
                 .bind_value(self.settings, 'language')
             ui.separator()
-            ui.label(text = self.ui_language.SETTINGS.Interface[4])
+            ui.label(text = self.ui_language.SETTINGS.Interface.text[4])
             ui.input(label = 'http proxy', placeholder = 'ip-address:port').bind_value(self.settings, 'proxy_http')
             ui.input(label = 'https proxy', placeholder = 'ip-address:port').bind_value(self.settings, 'proxy_https')
-            ui.button(text = 'CHECK CONNECTION', on_click = self._connection_check)
+            ui.button(text = self.ui_language.SETTINGS.Interface.check, on_click = self._connection_check)
         ui.separator()
-        with ui.button(text = 'APPLY', on_click = self._refresh_interface):
+        with ui.button(text = self.ui_language.SETTINGS.Interface.apply, on_click = self._refresh_interface):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.apply)
         with ui.button(icon = 'restore', on_click = self._reset_interface) \
                 .classes('absolute-bottom-left'):
             if self.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reset)
 
     def _replacements(self) -> None:
+        REPLACE_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
+        REPLACE_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
         self.ui_table = UITable(columns = REPLACE_COLS, dark_mode = self.settings.dark_mode) \
             .style('min-width:450px; max-height:80vh')
         ui.separator()

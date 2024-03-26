@@ -1,27 +1,34 @@
 {
     "START": {
-        "Explanations": [
-            "Explanation:",
-            [
-                "The LanguageDecoder translates a given text from the source language to the desired target language word by word (decoding).",
+        "Explanations": {
+            "title": "Explanation:",
+            "text": [
+                "The LanguageDecoder translates a given text from the source language",
+                "to the desired target language word by word (decoding).",
                 "Therefor the Google translator is used in the backend.",
-                "To improve the translation, a dictionary can be created to automatically correct common translation errors.",
-                "Afterwards, the decoded text can be exported to a PDF file."
-            ],
-            [
+                "To improve the translation,",
+                "a dictionary can be created to automatically correct common translation errors.",
+                "Afterwards, the decoded text can be exported to a PDF file.",
                 "The LanguageDecoder can also be used to create language learning lessons based on the",
                 "Birkenbihl approach."
-            ]
-        ],
-        "Disclaimers": [
-            "Disclaimer:",
-            [
-                "The LanguageDecoder is an open source project and runs under the MIT licence."
             ],
-            "To find out more about the project, visit the LanguageDecoder at"
-        ]
+            "start": "START"
+        },
+        "Disclaimers": {
+            "title": "Disclaimer:",
+            "text": [
+                "The LanguageDecoder is an open source project and runs under the MIT licence.",
+                "To find out more about the project, visit the LanguageDecoder at",
+                "Github.com."
+            ]
+        }
     },
     "UPLOAD": {
+        "Header": {
+            "start_page": "START PAGE",
+            "upload": "UPLOAD",
+            "dictionaries": "DICTIONARIES"
+        },
         "Dialogs": [
             "Some tips for the user interface!",
             ""
@@ -35,10 +42,6 @@
             "Enter some text",
             "start typing"
         ],
-        "Language": [
-            "Source language",
-            "Target language"
-        ],
         "Messages": {
             "decode": "Upload a text file or enter some text below.",
             "invalid": "Invalid text file. Use a different one or paste some text below.",
@@ -51,21 +54,35 @@
             "save": "Save text",
             "decode": "Start decoding",
             "delete": "Clear text"
+        },
+        "Footer": {
+            "source": "Source language",
+            "target": "Target language",
+            "decode": "DECODE"
         }
     },
     "DECODING": {
+        "Header": {
+            "go_back": "GO BACK TO UPLOAD",
+            "decoding": "DECODING",
+            "dictionaries": "DICTIONARIES"
+        },
         "Dialogs": [
             "Some tips for the user interface!"
-        ],
-        "Dialogs_pdf": [
-            "The pdf file is ready!",
-            "You can either first view the document:",
-            "Or just download the document:"
         ],
         "Dialogs_import": [
             "Upload a previously exported json file.",
             "Select file"
         ],
+        "Dialogs_pdf": {
+            "view": "VIEW PDF",
+            "download": "DOWNLOAD",
+            "text": [
+                "The pdf file is ready!",
+                "You can either first view the document:",
+                "Or just download the document:"
+            ]
+        },
         "Messages": {
             "decoding": "Decoding words:",
             "reject": "Upload a json file with max:",
@@ -73,22 +90,41 @@
         },
         "Tips": {
             "help": "Need help?",
-            "save": "Save decoding"
+            "replace": "Replace",
+            "import_": "Import words",
+            "save": "Save decoding",
+            "export": "Export words",
+            "view": "Sentence view"
+        },
+        "Footer": {
+            "import_": "IMPORT",
+            "apply": "APPLY DICT",
+            "create": "CREATE PDF",
+            "export": "EXPORT",
+            "replace": "APPLY"
         }
     },
     "DICTIONARY": {
+        "Header": {
+            "go_back": "GO BACK",
+            "dictionaries": "DICTIONARIES"
+        },
         "Dialogs_select": [
             "Some tips for the user interface!",
             ""
         ],
+        "Selector": {
+            "rename": "Rename dictionary",
+            "select": "Select or create a dictionary"
+        },
         "Dialogs_table": [
             "Some tips for the user interface!",
             ""
         ],
-        "Selector": [
-            "Rename dictionary",
-            "Select or create a dictionary"
-        ],
+        "Table": {
+            "key": "Source words",
+            "val": "Target words"
+        },
         "Dialogs_import": [
             "Upload a previously exported json file.",
             "Select file"
@@ -101,40 +137,53 @@
         "Tips": {
             "help": "Need help?",
             "delete": "Delete dictionary",
-            "help_table": "Need help?",
-            "delete_table": "Clear dictionary",
-            "save": "Save dictionary"
+            "clear": "Clear dictionary",
+            "save": "Save dictionary",
+            "import_": "Import dictionary'",
+            "export": "Export dictionary"
+        },
+        "Footer": {
+            "import_": "IMPORT",
+            "export": "EXPORT"
         }
     },
     "SETTINGS": {
-        "Dialogs_interface": [
-            "Some tips for the user interface!",
-            ""
-        ],
-        "Dialogs_replace": [
-            "Some tips for the user interface!",
-            ""
-        ],
-        "Dialogs_pdf": [
-            "Some tips for the user interface!",
-            ""
-        ],
-        "Dialogs_adv": [
-            "Some tips for the user interface!",
-            ""
-        ],
+        "Header": {
+            "go_back": "GO BACK",
+            "dictionaries": "SETTINGS"
+        },
         "Panel": [
             "INTERFACE SETTINGS",
             "REPLACEMENTS",
             "PDF SETTINGS",
             "ADVANCED SETTINGS"
         ],
-        "Interface": [
-            "Dark mode",
-            "Show tooltips",
-            "Reformat source text",
-            "Select language",
-            "Proxy configuration:"
+        "Dialogs_interface": [
+            "Some tips for the user interface!",
+            ""
+        ],
+        "Interface": {
+            "text": [
+                "Dark mode",
+                "Show tooltips",
+                "Reformat source text",
+                "Select language",
+                "Proxy configuration:"
+            ],
+            "check": "CHECK CONNECTION",
+            "apply": "APPLY"
+        },
+        "Dialogs_replace": [
+            "Some tips for the user interface!",
+            ""
+        ],
+        "Table": {
+            "key": "Character",
+            "val": "Substitute"
+        },
+        "Dialogs_pdf": [
+            "Some tips for the user interface!",
+            ""
         ],
         "Pdf": [
             "Use page seperator [0, 1]",
@@ -147,6 +196,10 @@
             "Title height",
             "Header height",
             "Line height"
+        ],
+        "Dialogs_adv": [
+            "Some tips for the user interface!",
+            ""
         ],
         "Advanced": [
             "Punctuations",

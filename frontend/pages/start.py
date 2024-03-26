@@ -21,35 +21,38 @@ class Start(Page):
 
     def _explanation(self) -> None:
         with ui.card().classes('w-[60%] items-center').style('min-width:1000px; min-height:562px; height:60vh'):
-            ui.label(text = self.ui_language.START.Explanations[0]).style(f'font-size:{self.font_size * 1.2}pt')
+            ui.label(text = self.ui_language.START.Explanations.title).style(f'font-size:{self.font_size * 1.2}pt')
             labels = ''
-            for label in self.ui_language.START.Explanations[1]:
+            for label in self.ui_language.START.Explanations.text[:-2]:
                 labels += f'{label} '
             ui.label(text = labels)
             with ui.row().style('gap:0.0rem'):
-                ui.label(text = self.ui_language.START.Explanations[2][0])
+                ui.label(text = self.ui_language.START.Explanations.text[-2])
                 ui.space().style(f'width:{self.font_size / 2}px')
                 ui.link(
-                    text = self.ui_language.START.Explanations[2][1],
+                    text = self.ui_language.START.Explanations.text[-1],
                     target = '''
                     https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/
                     ''',
                     new_tab = True)
             ui.space()
-            ui.button(text = 'START', on_click = self._open_upload).style(f'font-size:{self.font_size}pt')
+            ui.button(text = self.ui_language.START.Explanations.start, on_click = self._open_upload) \
+                .style(f'font-size:{self.font_size}pt')
             ui.space()
 
     def _disclaimer(self) -> None:
         with (ui.column().classes('w-[60%] items-center') \
                       .style(f'min-width:1000px; font-size:{self.font_size * 0.8}pt')):
-            ui.label(text = self.ui_language.START.Disclaimers[0]).style(f'font-size:{self.font_size}pt')
-            for label in self.ui_language.START.Disclaimers[1:-1]:
-                ui.label(text = ' '.join(label))
+            ui.label(text = self.ui_language.START.Disclaimers.title).style(f'font-size:{self.font_size}pt')
+            labels = ''
+            for label in self.ui_language.START.Disclaimers.text[:-2]:
+                labels += f'{label} '
+            ui.label(text = labels)
             with ui.row().style('gap:0.0rem'):
-                ui.label(text = self.ui_language.START.Disclaimers[-1])
+                ui.label(text = self.ui_language.START.Disclaimers.text[-2])
                 ui.space().style(f'width:{self.font_size * 0.8 / 2}px')
                 ui.link(
-                    text = 'Github.com.',
+                    text = self.ui_language.START.Disclaimers.text[-1],
                     target = 'https://github.com/PumucklRandom/language-decoder/',
                     new_tab = True)
 

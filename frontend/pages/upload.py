@@ -84,10 +84,10 @@ class Upload(Page):
 
     def _header(self) -> None:
         with ui.header():
-            ui.button(text = 'START PAGE', on_click = self._open_start_page)
-            ui.label('UPLOAD').classes('absolute-center')
+            ui.button(text = self.ui_language.UPLOAD.Header.start_page, on_click = self._open_start_page)
+            ui.label(text = self.ui_language.UPLOAD.Header.upload).classes('absolute-center')
             ui.space()
-            ui.button(text = 'DICTIONARIES', on_click = self._open_dictionaries)
+            ui.button(text = self.ui_language.UPLOAD.Header.dictionaries, on_click = self._open_dictionaries)
             ui.button(icon = 'settings', on_click = self._open_settings)
 
     def _center(self) -> None:
@@ -120,14 +120,14 @@ class Upload(Page):
         languages = self.decoder.get_supported_languages()
         with ui.row():
             self.ui_scr_select = ui.select(
-                label = self.ui_language.UPLOAD.Language[0],
+                label = self.ui_language.UPLOAD.Footer.source,
                 value = 'auto',
                 options = ['auto'] + languages) \
                 .props('dense options-dense') \
                 .style('min-width:200px; font-size:12pt')
             ui.space()
             self.ui_tar_select = ui.select(
-                label = self.ui_language.UPLOAD.Language[1],
+                label = self.ui_language.UPLOAD.Footer.target,
                 value = 'english',
                 options = languages) \
                 .props('dense options-dense') \
@@ -136,7 +136,7 @@ class Upload(Page):
             with ui.button(icon = 'save', on_click = self._update_text):
                 if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.save)
             ui.space()
-            with ui.button(text = 'DECODE', on_click = self._open_decoding):
+            with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._open_decoding):
                 if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
             with ui.button(icon = 'delete', on_click = self._clear_text) \
                     .classes('absolute-bottom-right'):
