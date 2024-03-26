@@ -120,6 +120,7 @@ REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
 
 class Language(object):
     def __init__(self, dictionary):
+        self.GENERAL = None
         self.START = None
         self.UPLOAD = None
         self.DECODING = None

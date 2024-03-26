@@ -1,4 +1,9 @@
 {
+    "GENERAL": {
+        "Error": {
+            "internal": "500 Internal Error"
+        }
+    },
     "START": {
         "Explanations": {
             "title": "Explanation:",
@@ -12,6 +17,7 @@
                 "The LanguageDecoder can also be used to create language learning lessons based on the",
                 "Birkenbihl approach."
             ],
+            "link": "https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/",
             "start": "START"
         },
         "Disclaimers": {
@@ -20,7 +26,8 @@
                 "The LanguageDecoder is an open source project and runs under the MIT licence.",
                 "To find out more about the project, visit the LanguageDecoder at",
                 "Github.com."
-            ]
+            ],
+            "link": "https://github.com/PumucklRandom/language-decoder/"
         }
     },
     "UPLOAD": {

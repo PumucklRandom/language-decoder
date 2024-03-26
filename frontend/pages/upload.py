@@ -1,5 +1,6 @@
 import pathlib
 from nicegui import ui, events
+from backend.logger.logger import logger
 from frontend.pages.ui.config import URLS
 from frontend.pages.ui.custom import ui_dialog, abs_top_left
 from frontend.pages.ui.page_abc import Page
@@ -16,48 +17,72 @@ class Upload(Page):
         self.ui_tar_select: ui.select = None  # noqa
 
     def _open_start_page(self) -> None:
-        self._update_text()
-        self.update_url_history()
-        ui.open(f'{URLS.START}')
+        try:
+            self._update_text()
+            self.update_url_history()
+            ui.open(f'{URLS.START}')
+        except Exception as exception:
+            logger.error(f'Error in "_open_start_page" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _open_dictionaries(self) -> None:
-        self._update_text()
-        self.update_url_history()
-        ui.open(f'{URLS.DICTIONARIES}')
+        try:
+            self._update_text()
+            self.update_url_history()
+            ui.open(f'{URLS.DICTIONARIES}')
+        except Exception as exception:
+            logger.error(f'Error in "_open_dictionaries" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _open_settings(self) -> None:
-        self._update_text()
-        self.update_url_history()
-        ui.open(f'{URLS.SETTINGS}')
+        try:
+            self._update_text()
+            self.update_url_history()
+            ui.open(f'{URLS.SETTINGS}')
+        except Exception as exception:
+            logger.error(f'Error in "_open_settings" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _open_decoding(self) -> None:
-        self._update_text()
-        # if self.decoder.source_text:
-        self.update_url_history()
-        ui.open(f'{URLS.DECODING}')
-        # else:
-        #     ui.notify(self.ui_language.UPLOAD.Messages.decode,
-        #               type = 'warning', position = 'top')
+        try:
+            self._update_text()
+            self.update_url_history()
+            ui.open(f'{URLS.DECODING}')
+        except Exception as exception:
+            logger.error(f'Error in "_open_decoding" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _clear_text(self) -> None:
-        # self.decoder.title = ''
-        self.ui_uploader.reset()
-        self.ui_text_box.set_value('')
-        self.decoder.source_text = ''
-        # self.decoder.source_language = 'auto'
-        # self.decoder.target_language = 'english'
+        try:
+            # self.decoder.title = ''
+            self.ui_uploader.reset()
+            self.ui_text_box.set_value('')
+            self.decoder.source_text = ''
+            # self.decoder.source_language = 'auto'
+            # self.decoder.target_language = 'english'
+        except Exception as exception:
+            logger.error(f'Error in "_clear_text" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _load_text(self) -> None:
-        self.ui_title.set_value(self.decoder.title)
-        self.ui_text_box.set_value(self.decoder.source_text)
-        self.ui_scr_select.set_value(self.decoder.source_language)
-        self.ui_tar_select.set_value(self.decoder.target_language)
+        try:
+            self.ui_title.set_value(self.decoder.title)
+            self.ui_text_box.set_value(self.decoder.source_text)
+            self.ui_scr_select.set_value(self.decoder.source_language)
+            self.ui_tar_select.set_value(self.decoder.target_language)
+        except Exception as exception:
+            logger.error(f'Error in "_load_text" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _update_text(self) -> None:
-        self.decoder.title = self.ui_title.value
-        self.decoder.source_text = self.ui_text_box.value
-        self.decoder.source_language = self.ui_scr_select.value
-        self.decoder.target_language = self.ui_tar_select.value
+        try:
+            self.decoder.title = self.ui_title.value
+            self.decoder.source_text = self.ui_text_box.value
+            self.decoder.source_language = self.ui_scr_select.value
+            self.decoder.target_language = self.ui_tar_select.value
+        except Exception as exception:
+            logger.error(f'Error in "_update_text" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
@@ -66,83 +91,106 @@ class Upload(Page):
             event.content.seek(0)
             text = event.content.read().decode('utf-16')
         except Exception:
-            ui.notify(self.ui_language.UPLOAD.Messages.invalid,
-                      type = 'warning', position = 'top')
+            ui.notify(self.ui_language.UPLOAD.Messages.invalid, type = 'warning', position = 'top')
             return
-        self.ui_title.set_value(pathlib.Path(event.name).stem)
-        self.ui_text_box.set_value(text)
-        event.sender.reset()  # noqa upload reset
-        ui.notify(self.ui_language.UPLOAD.Messages.success,
-                  type = 'positive', position = 'top')
+        try:
+            self.ui_title.set_value(pathlib.Path(event.name).stem)
+            self.ui_text_box.set_value(text)
+            event.sender.reset()  # noqa upload reset
+            ui.notify(self.ui_language.UPLOAD.Messages.success, type = 'positive', position = 'top')
+        except Exception as exception:
+            logger.error(f'Error in "_upload_handler" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _on_upload_reject(self) -> None:
-        ui.notify(f'{self.ui_language.UPLOAD.Messages.reject} {self.max_file_size / 10 ** 3} KB',
-                  type = 'warning', position = 'top')
+        try:
+            ui.notify(f'{self.ui_language.UPLOAD.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+                      type = 'warning', position = 'top')
+        except Exception as exception:
+            logger.error(f'Error in "_on_upload_reject" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _dialog(self) -> ui_dialog:
-        return ui_dialog(label_list = self.ui_language.UPLOAD.Dialogs)
+        try:
+            return ui_dialog(label_list = self.ui_language.UPLOAD.Dialogs)
+        except Exception as exception:
+            logger.error(f'Error in "_dialog" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _header(self) -> None:
-        with ui.header():
-            ui.button(text = self.ui_language.UPLOAD.Header.start_page, on_click = self._open_start_page)
-            ui.label(text = self.ui_language.UPLOAD.Header.upload).classes('absolute-center')
-            ui.space()
-            ui.button(text = self.ui_language.UPLOAD.Header.dictionaries, on_click = self._open_dictionaries)
-            ui.button(icon = 'settings', on_click = self._open_settings)
+        try:
+            with ui.header():
+                ui.button(text = self.ui_language.UPLOAD.Header.start_page, on_click = self._open_start_page)
+                ui.label(text = self.ui_language.UPLOAD.Header.upload).classes('absolute-center')
+                ui.space()
+                ui.button(text = self.ui_language.UPLOAD.Header.dictionaries, on_click = self._open_dictionaries)
+                ui.button(icon = 'settings', on_click = self._open_settings)
+        except Exception as exception:
+            logger.error(f'Error in "_header" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _center(self) -> None:
-        with ui.column().classes('w-full items-center'):
-            with ui.card().classes('w-[50%] items-center') \
-                    .style('min-width:1000px; min-height:562px; height:90vh'):
-                with ui.button(icon = 'help', on_click = self._dialog().open) \
-                        .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.help)
-                ui.label(self.ui_language.UPLOAD.Uploads[0]).style('font-size:14pt')
-                self.ui_uploader = ui.upload(
-                    label = self.ui_language.UPLOAD.Uploads[1],
-                    on_upload = self._upload_handler,
-                    on_rejected = self._on_upload_reject,
-                    max_file_size = self.max_file_size,
-                    auto_upload = self.auto_upload,
-                    max_files = self.max_files) \
-                    .props('accept=.txt flat dense')
-                with ui.input(label = self.ui_language.UPLOAD.Title).classes(abs_top_left(130, 160)) as self.ui_title:
-                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
-                self.ui_text_box = ui.textarea(
-                    label = self.ui_language.UPLOAD.Input_txt[0],
-                    placeholder = self.ui_language.UPLOAD.Input_txt[1],
-                    on_change = None) \
-                    .classes('w-full h-full flex-grow') \
-                    .style('min-width:1000px; min-height:562px; font-size:12pt')
-                self._language_selector()
+        try:
+            with (ui.column().classes('w-full items-center')):
+                with ui.card().classes('w-[50%] items-center') \
+                        .style('min-width:1000px; min-height:562px; height:90vh'):
+                    with ui.button(icon = 'help', on_click = self._dialog().open) \
+                            .classes('absolute-top-right'):
+                        if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.help)
+                    ui.label(self.ui_language.UPLOAD.Uploads[0]).style('font-size:14pt')
+                    self.ui_uploader = ui.upload(
+                        label = self.ui_language.UPLOAD.Uploads[1],
+                        on_upload = self._upload_handler,
+                        on_rejected = self._on_upload_reject,
+                        max_file_size = self.max_file_size,
+                        auto_upload = self.auto_upload,
+                        max_files = self.max_files) \
+                        .props('accept=.txt flat dense')
+                    with ui.input(label = self.ui_language.UPLOAD.Title) \
+                            .classes(abs_top_left(130, 160)) as self.ui_title:
+                        if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
+                    self.ui_text_box = ui.textarea(
+                        label = self.ui_language.UPLOAD.Input_txt[0],
+                        placeholder = self.ui_language.UPLOAD.Input_txt[1],
+                        on_change = None) \
+                        .classes('w-full h-full flex-grow') \
+                        .style('min-width:1000px; min-height:562px; font-size:12pt')
+                    self._language_selector()
+        except Exception as exception:
+            logger.error(f'Error in "_center" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _language_selector(self) -> None:
-        languages = self.decoder.get_supported_languages()
-        with ui.row():
-            self.ui_scr_select = ui.select(
-                label = self.ui_language.UPLOAD.Footer.source,
-                value = 'auto',
-                options = ['auto'] + languages) \
-                .props('dense options-dense') \
-                .style('min-width:200px; font-size:12pt')
-            ui.space()
-            self.ui_tar_select = ui.select(
-                label = self.ui_language.UPLOAD.Footer.target,
-                value = 'english',
-                options = languages) \
-                .props('dense options-dense') \
-                .style('min-width:200px; font-size:12pt')
-            ui.space()
-            with ui.button(icon = 'save', on_click = self._update_text):
-                if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.save)
-            ui.space()
-            with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._open_decoding):
-                if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
-            with ui.button(icon = 'delete', on_click = self._clear_text) \
-                    .classes('absolute-bottom-right'):
-                if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.delete)
-            ui.space().style('width:100px')
-            self._load_text()
+        try:
+            languages = self.decoder.get_supported_languages()
+            with ui.row():
+                self.ui_scr_select = ui.select(
+                    label = self.ui_language.UPLOAD.Footer.source,
+                    value = 'auto',
+                    options = ['auto'] + languages) \
+                    .props('dense options-dense') \
+                    .style('min-width:200px; font-size:12pt')
+                ui.space()
+                self.ui_tar_select = ui.select(
+                    label = self.ui_language.UPLOAD.Footer.target,
+                    value = 'english',
+                    options = languages) \
+                    .props('dense options-dense') \
+                    .style('min-width:200px; font-size:12pt')
+                ui.space()
+                with ui.button(icon = 'save', on_click = self._update_text):
+                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.save)
+                ui.space()
+                with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._open_decoding):
+                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
+                with ui.button(icon = 'delete', on_click = self._clear_text) \
+                        .classes('absolute-bottom-right'):
+                    if self.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.delete)
+                ui.space().style('width:100px')
+                self._load_text()
+        except Exception as exception:
+            logger.error(f'Error in "_language_selector" with exception:\n{exception}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def page(self) -> None:
         self.__init_ui__()

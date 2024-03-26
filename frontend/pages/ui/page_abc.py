@@ -73,8 +73,7 @@ class Page(ABC, ui.page):
                   dark = COLORS.DARK.VAL, positive = COLORS.POSITIVE.VAL, negative = COLORS.NEGATIVE.VAL,
                   info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
         ui.add_head_html(HTML.FLEX_GROW)
-        ui.add_head_html(HTML.HEADER_STICKY)
-        print(self.decoder.uuid)
+        # ui.add_head_html(HTML.HEADER_STICKY)
 
     @property
     def URL(self) -> str:
