@@ -1,0 +1,292 @@
+GENERAL:
+    Error:
+        internal: '500 Internal Error'
+START:
+    Explanations:
+        title: 'Explanation:'
+        text: [
+            'The LanguageDecoder translates a given text from the source language
+                to the desired target language word by word (decoding).',
+            'Therefor the Google translator is used in the backend.',
+            'To improve the translation, a dictionary can be created 
+                to automatically correct common translation errors.',
+            'Afterwards, the decoded text can be exported to a PDF file.',
+            'The LanguageDecoder can also be used to create language learning lessons based
+                on the',
+            'Birkenbihl approach.'
+        ]
+        link: 'https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/'
+        start: 'START'
+    Disclaimers:
+        title: 'Disclaimer:'
+        text: [
+            'The LanguageDecoder is an open source project and runs under the MIT licence.',
+            'To find out more about the project, visit the LanguageDecoder at',
+            'Github.com.'
+        ]
+        link: 'https://github.com/PumucklRandom/language-decoder/'
+UPLOAD:
+    Header:
+        start_page: 'START PAGE'
+        upload: 'UPLOAD'
+        dictionaries: 'DICTIONARIES'
+    Dialogs: [
+        'Here you can either upload a text file via the uploader or enter some text in the text area.',
+        '/n', '/N', '/n',
+        'At the bottom, below the text area, you can select the source language and the desired target language.',
+        'If you have finished entering the text input, you can start the decoding process with the "DECODE" button.',
+        'Depending on the amount of words entered, the decoding process may take a while.',
+        '/n',
+        'To clear the currently entered text you can click on the "trash bin" button at the bottom right side.'
+    ]
+    Uploads: [
+        'Upload a text file or enter some text below.',
+        'Select file'
+    ]
+    Title: 'Title'
+    Input_txt: [
+        'Enter some text',
+        'start typing'
+    ]
+    Messages:
+        decode: 'Upload a text file or enter some text below.'
+        invalid: 'Invalid text file. Use a different one or paste some text below.'
+        success: 'Upload finished.'
+        reject: 'Upload a text file with max:'
+    Tips:
+        help: 'Need help?'
+        title: 'Title of text'
+        save: 'Save text'
+        decode: 'Start decoding'
+        delete: 'Clear text'
+    Footer:
+        source: 'Source language'
+        target: 'Target language'
+        decode: 'DECODE'
+DECODING:
+    Header:
+        go_back: 'GO BACK TO UPLOAD'
+        decoding: 'DECODING'
+        dictionaries: 'DICTIONARIES'
+    Dialogs: [
+        'Here you can see the result of th decoding process.',
+        'For each input word should be a corresponding translation.',
+        'In case you are not satisfied with the translation provided by google,
+            you may correct the translation directly in the input field.',
+        'If an error occurs frequently, it is better to create a dictionary for it on the dictionary page
+            in order to set the corrections automatically.',
+        '/n', '/N', '/n',
+        'At the footer are several actions you may choose from:',
+        '/n',
+        'The first option on the left side is a simple find and replace function.',
+        '/n',
+        'With the second "IMPORT" option at the left side, you can import a previously exported decoding state.',
+        '/n',
+        'The third option "APPLY DICT" is used to apply the currently selected dictionary to the decoded words.',
+        '/n',
+        'To save your last changes, use the "SAVE" button in the middle of the footer.',
+        '/n',
+        'Once you have finished the decoding, you can click the "CREATE PDF" button
+            to view and download a pdf file from the decoding work.',
+        '/n',
+        'In case you want to continue with the decoding at a different time,
+            you can use the "EXPORT" button to create an export of your current work state and import it again later.',
+        '/n',
+        'The last button on the right side of the footer is a dedicated sentence view
+            of the current text for better understanding.'
+    ]
+    Dialogs_import: [
+        'Upload a previously exported json file.',
+        'Select file'
+    ]
+    Dialogs_pdf:
+        view: 'VIEW PDF'
+        download: 'DOWNLOAD'
+        text: [
+            'The pdf file is ready!',
+            'You can either first view the document:',
+            'Or just download the document:'
+        ]
+    Messages:
+        decoding: 'Decoding words:'
+        reject: 'Upload a json file with max:'
+        invalid: 'Invalid json file. Upload a previously exported json file.'
+    Tips:
+        help: 'Need help?'
+        replace: 'Replace'
+        import_: 'Import words'
+        save: 'Save decoding'
+        export: 'Export words'
+        view: 'Sentence view'
+    Footer:
+        import_: 'IMPORT'
+        apply: 'APPLY DICT'
+        create: 'CREATE PDF'
+        export: 'EXPORT'
+        replace: 'APPLY'
+DICTIONARY:
+    Header:
+        go_back: 'GO BACK'
+        dictionaries: 'DICTIONARIES'
+    Dialogs_select: [
+        'Here you can select between previously created dictionaries or create a new one.',
+        '/n',
+        'If you have already selected a dictionary,
+            you can deselect it by clicking the "X" button inside the text field.',
+        '/n',
+        'To rename an existing dictionary, select the dictionary you want to rename.',
+        'Check the "Rename dictionary" option and enter a new dictionary name.',
+        '/n',
+        'To remove a dictionary, select the dictionary to be deleted and press the upper "trash bin" button.'
+    ]
+    Selector:
+        rename: 'Rename dictionary'
+        select: 'Select or create a dictionary'
+    Dialogs_table: [
+        'Here you can customize the currently selected dictionary.',
+        '/n',
+        'With the "+" and "-" buttons you can add or remove entries in the dictionary.',
+        '/n',
+        'To clear the currently selected dictionary, press the lower "trash bin" button.',
+        '/n', '/N', '/n',
+        'Click on the "SAVE" button to store and apply your values.',
+        '/n',
+        'With the "IMPORT" and "EXPORT" options, you can import and export a dictionary.'
+    ]
+    Table:
+        key: 'Source word'
+        val: 'Target word'
+    Dialogs_import: [
+        'Upload a previously exported json file.',
+        'Select file'
+    ]
+    Messages:
+        add_row: 'Please select or create a dictionary.'
+        reject: 'Upload a json file with max:'
+        invalid: 'Invalid json file. Upload a previously exported json file.'
+    Tips:
+        help: 'Need help?'
+        delete: 'Delete dictionary'
+        clear: 'Clear dictionary'
+        save: 'Save dictionary'
+        import_: 'Import dictionary'
+        export: 'Export dictionary'
+    Footer:
+        import_: 'IMPORT'
+        export: 'EXPORT'
+SETTINGS:
+    Header:
+        go_back: 'GO BACK'
+        dictionaries: 'SETTINGS'
+    Panel: [
+        'INTERFACE SETTINGS',
+        'REPLACEMENTS',
+        'PDF SETTINGS',
+        'ADVANCED SETTINGS'
+    ]
+    Dialogs_interface: [
+        'On this tab, you can change basic interface settings.',
+        '/n', '/N', '/n',
+        'The first Section contains switches for enabling or disabling various settings such as:
+            "dark mode", "tooltips" and "input text reformation".',
+        'With the "reformation toggle", the input text will be reformatted with "regular expression",
+            to be able to distinguish the words from each other for the decoding process.',
+        '/n', '/N', '/n',
+        'In the second Section is a selection to change the current display language.',
+        '/n', '/N', '/n',
+        'The third sections provides a proxy configuration option and a button for checking the internet connection.',
+        '/n', '/N', '/n',
+        'Click the "APPLY" button to confirm your changes.',
+        '/n', '/N', '/n',
+        'To reset the "replacement dictionary", just press the button on the bottom left side of the tab.'
+    ]
+    Interface:
+        text: [
+            'Dark mode',
+            'Show tooltips',
+            'Reformat input text',
+            'Select language',
+            'Proxy configuration:'
+        ]
+        check: 'CHECK CONNECTION'
+        apply: 'APPLY'
+    Dialogs_replace: [
+        'On this tab, you can define a language independent "replacement dictionary" for the input text.',
+        'Under Character, you can enter special characters, which should be replaced.',
+        'Under Substitute, you can enter the characters, which should be used instead.',
+        'With the "+" and "-" buttons you can add or remove entries in the dictionary.',
+        '/n', '/N', '/n',
+        'Click on the "SAVE" button to store and apply your values.',
+        '/n',
+        'To reset the "replacement dictionary", just press the button on the bottom left side of the tab.',
+        '/n',
+        'The "Trash bin" button at the bottom right, deletes all dictionary entries at once.'
+    ]
+    Table:
+        key: 'Character'
+        val: 'Substitute'
+    Dialogs_pdf: [
+        'On this tab, you can change the "text layout" settings for the created PDF file.',
+        'It is not recommended to change these settings unless you know what you do.',
+        '/n',
+        'If you want to find out more about the use of the "pdf layout" settings, you
+            have to take a look at the backend code under: "backend/decoder/pdf.py".',
+        '/n', '/N', '/n',
+        'Click on the "SAVE" button to store and apply your values.',
+        '/n',
+        'To reset the "pdf layout" settings, just press the button on the bottom left side of the tab.'
+    ]
+    Pdf: [
+        'Use page seperator [0, 1]',
+        'Tab size between words',
+        'Characters per line',
+        'Lines per page',
+        'Title font size',
+        'Text font size',
+        'Page width',
+        'Title height',
+        'Header height',
+        'Line height'
+    ]
+    Dialogs_adv: [
+        'On this tab, you can change the "regular expression" settings for the input text.',
+        'It is not recommended to change these settings, unless you know what you do.',
+        '/n',
+        'If you want to find out more about the use of the "regular expression" settings,
+            you have to take a look at the backend code under: "backend/decoder/language_decoder.py".',
+        '/n', '/N', '/n',
+        'Click on the "SAVE" button to store and apply your values.',
+        '/n',
+        'To reset the "regular expression" settings, just press the button on the bottom left side of the tab.'
+    ]
+    Advanced: [
+        'Punctuations',
+        'Starting Marks',
+        'Finishing Marks',
+        'Number Marks',
+        'Opening Marks',
+        'Closing Marks',
+        'Quotations'
+    ]
+    Messages:
+        connect_check:
+            - 'Connection successful'
+            - '500 Internal server error'
+    Tips:
+        interface:
+            help: 'Need help?'
+            apply: 'Apply settings'
+            reset: 'Reset settings'
+        replace:
+            help: 'Need help?'
+            save: 'Save settings'
+            reset: 'Reset settings'
+            delete: 'Clear settings'
+        pdf:
+            help: 'Need help?'
+            save: 'Save settings'
+            reset: 'Reset settings'
+        advanced:
+            help: 'Need help?'
+            save: 'Save settings'
+            reset: 'Reset settings'

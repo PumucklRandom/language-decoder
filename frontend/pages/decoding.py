@@ -227,7 +227,7 @@ class Decoding(Page):
 
     def _dialog_sentences(self) -> None:
         try:
-            ui_dialog(label_list = self.decoder.sentences).open()
+            ui_dialog(label_list = self.decoder.sentences, classes = 'min-w-[80%]', style = 'width:200px').open()
         except Exception as exception:
             logger.error(f'Error in "_dialog_sentences" with exception:\n{exception}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')

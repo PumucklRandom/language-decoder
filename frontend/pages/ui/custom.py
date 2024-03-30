@@ -6,17 +6,19 @@ from frontend.pages.ui.config import COLORS, DEFAULT_COLS, SIZE_FACTOR
 
 
 # .style('min-width:500px; max-height:80vh', 'min-width:500px;)
-def ui_dialog(label_list: List[str], space: int = 10) -> ui.dialog:
+def ui_dialog(label_list: List[str], classes: str = 'max-w-[80%]',
+              style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
     with ui.dialog() as dialog:
-        with ui.card().classes('min-w-[80%]').style('width:200px; min-height:112px; gap:0.0rem'):
+        with ui.card().classes(f'{classes}') \
+                .style(f'{style}; min-height:112px; font-size:11pt; gap:0.0rem'):
             ui.button(icon = 'close', on_click = dialog.close) \
                 .classes('absolute-top-right') \
                 .props('dense round size=12px')
             ui.space().style(f'height:{space}px')
             for label in label_list:
-                if label == '\n':
+                if label == '/n':
                     ui.space().style(f'height:{space}px')
-                elif label == '/n':
+                elif label == '/N':
                     ui.separator().style(f'height:{2}px')
                 else:
                     ui.label(label)
@@ -70,12 +72,12 @@ class Table(ui.table):
     def _add_row(self, event: events.GenericEventArguments) -> None:
         _id = max([row.get('id') for row in self.rows] + [-1]) + 1
         if not event.args:
-            self.rows.insert(0, {'id': _id, 'key': '', 'val': ''})
+            self.rows.insert(0, {'id': _id, 'source': '', 'target': ''})
             self.update()
             return
         for i, row in enumerate(self.rows):
             if row.get('id') == event.args.get('id'):
-                self.rows.insert(i + 1, {'id': _id, 'key': '', 'val': ''})
+                self.rows.insert(i + 1, {'id': _id, 'source': '', 'target': ''})
         self.update()
 
     def _del_row(self, event: events.GenericEventArguments) -> None:
@@ -87,26 +89,26 @@ class Table(ui.table):
             if row.get('id') == event.args.get('id'):
                 row.update(event.args)
 
-    def _set_type(self, vals) -> List[Union[str, float]]:
-        return vals
+    def _set_type(self, values) -> List[Union[str, float]]:
+        return values
 
-    def set_values(self, keys: Union[Dict, Iterable[str]],
-                   vals: Iterable[Union[str, float]] = None) -> None:
-        if isinstance(keys, dict):
-            vals = keys.values()
-            keys = keys.keys()
-        vals = self._set_type(vals)
+    def set_values(self, sources: Union[Dict, Iterable[str]],
+                   targets: Iterable[Union[str, float]] = None) -> None:
+        if isinstance(sources, dict):
+            targets = sources.values()
+            sources = sources.keys()
+        targets = self._set_type(targets)
         self.rows.clear()
-        for i, (key, val) in enumerate(zip(keys, vals)):
-            self.rows.append({'id': i, 'key': key, 'val': val})
+        for i, (source, target) in enumerate(zip(sources, targets)):
+            self.rows.append({'id': i, 'source': source, 'target': target})
         self.update()
 
     def get_values(self, as_dict: bool = False) -> Union[Dict, Tuple[List, List]]:
-        keys = [row.get('key') for row in self.rows]
-        vals = self._set_type([row.get('val') for row in self.rows])
+        sources = [row.get('source') for row in self.rows]
+        targets = self._set_type([row.get('target') for row in self.rows])
         if as_dict:
-            return dict(zip(keys, vals))
-        return keys, vals
+            return dict(zip(sources, targets))
+        return sources, targets
 
 
 class UITable(Table):
@@ -114,12 +116,12 @@ class UITable(Table):
                  row_key: str = 'id', dark_mode: bool = True) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key)
         if dark_mode:
-            self.key_color = COLORS.GREY_10.VAL
-            self.val_color = COLORS.BLUE_GREY_10.VAL
+            self.scr_color = COLORS.GREY_10.VAL
+            self.tar_color = COLORS.BLUE_GREY_10.VAL
             self.btn_color = COLORS.CYAN_10.VAL
         else:
-            self.key_color = COLORS.GREY_1.VAL
-            self.val_color = COLORS.BLUE_GREY_1.VAL
+            self.scr_color = COLORS.GREY_1.VAL
+            self.tar_color = COLORS.BLUE_GREY_1.VAL
             self.btn_color = COLORS.CYAN_1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
@@ -141,12 +143,12 @@ class UITable(Table):
     def _body(self) -> str:
         return f'''
         <q-tr :props="props">
-            <q-td key="key" style="background-color:{self.key_color}" :props="props">
-                <q-input v-model="props.row.key" dense borderless debounce="{CONFIG.debounce}"
+            <q-td key="source" style="background-color:{self.scr_color}" :props="props">
+                <q-input v-model="props.row.source" dense borderless debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
-            <q-td key="val" style="background-color:{self.val_color}" :props="props">
-                <q-input v-model="props.row.val" dense borderless debounce="{CONFIG.debounce}"
+            <q-td key="target" style="background-color:{self.tar_color}" :props="props">
+                <q-input v-model="props.row.target" dense borderless debounce="{CONFIG.debounce}"
                 @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
             </q-td>
             <q-td auto-width style="background-color:{self.btn_color}">
@@ -195,12 +197,12 @@ class UIGrid(Table):
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
-                    <q-input v-model="props.row.key" dense outlined 
+                    <q-input v-model="props.row.source" dense outlined 
                     debounce="{CONFIG.debounce}" bg-color={self.scr_color}
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input v-model="props.row.val" dense outlined
+                    <q-input v-model="props.row.target" dense outlined
                     debounce="{CONFIG.debounce}" bg-color={self.tar_color}
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
@@ -217,17 +219,18 @@ class UIList(Table):
         self.props('hide-header separator=none')
         self.style('min-width:400px')
 
-    def _set_type(self, vals) -> List[float]:
+    def _set_type(self, values) -> List[float]:
         if self.val_type == 'number':
-            return list(map(float, vals))
-        return vals
+            return list(map(float, values))
+        return values
 
     def _body(self) -> str:
         return f'''
             <q-tr :props="props">
-                <q-td key="key" :props="props">
-                    {{{{ props.row.key }}}}
-                    <q-input v-model="props.row.val" type="{self.val_type}" dense outlined debounce="{CONFIG.debounce}"
+                <q-td key="source" :props="props">
+                    {{{{ props.row.source }}}}
+                    <q-input v-model="props.row.target" type="{self.val_type}"
+                     dense outlined debounce="{CONFIG.debounce}"
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
             </q-tr>

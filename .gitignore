@@ -12,5 +12,4 @@ LanguageDecoder.spec
 *.txt
 *.pfx
 
-!/frontend/pages/ui/labels/*.json
 !requirements.txt

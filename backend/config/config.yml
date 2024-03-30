@@ -1,7 +1,7 @@
 host: '127.0.0.1'
 port: 8080
 title: 'LanguageDecoder'
-favicon: 'pages/icon/LD-icon.png'
+favicon: 'pages/ui/icon/LD-icon.png'
 dark: true
 reconnect_timeout: 3
 native: false   # native = true (window mode)

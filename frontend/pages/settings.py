@@ -14,6 +14,7 @@ class Settings(Page):
     def __init__(self) -> None:
         super().__init__(url = URLS.SETTINGS)
         self.dicts: Dicts = Dicts()
+        self.ui_dark_mode: ui.checkbox = None  # noqa
         self.ui_table: UITable = None  # noqa
         self.ui_pdf_list: UIList = None  # noqa
         self.ui_adv_list: UIList = None  # noqa
@@ -23,6 +24,7 @@ class Settings(Page):
             self._update_replacements()
             self._update_pdf_params()
             self._update_adv_params()
+            self._refresh_interface()
             # do not update url history in settings
             ui.open(f'{self.url_history[0]}')
         except Exception as exception:
@@ -32,6 +34,7 @@ class Settings(Page):
     def _refresh_interface(self) -> None:
         try:
             self.decoder.proxies = self.settings.get_proxies()
+            self.settings.dark_mode = self.ui_dark_mode.value
             ui.open(f'{self.URL}')
         except Exception as exception:
             logger.error(f'Error in "_refresh_interface" with exception:\n{exception}')
@@ -45,6 +48,7 @@ class Settings(Page):
             self.settings.language = 'english'
             self.settings.proxy_http = ''
             self.settings.proxy_https = ''
+            self.ui_dark_mode.value = self.settings.dark_mode
         except Exception as exception:
             logger.error(f'Error in "_reset_interface" with exception:\n{exception}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -165,14 +169,14 @@ class Settings(Page):
 
     def _dialog_pdf_settings(self) -> ui_dialog:
         try:
-            return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_adv)
+            return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_pdf)
         except Exception as exception:
             logger.error(f'Error in "_dialog_pdf_settings" with exception:\n{exception}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _dialog_adv_settings(self) -> ui_dialog:
         try:
-            return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_interface)
+            return ui_dialog(label_list = self.ui_language.SETTINGS.Dialogs_adv)
         except Exception as exception:
             logger.error(f'Error in "_dialog_adv_settings" with exception:\n{exception}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -223,9 +227,11 @@ class Settings(Page):
     def _interface(self) -> None:
         try:
             with ((ui.card().style('width:400px'))):
-                ui.checkbox(self.ui_language.SETTINGS.Interface.text[0]).bind_value(self.settings, 'dark_mode')
+                self.ui_dark_mode = ui.checkbox(self.ui_language.SETTINGS.Interface.text[0],
+                                                value = self.settings.dark_mode)
                 ui.checkbox(self.ui_language.SETTINGS.Interface.text[1]).bind_value(self.settings, 'show_tips')
                 ui.checkbox(self.ui_language.SETTINGS.Interface.text[2]).bind_value(self.decoder, 'reformatting')
+                ui.separator()
                 ui.select(
                     label = self.ui_language.SETTINGS.Interface.text[3],
                     value = 'english',
@@ -253,8 +259,8 @@ class Settings(Page):
 
     def _replacements(self) -> None:
         try:
-            REPLACE_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
-            REPLACE_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
+            REPLACE_COLS[0].update({'label': self.ui_language.SETTINGS.Table.key})
+            REPLACE_COLS[1].update({'label': self.ui_language.SETTINGS.Table.val})
             self.ui_table = UITable(columns = REPLACE_COLS, dark_mode = self.settings.dark_mode) \
                 .style('min-width:450px; max-height:80vh')
             ui.separator()

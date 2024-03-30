@@ -179,7 +179,7 @@ class LanguageDecoder(object):
         tar_sentences = self.translate_source(scr_sentences)
         self.sentences.clear()
         for source, target in zip(scr_sentences, tar_sentences):
-            self.sentences.extend([source, target, '/n'])
+            self.sentences.extend([source, target, '/N'])
         self.sentences.pop(-1)
 
     def find_replace(self, find: str, repl: str) -> None:

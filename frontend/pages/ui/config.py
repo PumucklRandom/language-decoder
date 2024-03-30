@@ -1,5 +1,5 @@
 import os
-import json
+import yaml
 from typing import List
 from copy import deepcopy
 from nicegui import ui
@@ -105,8 +105,8 @@ ui.select.default_props('outlined')
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 
 DEFAULT_COLS = [
-    {'name': 'key', 'field': 'key', 'required': True, 'align': 'left'},
-    {'name': 'val', 'field': 'val', 'required': True, 'align': 'left'},
+    {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
+    {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
 ]
 
 DICT_COLS = deepcopy(DEFAULT_COLS)
@@ -136,24 +136,24 @@ class Language(object):
 
 
 def get_languages() -> List[str]:
-    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels')
+    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
     languages = list()
     for language_file in os.listdir(label_folder):
-        if language_file.endswith('.json'):
+        if language_file.endswith('.yml'):
             languages.append(os.path.splitext(language_file)[0])
     return languages
 
 
 def load_language(language: str = 'english') -> Language:
     logger.info('load language')
-    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.json')
+    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.yml')
     if not os.path.isfile(language_path):
         message = f'Language file not found at "{language_path}"'
         logger.critical(message)
         raise ConfigError(message)
     try:
         with open(file = language_path, mode = 'r', encoding = 'utf-8') as config_file:
-            language = dict_as_object(dictionary = json.load(config_file), object_type = Language)
+            language = dict_as_object(dictionary = yaml.safe_load(config_file), object_type = Language)
             logger.info('parsed language')
             return language
     except Exception as e:
