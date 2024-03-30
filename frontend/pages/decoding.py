@@ -114,12 +114,12 @@ class Decoding(Page):
             _hash = hash(self.decoder.source_text)
             if self.s_hash == _hash:
                 return
+            self.s_hash = _hash
             if not self.decoder.source_text:
                 self.decoder.source_words = []
                 self.decoder.target_words = []
                 self.decoder.sentences = []
                 return
-            self.s_hash = _hash
             self.decoder.split_text()
             self.len_words = len(self.decoder.source_words)
         except Exception as exception:
@@ -132,8 +132,8 @@ class Decoding(Page):
             if self.d_hash == _hash:
                 self._table.refresh()
                 return
+            self.d_hash = _hash
             if self.decoder.source_text:
-                self.d_hash = _hash
                 # FIXME: strange JavaScript TimeoutError with notification (over ~380 words)
                 #   but applications seems to run anyway
                 notification = ui.notification(
