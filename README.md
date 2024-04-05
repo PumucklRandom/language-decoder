@@ -15,6 +15,7 @@ on the
 ![Upload](_data/upload.png)
 ![Decoding](_data/decoding.png)
 ![Dicts](_data/dicts.png)
+![PDF](_data/pdf.png)
 
 ### Usage
 
