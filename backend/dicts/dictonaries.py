@@ -2,7 +2,7 @@ import os
 import json
 from uuid import UUID
 from typing import Dict, Union
-from backend.config.config import REPLACEMENTS
+from backend.config.config import CONFIG, REPLACEMENTS
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger
 
@@ -23,6 +23,8 @@ class Dicts(object):
         """
         :param uuid: user uuid to identify correspondent dictionaries
         """
+        if CONFIG.on_prem:
+            uuid = '00000000-0000-0000-0000-000000000000'
         json_path = os.path.join(self.folder_path, f'{uuid}.json')
         if not os.path.isfile(json_path):
             self.save(uuid = uuid)
@@ -43,6 +45,8 @@ class Dicts(object):
         :param uuid: user uuid to identify correspondent dictionaries
         """
         try:
+            if CONFIG.on_prem:
+                uuid = '00000000-0000-0000-0000-000000000000'
             os.makedirs(self.folder_path, exist_ok = True)
             json_path = os.path.join(self.folder_path, f'{uuid}.json')
             data = {'replacements': self.replacements, 'dictionaries': self.dictionaries}

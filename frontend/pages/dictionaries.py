@@ -170,7 +170,8 @@ class Dictionaries(Page):
             data = event.content.read().decode('utf-8')
             dict_name = pathlib.Path(event.name).stem
             self.dicts.import_(dict_name = dict_name, data = data)
-            self.ui_selector.value = dict_name
+            self.ui_selector._handle_new_value(dict_name)
+            self.ui_selector.set_value(dict_name)
             self._load_table()
         except DictionaryError:
             ui.notify(self.ui_language.DICTIONARY.Messages.invalid, type = 'warning', position = 'top')
@@ -244,7 +245,6 @@ class Dictionaries(Page):
                     new_value_mode = 'add-unique',
                     on_change = self._select_table,
                     clearable = True) \
-                    .props() \
                     .style('width:350px')
                 with ui.button(icon = 'help', on_click = self._dialog_select().open) \
                         .classes('absolute-top-right'):
