@@ -163,6 +163,9 @@ class LanguageDecoder(object):
     def _wrap_word(self, source_word: str, target_word: str) -> str:
         # make sure target word is stripped
         target_word = self._strip_word(target_word)
+        # check source word for all not alphanumeric
+        if all(not char.isalnum() for char in source_word):
+            return source_word
         # get marks at the beginning of the word
         beg = re.search('^\W*', source_word).group()
         # get marks at the end of the word

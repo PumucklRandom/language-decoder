@@ -10,6 +10,8 @@ REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '
 
 
 class Config(object):
+    on_prem: bool
+    debounce: int
     host: str
     port: int
     title: str
@@ -22,7 +24,6 @@ class Config(object):
     frameless: bool
     reload: bool
     storage_secret: str
-    debounce: int
 
     class Upload:
         max_file_size: int
