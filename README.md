@@ -43,6 +43,10 @@ Firefox and a free port on localhost port 8080 (127.0.0.1:8080).
 If this port is occupied, the IP address and the port can be adjusted as
 desired in the config file. (language_decoder/backend/config/config.yml)
 
+### Known issues
+
+Windows Security blocks application.
+
 ### Credits
 
 [Nicegui](https://nicegui.io/) for the grafical user interface\
