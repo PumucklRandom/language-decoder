@@ -45,7 +45,7 @@ desired in the config file. (language_decoder/backend/config/config.yml)
 
 ### Known issues
 
-Windows Security blocks application.
+Windows Security blocks application. (Workaround: Run application as admin)
 
 ### Credits
 
