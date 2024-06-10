@@ -1,21 +1,23 @@
-from nicegui import ui
+import traceback
+from nicegui import ui, Client
 from backend.logger.logger import logger
 from frontend.pages.ui.config import URLS
 from frontend.pages.ui.page_abc import Page
 
 
 class Start(Page):
+    _URL = URLS.START
 
     def __init__(self) -> None:
-        super().__init__(url = URLS.START)
+        super().__init__()
         self.font_size = 14
 
     def _open_upload(self) -> None:
         try:
             self.update_url_history()
             ui.open(f'{URLS.UPLOAD}')
-        except Exception as exception:
-            logger.error(f'Error in "_open_upload" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_open_upload" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _center(self) -> None:
@@ -24,8 +26,8 @@ class Start(Page):
                 self._explanation()
                 ui.separator()
                 self._disclaimer()
-        except Exception as exception:
-            logger.error(f'Error in "_center with" exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_center with" exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _explanation(self) -> None:
@@ -50,8 +52,8 @@ class Start(Page):
                 ui.button(text = self.ui_language.START.Explanations.start, on_click = self._open_upload) \
                     .style(f'font-size:{self.font_size}pt')
                 ui.space()
-        except Exception as exception:
-            logger.error(f'Error in "_explanation" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_explanation" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _disclaimer(self) -> None:
@@ -72,10 +74,10 @@ class Start(Page):
                         target = self.ui_language.START.Disclaimers.link,
                         new_tab = True
                     )
-        except Exception as exception:
-            logger.error(f'Error in "_disclaimer" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_disclaimer" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def page(self) -> None:
-        self.__init_ui__()
+    async def page(self, client: Client) -> None:
+        await self.__init_ui__(client = client)
         self._center()

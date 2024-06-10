@@ -1,9 +1,11 @@
 import os
 import json
 import yaml
+import traceback
+from copy import copy
 from typing import Tuple
 from backend.error.error import ConfigError
-from backend.logger.logger import logger
+from backend.logger.logger import logger, stream_handler
 
 # A mapping dict to replace language independent characters for the source text
 REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '-', '–': '-'}
@@ -11,6 +13,8 @@ REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '
 
 class Config(object):
     on_prem: bool
+    stream_handler: bool
+    session_time: int
     debounce: int
     host: str
     port: int
@@ -60,8 +64,11 @@ class Config(object):
     def __str__(self) -> str:
         return self.__dict__.__str__()
 
+    def copy(self):
+        return copy(self)
 
-def dict_as_object(dictionary: dict, object_type: type) -> object:
+
+def dict_as_object(dictionary: dict, object_type: type) -> type(object):
     return json.loads(json.dumps(dictionary), object_hook = object_type)
 
 
@@ -77,10 +84,12 @@ def load_config(config_path: str = 'config.yml') -> Config:
             config = dict_as_object(dictionary = yaml.safe_load(config_file), object_type = Config)
             logger.info('parsed config')
             return config
-    except Exception as exception:
-        message = f'Could not parse config file with exception:\n{exception}'
+    except Exception:
+        message = f'Could not parse config file with exception:\n{traceback.format_exc()}'
         logger.critical(message)
         raise ConfigError(message)
 
 
 CONFIG = load_config()
+if not CONFIG.stream_handler:
+    logger.removeHandler(stream_handler)

@@ -2,12 +2,14 @@ import os
 import yaml
 from typing import List
 from copy import deepcopy
-from nicegui import ui
+from nicegui import ui, app
 from backend.config.config import CONFIG, dict_as_object
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
 
-SIZE_FACTOR = 10
+app.storage.max_tab_storage_age = CONFIG.session_time
+
+SIZE_FACTOR = 11
 
 
 class URLS(object):
@@ -22,7 +24,7 @@ class URLS(object):
 class COLORS:
     class PRIMARY:
         KEY = 'primary'
-        VAL = '#409696'  # 409696
+        VAL = '#409696'
 
     class SECONDARY:
         KEY = 'secondary'

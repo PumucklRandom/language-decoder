@@ -1,5 +1,6 @@
 import pathlib
-from nicegui import ui, events
+import traceback
+from nicegui import ui, events, Client
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger
 from backend.dicts.dictonaries import Dicts
@@ -9,9 +10,10 @@ from frontend.pages.ui.page_abc import Page
 
 
 class Dictionaries(Page):
+    _URL = URLS.DICTIONARIES
 
     def __init__(self) -> None:
-        super().__init__(url = URLS.DICTIONARIES)
+        super().__init__()
         self.dicts: Dicts = Dicts()
         self.ui_rename_flag: ui.checkbox = None  # noqa
         self.ui_selector: ui.select = None  # noqa
@@ -23,8 +25,8 @@ class Dictionaries(Page):
             self.update_url_history()
             i = 1 if self.url_history[0] == self.URL else 0
             ui.open(f'{self.url_history[i]}')
-        except Exception as exception:
-            logger.error(f'Error in "_open_previous_url" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_open_previous_url" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _open_settings(self) -> None:
@@ -32,33 +34,35 @@ class Dictionaries(Page):
             self._save_dict()
             self.update_url_history()
             ui.open(f'{URLS.SETTINGS}')
-        except Exception as exception:
-            logger.error(f'Error in "_open_settings" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_open_settings" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _clear_table(self) -> None:
         try:
-            self.dicts.dictionaries.get(self.decoder.dict_name, {}).clear()
+            self.dicts.dictionaries.get(self.state.dict_name, {}).clear()
             self.ui_table.rows.clear()
             self.ui_table.update()
-        except Exception as exception:
-            logger.error(f'Error in "_clear_table" with exception:\n{exception}')
+            # self.dicts.save(uuid = self.state.uuid)
+        except Exception:
+            logger.error(f'Error in "_clear_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _delete_table(self) -> None:
         try:
-            self._remove_select_option(self.decoder.dict_name)
-            self.dicts.dictionaries.pop(self.decoder.dict_name, {})
+            self._remove_select_option(self.state.dict_name)
+            self.dicts.dictionaries.pop(self.state.dict_name, {})
             self.ui_selector.set_value(None)
-        except Exception as exception:
-            logger.error(f'Error in "_delete_table" with exception:\n{exception}')
+            # self.dicts.save(uuid = self.state.uuid)
+        except Exception:
+            logger.error(f'Error in "_delete_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _load_table(self) -> None:
         try:
-            self.ui_table.set_values(self.dicts.dictionaries.get(self.decoder.dict_name, {}))
-        except Exception as exception:
-            logger.error(f'Error in "_load_table" with exception:\n{exception}')
+            self.ui_table.set_values(self.dicts.dictionaries.get(self.state.dict_name, {}))
+        except Exception:
+            logger.error(f'Error in "_load_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _select_table(self) -> None:
@@ -71,98 +75,97 @@ class Dictionaries(Page):
             if self.ui_rename_flag.value:
                 self._rename_table()
                 return
-            self._update_dict()
-            self.decoder.dict_name = self.ui_selector.value
-            if self.decoder.dict_name not in self.dicts.dictionaries.keys():
-                self.dicts.dictionaries[self.decoder.dict_name] = {}
+            self._update_dict()  # self._save_dict()
+            self.state.dict_name = self.ui_selector.value
+            if self.state.dict_name not in self.dicts.dictionaries.keys():
+                self.dicts.dictionaries[self.state.dict_name] = {}
             self._load_table()
-            self.dicts.save(uuid = self.decoder.uuid)
-        except Exception as exception:
-            logger.error(f'Error in "_select_table" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_select_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _rename_table(self) -> None:
         try:
             self.ui_rename_flag.value = False
-            self._remove_select_option(self.decoder.dict_name)
-            self.dicts.dictionaries.pop(self.decoder.dict_name, {})
-            self.decoder.dict_name = self.ui_selector.value
-            self._save_dict()
+            self._remove_select_option(self.state.dict_name)
+            self.dicts.dictionaries.pop(self.state.dict_name, {})
+            self.state.dict_name = self.ui_selector.value
             self.ui_selector.update()
-        except Exception as exception:
-            logger.error(f'Error in "_rename_table" with exception:\n{exception}')
+            # self.dicts.save(uuid = self.state.uuid)
+        except Exception:
+            logger.error(f'Error in "_rename_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _deselect_table(self) -> None:
         try:
-            self.decoder.dict_name = None
+            self.state.dict_name = None
             self.ui_table.rows.clear()
             self.ui_table.update()
-        except Exception as exception:
-            logger.error(f'Error in "_deselect_table" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_deselect_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _remove_select_option(self, option) -> None:
         try:
             if option in self.ui_selector.options:
                 self.ui_selector.options.remove(option)
-        except Exception as exception:
-            logger.error(f'Error in "_remove_select_option" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_remove_select_option" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    def _update_dict(self) -> None:
+        try:
+            if self.state.dict_name:
+                self.dicts.dictionaries[self.state.dict_name] = self.ui_table.get_values(as_dict = True)
+        except Exception:
+            logger.error(f'Error in "_update_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _save_dict(self) -> None:
         try:
             self._update_dict()
-            self.dicts.save(uuid = self.decoder.uuid)
-        except Exception as exception:
-            logger.error(f'Error in "_save_dict" with exception:\n{exception}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _update_dict(self) -> None:
-        try:
-            if self.decoder.dict_name:
-                self.dicts.dictionaries[self.decoder.dict_name] = self.ui_table.get_values(as_dict = True)
-        except Exception as exception:
-            logger.error(f'Error in "_update_dict" with exception:\n{exception}')
+            self.dicts.save(uuid = self.state.uuid)
+        except Exception:
+            logger.error(f'Error in "_save_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _dialog_select(self) -> ui_dialog:
         try:
             return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_select)
-        except Exception as exception:
-            logger.error(f'Error in "_dialog_select" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_dialog_select" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _dialog_table(self) -> ui_dialog:
         try:
             return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_table)
-        except Exception as exception:
-            logger.error(f'Error in "_dialog_table" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_dialog_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _export(self) -> None:
         try:
-            if not self.decoder.dict_name:
+            if not self.state.dict_name:
                 return
             self._save_dict()
-            content = self.dicts.export(dict_name = self.decoder.dict_name)
+            content = self.dicts.export(dict_name = self.state.dict_name)
             route = self.upd_app_route(
                 url = URLS.DOWNLOAD,
                 content = content,
                 file_type = 'json',
-                filename = self.decoder.dict_name,
+                filename = self.state.dict_name,
             )
             ui.download(route)
-        except Exception as exception:
-            logger.error(f'Error in "_export" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_export" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _on_upload_reject(self) -> None:
         try:
             ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_file_size / 10 ** 3} KB',
                       type = 'warning', position = 'top')
-        except Exception as exception:
-            logger.error(f'Error in "_on_upload_reject" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
@@ -170,13 +173,14 @@ class Dictionaries(Page):
             data = event.content.read().decode('utf-8')
             dict_name = pathlib.Path(event.name).stem
             self.dicts.import_(dict_name = dict_name, data = data)
-            self.ui_selector._handle_new_value(dict_name)
+            self.ui_selector._handle_new_value(dict_name)  # needed to add new value to selection list
             self.ui_selector.set_value(dict_name)
             self._load_table()
+            # self._save_dict()
         except DictionaryError:
             ui.notify(self.ui_language.DICTIONARY.Messages.invalid, type = 'warning', position = 'top')
-        except Exception as exception:
-            logger.error(f'Error in "_upload_handler" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_upload_handler" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
         finally:
             event.sender.reset()  # noqa upload reset
@@ -198,8 +202,8 @@ class Dictionaries(Page):
                         max_files = self.max_files) \
                         .props('accept=.json flat dense')
                 dialog.open()
-        except Exception as exception:
-            logger.error(f'Error in "_import" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_import" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _header(self) -> None:
@@ -209,13 +213,13 @@ class Dictionaries(Page):
                 ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
                 ui.space()
                 ui.button(icon = 'settings', on_click = self._open_settings)
-        except Exception as exception:
-            logger.error(f'Error in "_header" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _center(self) -> None:
         try:
-            self.dicts.load(uuid = self.decoder.uuid)
+            self.dicts.load(uuid = self.state.uuid)
             with ui.column().classes('w-full items-center').style('font-size:12pt'):
                 self._selector()
                 with ui.card().classes('items-center').style('width:650px'):
@@ -223,12 +227,12 @@ class Dictionaries(Page):
                         self._table()
                     with ui.button(icon = 'help', on_click = self._dialog_table().open) \
                             .classes('absolute-top-right'):
-                        if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
+                        if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
                     with ui.button(icon = 'delete', on_click = self._clear_table) \
                             .classes('absolute-bottom-right'):
-                        if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.clear)
-        except Exception as exception:
-            logger.error(f'Error in "_center" with exception:\n{exception}')
+                        if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.clear)
+        except Exception:
+            logger.error(f'Error in "_center" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _selector(self):
@@ -239,7 +243,7 @@ class Dictionaries(Page):
                 # TODO: disable filtering options on rename
                 self.ui_selector = ui.select(
                     label = self.ui_language.DICTIONARY.Selector.select,
-                    value = self.decoder.dict_name,
+                    value = self.state.dict_name,
                     options = list(self.dicts.dictionaries.keys()),
                     with_input = True,
                     new_value_mode = 'add-unique',
@@ -248,23 +252,23 @@ class Dictionaries(Page):
                     .style('width:350px')
                 with ui.button(icon = 'help', on_click = self._dialog_select().open) \
                         .classes('absolute-top-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.help)
                 with ui.button(icon = 'delete', on_click = self._delete_table) \
                         .classes('absolute-bottom-right'):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete)
-        except Exception as exception:
-            logger.error(f'Error in "_selector" with exception:\n{exception}')
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.delete)
+        except Exception:
+            logger.error(f'Error in "_selector" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _table(self) -> None:
         try:
             DICT_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
             DICT_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
-            self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.settings.dark_mode) \
-                .style('min-width:500px; max-height:80vh')
+            self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.state.dark_mode) \
+                .style('min-width:500px; max-height:75vh')
             self._load_table()
-        except Exception as exception:
-            logger.error(f'Error in "_table" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _footer(self) -> None:
@@ -272,20 +276,20 @@ class Dictionaries(Page):
             with ui.footer():
                 ui.space()
                 with ui.button(text = self.ui_language.DICTIONARY.Footer.import_, on_click = self._import):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.import_)
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.import_)
                 ui.space()
                 with ui.button(icon = 'save', on_click = self._save_dict):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.save)
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.save)
                 ui.space()
                 with ui.button(text = self.ui_language.DICTIONARY.Footer.export, on_click = self._export):
-                    if self.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.export)
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.export)
                 ui.space()
-        except Exception as exception:
-            logger.error(f'Error in "_footer" with exception:\n{exception}')
+        except Exception:
+            logger.error(f'Error in "_footer" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def page(self) -> None:
-        self.__init_ui__()
+    async def page(self, client: Client) -> None:
+        await self.__init_ui__(client = client)
         self._header()
         self._center()
         self._footer()

@@ -21,13 +21,14 @@ import subprocess
 import pathlib
 import zipfile
 import nicegui
+import traceback
 
 
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.7.3.0', version)
-        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 7, 3, 0', version)
+        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.8.0.0', version)
+        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 8, 0, 0', version)
         file.seek(0)
         file.write(version)
 
@@ -48,8 +49,8 @@ def get_password() -> str:
             return ''
         with open(file = './_data/password.txt', mode = 'r', encoding = 'utf-8') as file:
             return file.read()
-    except Exception as exception:
-        print(f'Could not load password from: "{pw_path}"\n{exception}')
+    except Exception:
+        print(f'Could not load password from: "{pw_path}"\n{traceback.format_exc()}')
 
 
 def zip_directory(zip_file_path: str, source_directory: str) -> None:
@@ -93,5 +94,5 @@ try:
         subprocess.run(cmd_sign, shell = False, check = True)
     zip_directory(zip_file_path = './LanguageDecoder.zip', source_directory = './dist/LanguageDecoder/')
     print('Successfully build application')
-except Exception as exception:
-    print(f'Building application failed with:\n{exception}')
+except Exception:
+    print(f'Building application failed with exception:\n{traceback.format_exc()}')

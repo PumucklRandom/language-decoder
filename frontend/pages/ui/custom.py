@@ -5,7 +5,6 @@ from backend.utils.utilities import lonlen
 from frontend.pages.ui.config import COLORS, DEFAULT_COLS, SIZE_FACTOR
 
 
-# .style('min-width:500px; max-height:80vh', 'min-width:500px;)
 def ui_dialog(label_list: List[str], classes: str = 'max-w-[80%]',
               style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
     with ui.dialog() as dialog:
@@ -189,7 +188,8 @@ class UIGrid(Table):
     def _set_item_size(self, words: List[str] = None) -> None:
         if words and isinstance(words, list):
             chars = lonlen(words)
-            chars = 20 if chars > 20 else chars
+            if chars < 5: chars = 5
+            if chars > 18: chars = 18
             self.item_size = chars * SIZE_FACTOR
 
     def _item(self) -> str:

@@ -3,6 +3,7 @@ import re
 import json
 import textwrap
 import requests
+import traceback
 from uuid import UUID
 from typing import Tuple, List, Union
 from pprint import PrettyPrinter
@@ -32,7 +33,6 @@ class LanguageDecoder(object):
                  new_line: str = '\n',
                  tab_size: int = 4,
                  char_lim: int = 120,
-                 reformatting: bool = True,
                  proxies: dict = None,
                  regex: Config.Regex = CONFIG.Regex) -> None:
 
@@ -44,32 +44,24 @@ class LanguageDecoder(object):
         :param new_line: new line string
         :param tab_size: the tab size between two words
         :param char_lim: character limit of one line
-        :param reformatting: indicator for reformatting the source text
         :param proxies: set proxies for translator
         :param regex: a set of character patterns for regex compilations
         """
 
         self._pp = PrettyPrinter(indent = 4)
-        self.proxies = proxies
         self.uuid = uuid
         self.source_language = source_language
         self.target_language = target_language
-        self._translator = self.__init_translator__()
-        self._dicts = Dicts()
         self.dict_name = dict_name
+        self.proxies = proxies
+        self._dicts = Dicts(uuid = self.uuid)
+        self._translator = self.__init_translator__()
         self.regex = regex
         self.new_line = new_line
         self.tab_size = tab_size
         self.char_lim = char_lim
-        self.reformatting = reformatting
         self.source_path: str = ''
-        self.source_text: str = ''
-        self.decode_text: str = ''
-        self.source_words: List[str] = []
-        self.target_words: List[str] = []
-        self.sentences: List[str] = []
-        self.translated_text: str = ''
-        self.title: str = ''
+        self.reformatting: bool = True
 
     def __init_translator__(self) -> GoogleTranslator:
         self._translator = GoogleTranslator(
@@ -81,11 +73,10 @@ class LanguageDecoder(object):
     def get_supported_languages(self, show: bool = False) -> List[str]:
         try:
             languages = self._translator.get_supported_languages(as_dict = True)
-            if show:
-                self._pp.pprint(languages.keys())
+            if show: self._pp.pprint(languages.keys())
             return list(languages.keys())
-        except Exception as exception:
-            message = f'Could not fetch supported languages with exception:\n{exception}'
+        except Exception:
+            message = f'Could not fetch supported languages with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
@@ -96,25 +87,25 @@ class LanguageDecoder(object):
                 return self._translator.translate_batch(source)
             elif isinstance(source, str):
                 return self._translator.translate(source)
-        except TooManyRequests as exception:
+        except TooManyRequests:
             message = 'Too many requests! Try again later!'
-            logger.error(f'{message} with exception:\n{exception}')
+            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise DecoderError(message)
-        except RequestError as exception:
+        except RequestError:
             message = 'Request Error! Check your internet connection or your proxy settings!'
-            logger.error(f'{message} with exception:\n{exception}')
+            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise DecoderError(message)
-        except requests.exceptions.ProxyError as exception:
+        except requests.exceptions.ProxyError:
             message = 'Request Error! Check your proxy settings!'
-            logger.error(f'{message} with exception:\n{exception}')
+            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise DecoderError(message)
-        except TranslationNotFound as exception:
+        except TranslationNotFound:
             message = 'Translator Error!'
-            logger.error(f'{message} with exception:\n{exception}')
+            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise DecoderError(message)
-        except Exception as exception:
+        except Exception:
             message = 'Unexpected Error!'
-            logger.error(f'{message} with exception:\n{exception}')
+            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise Exception(message)
 
     @staticmethod
@@ -150,8 +141,8 @@ class LanguageDecoder(object):
             if not any(punctuation in text.split()[-1] for punctuation in self.regex.puncts):
                 text += '.'
             return text
-        except Exception as exception:
-            message = f'Could not reformat source text with exception:\n{exception}'
+        except Exception:
+            message = f'Could not reformat source text with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
@@ -176,80 +167,89 @@ class LanguageDecoder(object):
         # spit text into sentences with consideration of quotes and brackets
         return re.findall(f'(.*?[{self.regex.puncts}][{self.regex.close}{self.regex.quotes}]?)\s+', f'{text} ')
 
-    def decode_sentences(self) -> None:
-        text = ' '.join(self.source_words)
+    def decode_sentences(self, source_words: List[str]) -> List[str]:
+        text = ' '.join(source_words)
+        if not any(punctuation in text.split()[-1] for punctuation in self.regex.puncts):
+            text += '.'
         scr_sentences = self._split_sentences(text = text)
         tar_sentences = self.translate_source(scr_sentences)
-        self.sentences.clear()
+        sentences = list()
         for source, target in zip(scr_sentences, tar_sentences):
-            self.sentences.extend([source, target, '/N'])
-        self.sentences.pop(-1)
+            sentences.extend([source, target, '/N'])
+        sentences.pop(-1)
+        return sentences
 
-    def find_replace(self, find: str, repl: str) -> None:
-        for i, (source, target) in enumerate(zip(self.source_words, self.target_words)):
-            self.source_words[i] = source.replace(find, repl)
-            self.target_words[i] = target.replace(find, repl)
+    @staticmethod
+    def find_replace(source_words: List[str], target_words: List[str],
+                     find: str, repl: str) -> Tuple[List[str], List[str]]:
+        for i, (source, target) in enumerate(zip(source_words, target_words)):
+            source_words[i] = source.replace(find, repl)
+            target_words[i] = target.replace(find, repl)
+        return source_words, target_words
 
-    def split_text(self) -> None:
+    def split_text(self, source_text: str) -> List[str]:
         try:
-            if len(self.source_text) == 0:
+            if len(source_text) == 0:
                 message = 'Source Text is empty'
                 logger.error(message)
                 raise DecoderError(message)
             # reformat text for translator
             if self.reformatting:
-                source_text = self._reformat_text(text = self.source_text)
+                source_text = self._reformat_text(text = source_text)
             else:
-                source_text = ' '.join(self.source_text.split())
+                source_text = ' '.join(source_text.split())
             # split text into words
-            self.source_words = source_text.split()
-        except Exception as exception:
-            message = f'Could not split source text with exception:\n{exception}'
+            return source_text.split()
+        except Exception:
+            message = f'Could not split source text with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
-    def decode_words(self) -> None:
+    def decode_words(self, source_words: List[str]) -> List[str]:
         try:
-            logger.info(f'Decode {len(self.source_words)} words.')
-            target_words = self.translate_source(self.source_words)
-            if len(target_words) != len(self.source_words):
+            logger.info(f'Decode {len(source_words)} words.')
+            target_words_copy = self.translate_source(source_words)
+            if len(target_words_copy) != len(source_words):
                 message = 'Length mismatch between source words and target words'
                 logger.error(message)
                 raise DecoderError(message)
-            self.target_words.clear()
-            for source_word, target_word in zip(self.source_words, target_words):
+            target_words = list()
+            for source_word, target_word in zip(source_words, target_words_copy):
                 # take source word if target word is None
                 target_word = source_word if target_word is None else target_word
                 # add missing marks from source word to target word
-                self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
+                target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
             logger.info('Decoded words.')
-        except Exception as exception:
-            message = f'Could not decode source words with exception:\n{exception}'
+            return target_words
+        except Exception:
+            message = f'Could not decode source words with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
-    def apply_dict(self) -> None:
+    def apply_dict(self, source_words: List[str], target_words: List[str]) -> List[str]:
         try:
             if not self.dict_name:
-                return
+                return target_words
             self._dicts.load(uuid = self.uuid)
             dictionary = self._dicts.dictionaries.get(self.dict_name, {})
-            target_words = self.target_words.copy()
-            self.target_words.clear()
-            for source_word, target_word in zip(self.source_words, target_words):
+            target_words_copy = target_words.copy()
+            target_words.clear()
+            for source_word, target_word in zip(source_words, target_words_copy):
                 # first strip the source word for the dictionary keys
                 source_strip = self._strip_word(target_word = source_word)
                 if source_strip in dictionary.keys():
                     # replace target word if stripped source word is key
                     target_word = dictionary.get(source_strip)
                 # add missing marks from source word to target word
-                self.target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
-        except Exception as exception:
-            message = f'Could not apply dictionary with exception:\n{exception}'
+                target_words.append(self._wrap_word(source_word = source_word, target_word = target_word))
+            return target_words
+        except Exception:
+            message = f'Could not apply dictionary with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
-    def import_(self, data: str) -> None:
+    @staticmethod
+    def import_(data: str) -> Tuple[List[str], List[str], List[str]]:
         try:
             data = json.loads(data)
             if len(data.get('source', [])) != len(data.get('target', [])):
@@ -257,20 +257,24 @@ class LanguageDecoder(object):
             if any(not isinstance(scr, str) for scr in data.get('source', [])) or \
                     any(not isinstance(tar, str) for tar in data.get('target', [])):
                 raise DecoderError('Found a non-string value in data')
-            self.source_words = data.get('source', [])
-            self.target_words = data.get('target', [])
+            source_words = data.get('source', [])
+            target_words = data.get('target', [])
+            sentences = []
             if all(isinstance(sentence, str) for sentence in data.get('sentences', [])):
-                self.sentences = data.get('sentences', [])
+                sentences = data.get('sentences', [])
+            return source_words, target_words, sentences
         except DecoderError as exception:
             raise exception
-        except Exception as exception:
-            message = f'Could not parse import with exception:\n{exception}'
+        except Exception:
+            message = f'Could not parse import with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
-    def export(self, destin_path: str = '') -> str:
+    @staticmethod
+    def export(source_words: List[str], target_words: List[str],
+               sentences: List[str], destin_path: str = '') -> str:
         try:
-            data = {'source': self.source_words, 'target': self.target_words, 'sentences': self.sentences}
+            data = {'source': source_words, 'target': target_words, 'sentences': sentences}
             data_str = json.dumps(data, ensure_ascii = False, indent = 4)
             if not destin_path:
                 return data_str
@@ -278,8 +282,8 @@ class LanguageDecoder(object):
             path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
             with open(file = path, mode = 'w', encoding = 'utf-8') as file:
                 file.write(data_str)
-        except Exception as exception:
-            message = f'Could not execute export with exception:\n{exception}'
+        except Exception:
+            message = f'Could not execute export with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
@@ -306,40 +310,41 @@ class LanguageDecoder(object):
         if os.path.isfile(transl_path):
             os.remove(transl_path)
 
-    def _read_text(self, source_path: str) -> None:
+    def _read_text(self, source_path: str) -> str:
         try:
             if source_path:
                 self.source_path = source_path
                 destin_path, _ = self._get_destin_paths(source_path = source_path)
                 if os.path.isfile(destin_path):
                     # logger.info(f'Text already decoded at: "{destin_path}"')
-                    self.source_text = ''
-                    return
+                    return ''
                 try:
                     with open(file = source_path, mode = 'r', encoding = 'utf-8') as file:
-                        self.source_text = file.read()
+                        source_text = file.read()
                 except IOError as exception:
-                    message = f'Could not open file at "{source_path}" with exception:\n{exception}'
+                    message = f'Could not open file at "{source_path}" with exception:\n{traceback.format_exc()}'
                     logger.error(message)
                     raise DecoderError(message)
             logger.info(f'Decode Text for: "{source_path}".')
-        except Exception as exception:
-            message = f'Could not read text file with:\n{exception}'
+            return source_text
+        except Exception:
+            message = f'Could not read text file with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DecoderError(message)
 
     def decode_text_to_file(self, source_path: str = None, translate: bool = False) -> None:
         try:
-            self._read_text(source_path = source_path)
-            self.split_text()
-            self.decode_words()
-            self.apply_dict()
+            source_text = self._read_text(source_path = source_path)
+            if not source_text: return
+            source_words = self.split_text(source_text = source_text)
+            target_words = self.decode_words(source_words = source_words)
+            target_words = self.apply_dict(source_words = source_words, target_words = target_words)
             # formatting text
             line_len = 0
             source_line = ''
             target_line = ''
-            self.decode_text = ''
-            for source_word, target_word in zip(self.source_words, self.target_words):
+            decode_text = ''
+            for source_word, target_word in zip(source_words, target_words):
                 # get the length of the longest word + word_space
                 word_len = utils.lonlen([source_word, target_word]) + self.tab_size
                 # get the length of the current line
@@ -350,7 +355,7 @@ class LanguageDecoder(object):
                     source_line = f'{source_line[0:-self.tab_size]}{self.new_line}'
                     target_line = f'{target_line[0:-self.tab_size]}{self.new_line}'
                     # combine to formatted text
-                    self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
+                    decode_text = f'{decode_text}{source_line}{target_line}{self.new_line}'
                     # set length to word length
                     line_len = word_len
                     # adjust word for same length, add word_space and add it to the line
@@ -362,7 +367,7 @@ class LanguageDecoder(object):
                     source_line = f'{source_line}{source_word}{self.new_line}'
                     target_line = f'{target_line}{target_word}{self.new_line}'
                     # combine to formatted text
-                    self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
+                    decode_text = f'{decode_text}{source_line}{target_line}{self.new_line}'
                     # reset length and lines
                     line_len = 0
                     source_line = ''
@@ -374,31 +379,31 @@ class LanguageDecoder(object):
             # if the loop is finished add the last lines
             source_line = f'{source_line[0:-self.tab_size]}{self.new_line}'
             target_line = f'{target_line[0:-self.tab_size]}{self.new_line}'
-            self.decode_text = f'{self.decode_text}{source_line}{target_line}{self.new_line}'
+            decode_text = f'{decode_text}{source_line}{target_line}{self.new_line}'
 
-            self._save_decode_text()
+            self._save_decode_text(decode_text = decode_text)
             if translate:
-                self._translate_text()
-                self._save_translated_text()
-        except Exception as exception:
-            message = f'Could not decode source text to file with exception:\n{exception}'
+                translated_text = self._translate_text(source_text = source_text)
+                self._save_translated_text(translated_text = translated_text)
+        except Exception:
+            message = f'Could not decode source text to file with exception:\n{traceback.format_exc()}'
             logger.error(message)
             return
 
-    def _save_decode_text(self) -> str:
+    def _save_decode_text(self, decode_text: str) -> str:
         destin_path, _ = self._get_destin_paths(source_path = self.source_path)
-        if not os.path.isfile(destin_path) and self.decode_text:
+        if not os.path.isfile(destin_path) and decode_text:
             with open(file = destin_path, mode = 'w', encoding = 'utf-8') as file:
-                file.write(self.decode_text)
+                file.write(decode_text)
             return destin_path
 
-    def _translate_text(self) -> None:
-        self.translated_text = self.translate_source(self.source_text)
-        self.translated_text = textwrap.fill(self.translated_text, width = self.char_lim)
+    def _translate_text(self, source_text) -> str:
+        translated_text = self.translate_source(source_text)
+        return textwrap.fill(translated_text, width = self.char_lim)
 
-    def _save_translated_text(self) -> str:
+    def _save_translated_text(self, translated_text) -> str:
         _, transl_path = self._get_destin_paths(source_path = self.source_path)
-        if not os.path.isfile(transl_path) and self.translated_text:
+        if not os.path.isfile(transl_path) and translated_text:
             with open(file = transl_path, mode = 'w', encoding = 'utf-8') as file:
-                file.write(self.translated_text)
+                file.write(translated_text)
             return transl_path

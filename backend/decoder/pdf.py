@@ -1,4 +1,5 @@
 import os
+import traceback
 from typing import Optional, Tuple, List, Union
 from fpdf import FPDF
 from backend.error.error import PDFFormatterError
@@ -89,8 +90,8 @@ class PDF(object):
             pdf_lines.append(f'{source_line[0:-self.tab_size]}{self.new_line}')
             pdf_lines.append(f'{target_line[0:-self.tab_size]}{self.new_line}')
             # pdf_lines.append(self.new_line)
-        except Exception as exception:
-            message = f'Could not format pdf lines with exception:\n{exception}'
+        except Exception:
+            message = f'Could not format pdf lines with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)
         return pdf_lines
@@ -108,8 +109,8 @@ class PDF(object):
                 # join lines to a single page and remove the self.new_lines at the end of the page
                 pages.append(''.join(page_lines)[:-len(self.new_line)])
                 completed_lines += self.line_lim
-        except Exception as exception:
-            message = f'Could not format pdf pages with exception:\n{exception}'
+        except Exception:
+            message = f'Could not format pdf pages with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)
         return pages
@@ -141,8 +142,8 @@ class PDF(object):
                 else:  # back pages
                     # write formatted page
                     self._fpdf.multi_cell(text = page, w = self.width, h = self.line_height)
-        except Exception as exception:
-            message = f'Could not format pdf file with exception:\n{exception}'
+        except Exception:
+            message = f'Could not format pdf file with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)
 
@@ -171,8 +172,8 @@ class PDF(object):
                 self._fpdf.output(pdf_path)
                 return pdf_path
 
-        except Exception as exception:
-            message = f'Could not convert words to pdf with exception:\n{exception}'
+        except Exception:
+            message = f'Could not convert words to pdf with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)
 
@@ -204,7 +205,7 @@ class PDF(object):
                 with open(file = decode_path, mode = 'r', encoding = 'utf-8') as file:
                     lines = file.readlines()
             except IOError as exception:
-                message = f'Could not open file at "{decode_path}" with exception:\n{exception}'
+                message = f'Could not open file at "{decode_path}" with exception:\n{traceback.format_exc()}'
                 logger.error(message)
                 raise PDFFormatterError(message)
             # split lines in source and decode
@@ -216,7 +217,7 @@ class PDF(object):
                 if i % 3 == 1:
                     target_words += line.split()
             return source_words, target_words
-        except Exception as exception:
-            message = f'Could not parse decoded text file with exception:\n{exception}'
+        except Exception:
+            message = f'Could not parse decoded text file with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)

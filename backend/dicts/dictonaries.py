@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from uuid import UUID
 from typing import Dict, Union
 from backend.config.config import CONFIG, REPLACEMENTS
@@ -7,14 +8,18 @@ from backend.error.error import DictionaryError
 from backend.logger.logger import logger
 
 
+# TODO: write a service, which deletes all storage data after n unused days.
+
 class Dicts(object):
 
-    def __init__(self, folder_path: str = '.') -> None:
+    def __init__(self, folder_path: str = '.',
+                 uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000') -> None:
         """
         replace_dict: a dictionary to replace chars in source text
         dictionaries: a dictionary of dictionaries to correct language dependent translation mistakes
         """
         module_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), folder_path)
+        self.uuid = uuid
         self.folder_path = os.path.join(module_path, 'json')
         self.replacements: Dict[str, str] = REPLACEMENTS
         self.dictionaries: Dict[str, Dict[str, str]] = {}
@@ -23,8 +28,7 @@ class Dicts(object):
         """
         :param uuid: user uuid to identify correspondent dictionaries
         """
-        if CONFIG.on_prem:
-            uuid = '00000000-0000-0000-0000-000000000000'
+        if CONFIG.on_prem: uuid = self.uuid
         json_path = os.path.join(self.folder_path, f'{uuid}.json')
         if not os.path.isfile(json_path):
             self.save(uuid = uuid)
@@ -35,8 +39,8 @@ class Dicts(object):
             self.replacements = data.get('replacements', REPLACEMENTS)
             self.dictionaries = data.get('dictionaries', {})
             logger.info('parsed dictionaries')
-        except Exception as exception:
-            message = f'Could not parse json file dict with exception:\n{exception}'
+        except Exception:
+            message = f'Could not parse json file dict with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DictionaryError(message)
 
@@ -45,16 +49,15 @@ class Dicts(object):
         :param uuid: user uuid to identify correspondent dictionaries
         """
         try:
-            if CONFIG.on_prem:
-                uuid = '00000000-0000-0000-0000-000000000000'
+            if CONFIG.on_prem: uuid = self.uuid
             os.makedirs(self.folder_path, exist_ok = True)
             json_path = os.path.join(self.folder_path, f'{uuid}.json')
             data = {'replacements': self.replacements, 'dictionaries': self.dictionaries}
             with open(file = json_path, mode = 'w', encoding = 'utf-8') as json_file:
                 json.dump(data, json_file, ensure_ascii = False, indent = 4)
             logger.info('saved dictionaries')
-        except Exception as exception:
-            message = f'Could not save json file dict with exception:\n{exception}'
+        except Exception:
+            message = f'Could not save json file dict with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DictionaryError(message)
 
@@ -67,8 +70,8 @@ class Dicts(object):
             self.dictionaries[dict_name] = data
         except DictionaryError as exception:
             raise exception
-        except Exception as exception:
-            message = f'Could not parse import with exception:\n{exception}'
+        except Exception:
+            message = f'Could not parse import with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DictionaryError(message)
 
@@ -82,7 +85,7 @@ class Dicts(object):
             path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
             with open(file = path, mode = 'w', encoding = 'utf-8') as file:
                 file.write(data_str)
-        except Exception as exception:
-            message = f'Could not execute export with exception:\n{exception}'
+        except Exception:
+            message = f'Could not execute export with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise DictionaryError(message)

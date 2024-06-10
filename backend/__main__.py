@@ -18,7 +18,7 @@ def main() -> None:
                 language_decoder.decode_text_to_file(source_path = text_file, translate = True)
             if text_file.endswith('decode.txt'):
                 pdf.convert2pdf(decode_path = text_file)
-                # language_decoder.delete_decoded_files(decode_path=text_file)
+                # language_decoder.delete_decoded_files(decode_path = text_file)
 
 
 main()

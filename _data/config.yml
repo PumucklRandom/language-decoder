@@ -1,4 +1,6 @@
 on_prem: true
+stream_handler: false
+session_time: 100000
 debounce: 200
 host: '127.0.0.1'
 port: 8080

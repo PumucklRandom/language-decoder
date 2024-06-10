@@ -1,9 +1,9 @@
-from frontend import iterface
+from frontend import interface
 
 
 def main() -> None:
-    iterface.build()
-    iterface.run()
+    interface.build()
+    interface.run()
 
 
 main()
