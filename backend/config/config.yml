@@ -2,6 +2,7 @@ on_prem: false
 stream_handler: true
 session_time: 10000
 debounce: 200
+size_factor: 11
 host: '127.0.0.1'
 port: 8080
 title: 'LanguageDecoder'

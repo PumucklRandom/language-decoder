@@ -9,8 +9,8 @@ class State(object):
     def __init__(self, store: dict):
         self.store = store
 
-    def get(self, key, dflt: any = None):
-        return self.store.get(key, dflt)
+    def get(self, key: str, default: any = None):
+        return self.store.get(key, default)
 
     def update(self, key: str, value: Any) -> None:
         self.store.update({key: value})

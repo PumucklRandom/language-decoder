@@ -321,7 +321,7 @@ class LanguageDecoder(object):
                 try:
                     with open(file = source_path, mode = 'r', encoding = 'utf-8') as file:
                         source_text = file.read()
-                except IOError as exception:
+                except IOError:
                     message = f'Could not open file at "{source_path}" with exception:\n{traceback.format_exc()}'
                     logger.error(message)
                     raise DecoderError(message)

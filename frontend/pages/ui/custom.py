@@ -2,7 +2,7 @@ from typing import Union, Tuple, Dict, List, Iterable
 from nicegui import ui, events
 from backend.config.config import CONFIG
 from backend.utils.utilities import lonlen
-from frontend.pages.ui.config import COLORS, DEFAULT_COLS, SIZE_FACTOR
+from frontend.pages.ui.config import COLORS, DEFAULT_COLS
 
 
 def ui_dialog(label_list: List[str], classes: str = 'max-w-[80%]',
@@ -190,7 +190,7 @@ class UIGrid(Table):
             chars = lonlen(words)
             if chars < 5: chars = 5
             if chars > 18: chars = 18
-            self.item_size = chars * SIZE_FACTOR
+            self.item_size = chars * CONFIG.size_factor
 
     def _item(self) -> str:
         # TODO: custom size/width for each input element pair

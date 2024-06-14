@@ -16,6 +16,7 @@ class Config(object):
     stream_handler: bool
     session_time: int
     debounce: int
+    size_factor: int
     host: str
     port: int
     title: str

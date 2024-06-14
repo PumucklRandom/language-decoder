@@ -204,7 +204,7 @@ class PDF(object):
                 # read text file as lines
                 with open(file = decode_path, mode = 'r', encoding = 'utf-8') as file:
                     lines = file.readlines()
-            except IOError as exception:
+            except IOError:
                 message = f'Could not open file at "{decode_path}" with exception:\n{traceback.format_exc()}'
                 logger.error(message)
                 raise PDFFormatterError(message)

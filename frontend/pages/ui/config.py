@@ -9,8 +9,6 @@ from backend.logger.logger import logger
 
 app.storage.max_tab_storage_age = CONFIG.session_time
 
-SIZE_FACTOR = 11
-
 
 class URLS(object):
     START = '/'
@@ -102,9 +100,9 @@ class HTML:
     '''
 
 
-# TODO: change default icons of ui.checkbox with radio_button_unchecked, radio_button_checked
 ui.select.default_props('outlined')
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
+ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
 
 DEFAULT_COLS = [
     {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
