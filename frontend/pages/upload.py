@@ -47,7 +47,7 @@ class Upload(Page):
 
     def _clear_text(self) -> None:
         try:
-            # self.state.title = ''
+            self.state.title = ''
             self.state.source_text = ''
             # self.state.source_language = 'auto'
             # self.state.target_language = 'english'

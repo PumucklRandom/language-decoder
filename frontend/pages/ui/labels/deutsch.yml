@@ -1,0 +1,310 @@
+GENERAL:
+    Error:
+        internal: '500 Internal Error'
+START:
+    Explanations:
+        title: 'Beschreibung:'
+        text: [
+            'Der LanguageDecoder übersetzt einen gegebenen Text von der Ausgangssprache
+                Wort für Wort in die gewünschte Zielsprache (Dekodierung).',
+            'Dafür wird im Backend der Google-Übersetzer verwendet.',
+            'Um die Übersetzung zu verbessern, kann ein Wörterbuch erstellt werden,
+                dass gängige Übersetzungsfehler automatisch korrigiert.',
+            'Anschließend kann der entschlüsselte Text in eine PDF-Datei exportiert werden.',
+            'Der LanguageDecoder kann auch zur Erstellung von Sprachlernkursen verwendet werden,
+                basierend auf der',
+            'Birkenbihl-Methode.'
+        ]
+        link: 'https://vera-birkenbihl.de/die-birkenbihl-methode/'
+        start: 'START'
+    Disclaimers:
+        title: 'Disclaimer:'
+        text: [
+            'Der LanguageDecoder ist ein Open-Source-Projekt und läuft unter der MIT-Lizenz.',
+            'Um mehr über das Projekt zu erfahren, besuchen Sie den LanguageDecoder unter',
+            'Github.com.'
+        ]
+        link: 'https://github.com/PumucklRandom/language-decoder/'
+UPLOAD:
+    Header:
+        start_page: 'STARTSEITE'
+        upload: 'HOCHLADEN'
+        dictionaries: 'WÖRTERBÜCHER'
+    Dialogs: [
+        'Hier können Sie entweder eine Textdatei über den Uploader hochladen
+            oder einen Text in den Textbereich eingeben.',
+        '/n', '/N', '/n',
+        'Am unteren Rand, unterhalb des Textbereichs, können Sie die Ausgangssprache
+            und die gewünschte Zielsprache auswählen.',
+        'Wenn Sie die Texteingabe beendet haben,
+            können Sie mit der Schaltfläche "DEKODIEREN" den Dekodiervorgang starten.',
+        'Abhängig von der Menge der eingegebenen Wörter kann der Dekodierungsprozess eine Weile dauern.',
+        '/n',
+        'Um den aktuell eingegebenen Text zu löschen, 
+            können Sie auf die Schaltfläche "Mülleimer" unten rechts klicken.'
+    ]
+    Uploads: [
+        'Laden Sie eine Textdatei hoch oder geben Sie unten einen Text ein.',
+        'Datei auswählen'
+    ]
+    Title: 'Titel'
+    Input_txt: [
+        'Geben Sie einen Text ein',
+        'Eingabe starten'
+    ]
+    Messages:
+        decode: 'Laden Sie eine Textdatei hoch oder geben Sie unten einen Text ein.'
+        invalid: 'Ungültige Textdatei. Verwenden Sie eine andere Datei oder fügen Sie unten einen Text ein.'
+        success: 'Hochladen beendet.'
+        reject: 'Hochladen einer Textdatei mit maximal:'
+    Tips:
+        help: 'Hilfe benötigt?'
+        title: 'Titel des Textes'
+        save: 'Text abspeichern'
+        decode: 'Dekodierung starten'
+        delete: 'Text löschen'
+    Footer:
+        source: 'Ausgangssprache'
+        target: 'Zielsprache'
+        decode: 'DEKODIEREN'
+DECODING:
+    Header:
+        go_back: 'ZURÜCK ZUM HOCHLADEN'
+        decoding: 'DEKODIERUNG'
+        dictionaries: 'WÖRTERBÜCHER'
+    Dialogs: [
+        'Hier sehen Sie das Ergebnis der Dekodierung.',
+        'Für jedes Wort sollte es eine entsprechende Übersetzung geben.',
+        'Falls Sie mit der von Google gelieferten Übersetzung nicht zufrieden sind,
+            können Sie die Übersetzung direkt im Eingabefeld korrigieren.',
+        'Wenn ein Fehler häufig auftritt, wird empfohlen dafür ein Wörterbuch auf der Seite Wörterbücher
+            anzulegen, um die Korrekturen automatisch vorzunehmen.',
+        '/n', '/N', '/n',
+        'In der Fußzeile finden Sie verschiedene Aktionen, die Sie auswählen können:',
+        '/n',
+        'Die erste Option auf der linken Seite ist eine einfache Such- und Ersetzungsfunktion.',
+        '/n',
+        'Mit der zweiten Option "IMPORTIEREN" auf der linken Seite können Sie eine zuvor exportierte
+            Dekodierung wieder importieren.',
+        '/n',
+        'Die dritte Option "WÖRTERBUCH ANWENDEN" wird verwendet, 
+            um das aktuell ausgewählte Wörterbuch auf die dekodierten Wörter anzuwenden.',
+        '/n',
+        'Um Ihre letzten Änderungen zu speichern, verwenden Sie die Schaltfläche "SPEICHERN"
+            in der Mitte der Fußzeile.',
+        '/n',
+        'Wenn Sie die Dekodierung abgeschlossen haben, können Sie mit der Schaltfläche "PDF ERSTELLEN",
+            eine PDF-Datei der Dekodierung ansehen und herunterladen.',
+        '/n',
+        'Falls Sie die Dekodierung zu einem anderen Zeitpunkt fortsetzen möchten,
+            können Sie mit der Schaltfläche "EXPORTIEREN" einen Export Ihres aktuellen Arbeitsstandes erstellen
+            und diesen später erneut importieren.',
+        '/n',
+        'Die letzte Schaltfläche auf der rechten Seite der Fußzeile ist eine spezielle Satzansicht
+             des aktuellen Textes zum besseren Verständnis.'
+    ]
+    Dialogs_import: [
+        'Laden Sie eine zuvor exportierte json-Datei hoch.',
+        'Datei auswählen'
+    ]
+    Dialogs_pdf:
+        view: 'PDF ANSEHEN'
+        download: 'HERUNTERLADEN'
+        text: [
+            'Die pdf-Datei ist fertig!',
+            'Sie können das Dokument entweder zuerst ansehen:',
+            'Oder laden Sie das Dokument einfach herunter:'
+        ]
+    Messages:
+        decoding: 'Wörter dekodieren:'
+        cancel: 'ABBRECHEN'
+        reject: 'Hochladen einer json-Datei mit maximal:'
+        invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
+    Tips:
+        help: 'Hilfe benötigt?'
+        replace: 'Austauschen'
+        import_: 'Wörter importieren'
+        save: 'Dekodierung speichern'
+        export: 'Wörter exportieren'
+        view: 'Satzansicht'
+    Footer:
+        import_: 'IMPORTIEREN'
+        apply: 'WÖRTERBUCH ANWENDEN'
+        create: 'PDF ERSTELLEN'
+        export: 'EXPORTIEREN'
+        replace: 'ANWENDEN'
+DICTIONARY:
+    Header:
+        go_back: 'ZURÜCK'
+        dictionaries: 'WÖRTERBÜCHER'
+    Dialogs_select: [
+        'Hier können Sie zwischen bereits erstellten Wörterbüchern wählen oder ein neues erstellen.',
+        '/n',
+        'Wenn Sie bereits ein Wörterbuch ausgewählt haben,
+            können Sie die Auswahl abwählen, indem Sie auf die Schaltfläche "X" im Textfeld klicken.',
+        '/n',
+        'Um ein vorhandenes Wörterbuch umzubenennen, wählen Sie das Wörterbuch aus, das Sie umbenennen möchten.',
+        'Aktivieren Sie die Option "Wörterbuch umbenennen" und geben Sie einen neuen Wörterbuchnamen ein.',
+        '/n',
+        'Um ein Wörterbuch zu entfernen,
+            wählen Sie das zu löschende Wörterbuch aus und drücken Sie die obere Schaltfläche "Mülleimer".'
+    ]
+    Selector:
+        rename: 'Wörterbuch umbenennen'
+        select: 'Ein Wörterbuch auswählen oder erstellen'
+    Dialogs_table: [
+        'Hier können Sie das aktuell ausgewählte Wörterbuch anpassen.',
+        '/n',
+        'Mit den Schaltflächen "+" und "-" können Sie Einträge im Wörterbuch hinzufügen oder entfernen.',
+        '/n',
+        'Um das aktuell ausgewählte Wörterbuch zu löschen, drücken Sie die untere Taste "Mülleimer".',
+        '/n', '/N', '/n',
+        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
+        '/n',
+        'Mit den Optionen "IMPORTIEREN" und "EXPORTIEREN" können Sie ein Wörterbuch importieren und exportieren.'
+    ]
+    Table:
+        key: 'Ausgangswort'
+        val: 'Zielwort'
+    Dialogs_import: [
+        'Laden Sie eine zuvor exportierte json-Datei hoch.',
+        'Datei auswählen'
+    ]
+    Messages:
+        add_row: 'Bitte wählen oder erstellen Sie ein Wörterbuch.'
+        reject: 'Hochladen einer json-Datei mit maximal:'
+        invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
+    Tips:
+        help: 'Hilfe benötigt?'
+        delete: 'Wörterbuch löschen'
+        clear: 'Wörterbuch zurücksetzen'
+        save: 'Wörterbuch abspeichern'
+        import_: 'Wörterbuch importieren'
+        export: 'Wörterbuch exportieren'
+    Footer:
+        import_: 'IMPORTIEREN'
+        export: 'EXPORTIEREN'
+SETTINGS:
+    Header:
+        go_back: 'ZURÜCK'
+        dictionaries: 'EINSTELLUNGEN'
+    Panel: [
+        'PROGRAMM EINSTELLUNGEN',
+        'ERSETZUNGEN',
+        'PDF EINSTELLUNGEN',
+        'ERWEITERTE EINSTELLUNGEN'
+    ]
+    Dialogs_interface: [
+        'Auf dieser Registerkarte können Sie grundlegende Programmeinstellungen ändern.',
+        '/n', '/N', '/n',
+        'Der erste Abschnitt enthält Schalter zum Aktivieren oder Deaktivieren verschiedener Einstellungen,
+            wie z. B.: "Dunkler Modus", "Hinweise" und "Textumformung bei der Eingabe".',
+        'Mit dem Umschalter "Umformung" wird der Eingabetext mit einem "regular expression" umformatiert,
+            um die Wörter bei der Dekodierung voneinander unterscheiden zu können.',
+        '/n', '/N', '/n',
+        'Im zweiten Abschnitt finden Sie eine Auswahl, mit der Sie die aktuelle Anzeigesprache ändern können.',
+        '/n', '/N', '/n',
+        'Der dritte Abschnitt bietet eine Proxy-Konfigurationsoption
+            und eine Schaltfläche zur Überprüfung der Internetverbindung.',
+        '/n', '/N', '/n',
+        'Klicken Sie auf die Schaltfläche "ANWENDEN", um Ihre Änderungen zu bestätigen.',
+        '/n', '/N', '/n',
+        'Um die "Programmeinstellungen" zurückzusetzen, 
+            drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
+    ]
+    Interface:
+        text: [
+            'Dunkler Modus',
+            'Zeige Hinweise',
+            'Eingabetext umformatieren',
+            'Sprache auswählen',
+            'Proxy-Konfiguration:'
+        ]
+        check: 'VERBINDUNG PRÜFEN'
+        apply: 'ANWENDEN'
+    Dialogs_replace: [
+        'Auf dieser Registerkarte können Sie ein sprachunabhängiges 
+            "Ersetzungswörterbuch" für den Eingabetext definieren.',
+        'Unter "Sonderzeichen" können Sie Sonderzeichen eingeben, die ersetzt werden sollen.',
+        'Unter "Alternative" können Sie die Zeichen eingeben, die stattdessen verwendet werden sollen.',
+        'Mit den Schaltflächen "+" und "-" können Sie Einträge im Wörterbuch hinzufügen oder entfernen.',
+        '/n', '/N', '/n',
+        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
+        '/n',
+        'Um das "Ersetzungswörterbuch" zurückzusetzen, 
+            drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.',
+        '/n',
+        'Die Schaltfläche "Mülleimer" unten rechts löscht alle Wörterbucheinträge auf einmal.'
+    ]
+    Table:
+        key: 'Sonderzeichen'
+        val: 'Alternative'
+    Dialogs_pdf: [
+        'Auf dieser Registerkarte können Sie die "Textformatierungs-Einstellungen"
+            für die erstellte PDF-Datei ändern.',
+        'Es wird nicht empfohlen, diese Einstellungen zu ändern, wenn Sie nicht wissen, was Sie tun.',
+        '/n',
+        'Wenn Sie mehr über die Verwendung der "PDF-Formatierungs-Einstellungen" erfahren möchten,
+            sollten Sie einen Blick auf den Backend-Code werfen unter: "backend/decoder/pdf.py".',
+        '/n', '/N', '/n',
+        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
+        '/n',
+        'Um die "PDF-Formatierungs-Einstellungen" zurückzusetzen,
+            drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
+    ]
+    Pdf: [
+        'Seitentrennzeichen verwenden [0, 1]',
+        'Tabulatorgröße zwischen Wörtern',
+        'Zeichen pro Zeile',
+        'Zeilen pro Seite',
+        'Titel Schriftgröße',
+        'Text Schriftgröße',
+        'Seitenbreite',
+        'Titlehöhe',
+        'Kopfzeilehöhe',
+        'Zeilenhöhe'
+    ]
+    Dialogs_adv: [
+        'Auf dieser Registerkarte können Sie die Einstellungen für die 
+            "regular expression" für den Eingabetext ändern.',
+        'Es wird nicht empfohlen, diese Einstellungen zu ändern, wenn Sie nicht wissen, was Sie tun.',
+        '/n',
+        'Wenn Sie mehr über die Verwendung der Einstellungen für "reguläre Ausdrücke" erfahren möchten,
+            sollten Sie einen Blick auf den Backend-Code werfen unter: "backend/decoder/language_decoder.py".',
+        '/n', '/N', '/n',
+        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
+        '/n',
+        'Um die Einstellungen für den "regulären Ausdruck" zurückzusetzen,
+            drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
+    ]
+    Advanced: [
+        'Zeichensetzung',
+        'Startzeichen',
+        'Abschlusszeichen',
+        'Zahlenmarkierungen',
+        'Eröffnungszeichen',
+        'Abschlusszeichen',
+        'Zitatmarkierungen'
+    ]
+    Messages:
+        connect_check:
+            - 'Verbindung erfolgreich'
+            - '500 Internal server error'
+    Tips:
+        interface:
+            help: 'Hilfe benötigt?'
+            apply: 'Einstellungen anwenden'
+            reset: 'Einstellungen zurücksetzen'
+        replace:
+            help: 'Hilfe benötigt?'
+            save: 'Einstellungen speichern'
+            reset: 'Einstellungen zurücksetzen'
+            delete: 'Einstellungen löschen'
+        pdf:
+            help: 'Hilfe benötigt?'
+            save: 'Einstellungen speichern'
+            reset: 'Einstellungen zurücksetzen'
+        advanced:
+            help: 'Hilfe benötigt?'
+            save: 'Einstellungen speichern'
+            reset: 'Einstellungen zurücksetzen'

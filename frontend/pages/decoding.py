@@ -22,6 +22,8 @@ class Decoding(Page):
         self.find: str = ''
         self.repl: str = ''
         self.preload: bool = False
+        self.task0: asyncio.Task
+        self.task1: asyncio.Task
 
     def _open_upload(self) -> None:
         try:
@@ -135,22 +137,46 @@ class Decoding(Page):
                     message = f"{self.ui_language.DECODING.Messages.decoding} {len(self.state.source_words)}",
                     position = 'top',
                     type = 'ongoing',
+                    color = 'dark',
                     multi_line = True,
                     timeout = None,
                     spinner = True,
-                    close_button = False,
+                    close_button = self.ui_language.DECODING.Messages.cancel,
+                    on_dismiss = self._task_cancel
                 )
-                # TODO: make decoding cancelable
-                self.state.target_words = await asyncio.to_thread(
-                    lambda: self.decoder.decode_words(source_words = self.state.source_words)
-                )
-                self.state.sentences = await asyncio.to_thread(
-                    lambda: self.decoder.decode_sentences(source_words = self.state.source_words)
-                )
+                await self._task_handler()
                 self._apply_dict()
                 notification.dismiss()
         except Exception:
             logger.error(f'Error in "_decode_words" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    async def _task_handler(self):
+        try:
+            self.task0 = asyncio.create_task(
+                asyncio.to_thread(self.decoder.decode_words, self.state.source_words)
+            )
+            self.task1 = asyncio.create_task(
+                asyncio.to_thread(self.decoder.decode_sentences, self.state.source_words)
+            )
+            self.state.target_words = await self.task0
+            self.state.sentences = await self.task1
+        except asyncio.exceptions.CancelledError:
+            logger.info('Decoding cancelled')
+            self.state.s_hash = 0
+            self.state.d_hash = 0
+        except Exception:
+            logger.error(f'Error in "_task_handler" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    def _task_cancel(self):
+        try:
+            self.task0.cancel()
+            self.task1.cancel()
+        except AttributeError:
+            return
+        except Exception:
+            logger.error(f'Error in "_task_cancel" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _apply_dict(self) -> None:

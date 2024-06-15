@@ -73,7 +73,7 @@ DECODING:
         'For each input word should be a corresponding translation.',
         'In case you are not satisfied with the translation provided by google,
             you may correct the translation directly in the input field.',
-        'If an error occurs frequently, it is better to create a dictionary for it on the dictionary page
+        'If an error occurs frequently, it is better to create a dictionary for it on the dictionaries page
             in order to set the corrections automatically.',
         '/n', '/N', '/n',
         'At the footer are several actions you may choose from:',
@@ -109,6 +109,7 @@ DECODING:
         ]
     Messages:
         decoding: 'Decoding words:'
+        cancel: 'CANCEL'
         reject: 'Upload a json file with max:'
         invalid: 'Invalid json file. Upload a previously exported json file.'
     Tips:
@@ -198,7 +199,7 @@ SETTINGS:
         '/n', '/N', '/n',
         'Click the "APPLY" button to confirm your changes.',
         '/n', '/N', '/n',
-        'To reset the "replacement dictionary", just press the button on the bottom left side of the tab.'
+        'To reset the "interface settings", just press the button on the bottom left side of the tab.'
     ]
     Interface:
         text: [
@@ -212,8 +213,8 @@ SETTINGS:
         apply: 'APPLY'
     Dialogs_replace: [
         'On this tab, you can define a language independent "replacement dictionary" for the input text.',
-        'Under Character, you can enter special characters, which should be replaced.',
-        'Under Substitute, you can enter the characters, which should be used instead.',
+        'Under "Character", you can enter special characters, which should be replaced.',
+        'Under "Substitute", you can enter the characters, which should be used instead.',
         'With the "+" and "-" buttons you can add or remove entries in the dictionary.',
         '/n', '/N', '/n',
         'Click on the "SAVE" button to store and apply your values.',
