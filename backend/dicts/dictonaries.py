@@ -13,25 +13,25 @@ from backend.logger.logger import logger
 class Dicts(object):
 
     def __init__(self, folder_path: str = '.',
-                 uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000') -> None:
+                 user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000') -> None:
         """
-        replace_dict: a dictionary to replace chars in source text
-        dictionaries: a dictionary of dictionaries to correct language dependent translation mistakes
+        :param folder_path: path to the dictionaries folder
+        :param user_uuid: user uuid to identify correspondent dictionaries
         """
         module_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), folder_path)
-        self.uuid = uuid
+        self.user_uuid = user_uuid
         self.folder_path = os.path.join(module_path, 'json')
         self.replacements: Dict[str, str] = REPLACEMENTS
         self.dictionaries: Dict[str, Dict[str, str]] = {}
 
-    def load(self, uuid: Union[UUID, str]) -> None:
+    def load(self, user_uuid: Union[UUID, str]) -> None:
         """
-        :param uuid: user uuid to identify correspondent dictionaries
+        :param user_uuid: user uuid to identify correspondent dictionaries
         """
-        if CONFIG.on_prem: uuid = self.uuid
-        json_path = os.path.join(self.folder_path, f'{uuid}.json')
+        if CONFIG.on_prem: user_uuid = self.user_uuid
+        json_path = os.path.join(self.folder_path, f'{user_uuid}.json')
         if not os.path.isfile(json_path):
-            self.save(uuid = uuid)
+            self.save(user_uuid = user_uuid)
             return
         try:
             with open(file = json_path, mode = 'r', encoding = 'utf-8') as json_file:
@@ -44,14 +44,14 @@ class Dicts(object):
             logger.error(message)
             raise DictionaryError(message)
 
-    def save(self, uuid: Union[UUID, str]) -> None:
+    def save(self, user_uuid: Union[UUID, str]) -> None:
         """
-        :param uuid: user uuid to identify correspondent dictionaries
+        :param user_uuid: user uuid to identify correspondent dictionaries
         """
         try:
-            if CONFIG.on_prem: uuid = self.uuid
+            if CONFIG.on_prem: user_uuid = self.user_uuid
             os.makedirs(self.folder_path, exist_ok = True)
-            json_path = os.path.join(self.folder_path, f'{uuid}.json')
+            json_path = os.path.join(self.folder_path, f'{user_uuid}.json')
             data = {'replacements': self.replacements, 'dictionaries': self.dictionaries}
             with open(file = json_path, mode = 'w', encoding = 'utf-8') as json_file:
                 json.dump(data, json_file, ensure_ascii = False, indent = 4)

@@ -54,7 +54,7 @@ UPLOAD:
         success: 'Upload finished.'
         reject: 'Upload a text file with max:'
     Tips:
-        help: 'Need help?'
+        help: 'Help'
         title: 'Title of text'
         save: 'Save text'
         decode: 'Start decoding'
@@ -113,7 +113,7 @@ DECODING:
         reject: 'Upload a json file with max:'
         invalid: 'Invalid json file. Upload a previously exported json file.'
     Tips:
-        help: 'Need help?'
+        help: 'Help'
         replace: 'Replace'
         import_: 'Import words'
         save: 'Save decoding'
@@ -166,7 +166,7 @@ DICTIONARY:
         reject: 'Upload a json file with max:'
         invalid: 'Invalid json file. Upload a previously exported json file.'
     Tips:
-        help: 'Need help?'
+        help: 'Help'
         delete: 'Delete dictionary'
         clear: 'Clear dictionary'
         save: 'Save dictionary'
@@ -197,7 +197,7 @@ SETTINGS:
         '/n', '/N', '/n',
         'The third sections provides a proxy configuration option and a button for checking the internet connection.',
         '/n', '/N', '/n',
-        'Click the "APPLY" button to confirm your changes.',
+        'Click the "RELOAD" button to reload the page and see the changes.',
         '/n', '/N', '/n',
         'To reset the "interface settings", just press the button on the bottom left side of the tab.'
     ]
@@ -210,14 +210,14 @@ SETTINGS:
             'Proxy configuration:'
         ]
         check: 'CHECK CONNECTION'
-        apply: 'APPLY'
+        reload: 'RELOAD'
     Dialogs_replace: [
         'On this tab, you can define a language independent "replacement dictionary" for the input text.',
         'Under "Character", you can enter special characters, which should be replaced.',
         'Under "Substitute", you can enter the characters, which should be used instead.',
         'With the "+" and "-" buttons you can add or remove entries in the dictionary.',
         '/n', '/N', '/n',
-        'Click on the "SAVE" button to store and apply your values.',
+        'Click on the "SAVE" button to save and apply your values.',
         '/n',
         'To reset the "replacement dictionary", just press the button on the bottom left side of the tab.',
         '/n',
@@ -233,7 +233,7 @@ SETTINGS:
         'If you want to find out more about the use of the "pdf layout" settings, you
             have to take a look at the backend code under: "backend/decoder/pdf.py".',
         '/n', '/N', '/n',
-        'Click on the "SAVE" button to store and apply your values.',
+        'Click on the "SAVE" button to save and apply your values.',
         '/n',
         'To reset the "pdf layout" settings, just press the button on the bottom left side of the tab.'
     ]
@@ -256,7 +256,7 @@ SETTINGS:
         'If you want to find out more about the use of the "regular expression" settings,
             you have to take a look at the backend code under: "backend/decoder/language_decoder.py".',
         '/n', '/N', '/n',
-        'Click on the "SAVE" button to store and apply your values.',
+        'Click on the "SAVE" button to save and apply your values.',
         '/n',
         'To reset the "regular expression" settings, just press the button on the bottom left side of the tab.'
     ]
@@ -275,19 +275,19 @@ SETTINGS:
             - '500 Internal server error'
     Tips:
         interface:
-            help: 'Need help?'
-            apply: 'Apply settings'
+            help: 'Help'
+            reload: 'Reload page'
             reset: 'Reset settings'
         replace:
-            help: 'Need help?'
+            help: 'Help'
             save: 'Save settings'
             reset: 'Reset settings'
             delete: 'Clear settings'
         pdf:
-            help: 'Need help?'
+            help: 'Help'
             save: 'Save settings'
             reset: 'Reset settings'
         advanced:
-            help: 'Need help?'
+            help: 'Help'
             save: 'Save settings'
             reset: 'Reset settings'

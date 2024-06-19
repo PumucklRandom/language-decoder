@@ -19,23 +19,20 @@ class Dictionaries(Page):
         self.ui_selector: ui.select = None  # noqa
         self.ui_table: UITable = None  # noqa
 
-    def _open_previous_url(self) -> None:
+    def _go_back(self) -> None:
         try:
             self._save_dict()
-            self.update_url_history()
-            i = 1 if self.url_history[0] == self.URL else 0
-            ui.open(f'{self.url_history[i]}')
+            ui.navigate.back()
         except Exception:
-            logger.error(f'Error in "_open_previous_url" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_back" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_settings(self) -> None:
+    def _go_to_settings(self) -> None:
         try:
             self._save_dict()
-            self.update_url_history()
-            ui.open(f'{URLS.SETTINGS}')
+            ui.navigate.to(f'{URLS.SETTINGS}')
         except Exception:
-            logger.error(f'Error in "_open_settings" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _clear_table(self) -> None:
@@ -43,7 +40,7 @@ class Dictionaries(Page):
             self.dicts.dictionaries.get(self.state.dict_name, {}).clear()
             self.ui_table.rows.clear()
             self.ui_table.update()
-            # self.dicts.save(uuid = self.state.uuid)
+            # self.dicts.save(user_uuid = self.state.user_uuid)
         except Exception:
             logger.error(f'Error in "_clear_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -53,7 +50,7 @@ class Dictionaries(Page):
             self._remove_select_option(self.state.dict_name)
             self.dicts.dictionaries.pop(self.state.dict_name, {})
             self.ui_selector.set_value(None)
-            # self.dicts.save(uuid = self.state.uuid)
+            # self.dicts.save(user_uuid = self.state.user_uuid)
         except Exception:
             logger.error(f'Error in "_delete_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -91,7 +88,7 @@ class Dictionaries(Page):
             self.dicts.dictionaries.pop(self.state.dict_name, {})
             self.state.dict_name = self.ui_selector.value
             self.ui_selector.update()
-            # self.dicts.save(uuid = self.state.uuid)
+            # self.dicts.save(user_uuid = self.state.user_uuid)
         except Exception:
             logger.error(f'Error in "_rename_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -124,7 +121,7 @@ class Dictionaries(Page):
     def _save_dict(self) -> None:
         try:
             self._update_dict()
-            self.dicts.save(uuid = self.state.uuid)
+            self.dicts.save(user_uuid = self.state.user_uuid)
         except Exception:
             logger.error(f'Error in "_save_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -209,17 +206,17 @@ class Dictionaries(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DICTIONARY.Header.go_back, on_click = self._open_previous_url)
+                ui.button(text = self.ui_language.DICTIONARY.Header.go_back, on_click = self._go_back)
                 ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
                 ui.space()
-                ui.button(icon = 'settings', on_click = self._open_settings)
+                ui.button(icon = 'settings', on_click = self._go_to_settings)
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _center(self) -> None:
         try:
-            self.dicts.load(uuid = self.state.uuid)
+            self.dicts.load(user_uuid = self.state.user_uuid)
             with ui.column().classes('w-full items-center').style('font-size:12pt'):
                 self._selector()
                 with ui.card().classes('items-center').style('width:650px'):

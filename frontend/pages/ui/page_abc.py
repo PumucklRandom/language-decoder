@@ -1,11 +1,10 @@
-from typing import List
 from urllib import parse
 from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import URLS, COLORS, HTML, Language, load_language
+from frontend.pages.ui.config import URLS, COLORS, HTML, Language
 from frontend.pages.ui.state import State
 
 
@@ -18,24 +17,6 @@ class Classproperty(property):
 
     def __delete__(self, obj):
         super(Classproperty, self).__delete__(type(obj))
-
-
-class URLHistory(object):
-    """
-     Stores the URL of previous viewed pages to provide the GO BACK option
-    """
-
-    def __init__(self, size: int = 3) -> None:
-        self.size = size
-        self._url_history: List[str] = ['/'] * self.size
-
-    @property
-    def url_history(self) -> List[str]:
-        return self._url_history
-
-    def update(self, url) -> None:
-        self._url_history.insert(0, url)
-        self._url_history.pop(-1)
 
 
 class Page(ABC):
@@ -55,8 +36,8 @@ class Page(ABC):
     async def __init_ui__(self, client: Client) -> None:
         await client.connected()
         if not client.disconnect_handlers:
-            client.on_disconnect(handler = lambda: self.del_app_routes(route = f'{URLS.DOWNLOAD}{self.state.id}'))
-        self.__init_state__(state_id = client.tab_id)
+            client.on_disconnect(handler = lambda: self.del_app_routes(route = f'{URLS.DOWNLOAD}{self.state.uuid}'))
+        self.__init_state__(uuid = client.tab_id)
         ui.dark_mode().set_value(self.state.dark_mode)
         self.ui_language = self.state.ui_language
         # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
@@ -66,15 +47,15 @@ class Page(ABC):
         ui.add_head_html(HTML.FLEX_GROW)
         # ui.add_head_html(HTML.HEADER_STICKY)
 
-    def __init_state__(self, state_id: str) -> None:
-        self.state = State(app.storage.tab)
-        self.state.add('id', state_id)
-        self.state.add('uuid', app.storage.browser.get('id'))
-        self.state.add('url_history', URLHistory())
-        self.state.add('ui_language', load_language())
+    def __init_state__(self, uuid: str) -> None:
+        self.state = State(store = app.storage.tab)
+        self.state.add('uuid', uuid)
+        self.state.add('user_uuid', app.storage.browser.get('id'))
+        self.state.add('pdf_params', CONFIG.Pdf.__dict__.copy())
+        self.state.add('regex', CONFIG.Regex.copy())
 
     def set_decoder_state(self) -> None:
-        self.decoder.uuid = self.state.uuid
+        self.decoder.user_uuid = self.state.user_uuid
         self.decoder.source_language = self.state.source_language
         self.decoder.target_language = self.state.target_language
         self.decoder.dict_name = self.state.dict_name
@@ -85,18 +66,6 @@ class Page(ABC):
     @Classproperty
     def URL(cls) -> str:
         return cls._URL
-
-    @property
-    def url_history(self) -> List[str]:
-        return self.state.url_history.url_history
-
-    @url_history.setter
-    def url_history(self, url: str) -> None:
-        self.state.url_history.update(url)
-
-    def update_url_history(self) -> None:
-        if self.url_history[0] != self.URL:
-            self.url_history = self.URL
 
     @staticmethod
     def _add_app_route(route: str, content: any, file_type: str, disposition: str, filename: str) -> None:
@@ -118,7 +87,7 @@ class Page(ABC):
 
     def upd_app_route(self, url: str, content: any, file_type: str,
                       filename: str, disposition: str = 'attachment') -> str:
-        route = f'{url}{self.state.id}/{self.state.uuid}'
+        route = f'{url}{self.state.uuid}/{self.state.user_uuid}'
         if disposition == 'attachment':
             route = f'{route}.{file_type}'
         else:

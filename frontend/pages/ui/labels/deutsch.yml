@@ -58,7 +58,7 @@ UPLOAD:
         success: 'Hochladen beendet.'
         reject: 'Hochladen einer Textdatei mit maximal:'
     Tips:
-        help: 'Hilfe benötigt?'
+        help: 'Hilfe'
         title: 'Titel des Textes'
         save: 'Text abspeichern'
         decode: 'Dekodierung starten'
@@ -121,7 +121,7 @@ DECODING:
         reject: 'Hochladen einer json-Datei mit maximal:'
         invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
     Tips:
-        help: 'Hilfe benötigt?'
+        help: 'Hilfe'
         replace: 'Austauschen'
         import_: 'Wörter importieren'
         save: 'Dekodierung speichern'
@@ -175,7 +175,7 @@ DICTIONARY:
         reject: 'Hochladen einer json-Datei mit maximal:'
         invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
     Tips:
-        help: 'Hilfe benötigt?'
+        help: 'Hilfe'
         delete: 'Wörterbuch löschen'
         clear: 'Wörterbuch zurücksetzen'
         save: 'Wörterbuch abspeichern'
@@ -207,7 +207,7 @@ SETTINGS:
         'Der dritte Abschnitt bietet eine Proxy-Konfigurationsoption
             und eine Schaltfläche zur Überprüfung der Internetverbindung.',
         '/n', '/N', '/n',
-        'Klicken Sie auf die Schaltfläche "ANWENDEN", um Ihre Änderungen zu bestätigen.',
+        'Klicken Sie auf die Schaltfläche "NEU-LADEN", um die Seite neu zu laden und die Änderungen zu sehen.',
         '/n', '/N', '/n',
         'Um die "Programmeinstellungen" zurückzusetzen, 
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
@@ -221,7 +221,7 @@ SETTINGS:
             'Proxy-Konfiguration:'
         ]
         check: 'VERBINDUNG PRÜFEN'
-        apply: 'ANWENDEN'
+        reload: 'NEU-LADEN'
     Dialogs_replace: [
         'Auf dieser Registerkarte können Sie ein sprachunabhängiges 
             "Ersetzungswörterbuch" für den Eingabetext definieren.',
@@ -292,19 +292,19 @@ SETTINGS:
             - '500 Internal server error'
     Tips:
         interface:
-            help: 'Hilfe benötigt?'
-            apply: 'Einstellungen anwenden'
+            help: 'Hilfe'
+            reload: 'Seite neu laden'
             reset: 'Einstellungen zurücksetzen'
         replace:
-            help: 'Hilfe benötigt?'
+            help: 'Hilfe'
             save: 'Einstellungen speichern'
             reset: 'Einstellungen zurücksetzen'
             delete: 'Einstellungen löschen'
         pdf:
-            help: 'Hilfe benötigt?'
+            help: 'Hilfe'
             save: 'Einstellungen speichern'
             reset: 'Einstellungen zurücksetzen'
         advanced:
-            help: 'Hilfe benötigt?'
+            help: 'Hilfe'
             save: 'Einstellungen speichern'
             reset: 'Einstellungen zurücksetzen'

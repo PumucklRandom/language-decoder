@@ -1,7 +1,7 @@
-from typing import Any, List, Union
 from copy import copy
+from typing import Any, List, Union
 from backend.config.config import CONFIG
-from frontend.pages.ui.config import Language
+from frontend.pages.ui.config import Language, load_language
 
 
 class State(object):
@@ -39,32 +39,24 @@ class State(object):
         return copy(self)
 
     @property
-    def id(self) -> str:
-        return self.get('id')
-
-    @id.setter
-    def id(self, value: str) -> None:
-        self.update('id', value)
-
-    @property
     def uuid(self) -> str:
-        return self.get('uuid')
+        return self.get('uuid', '')
 
     @uuid.setter
     def uuid(self, value: str) -> None:
         self.update('uuid', value)
 
     @property
-    def url_history(self) -> type(object):
-        return self.get('url_history')
+    def user_uuid(self) -> str:
+        return self.get('user_uuid', '')
 
-    @url_history.setter
-    def url_history(self, value: type(object)) -> None:
-        self.update('url_history', value)
+    @user_uuid.setter
+    def user_uuid(self, value: str) -> None:
+        self.update('user_uuid', value)
 
     @property
     def ui_language(self) -> Language:
-        return self.get('ui_language')
+        return self.get('ui_language', load_language())
 
     @ui_language.setter
     def ui_language(self, value: Language) -> None:
@@ -104,7 +96,7 @@ class State(object):
 
     @property
     def http(self) -> str:
-        return self.get('http')
+        return self.get('http', '')
 
     @http.setter
     def http(self, value: str) -> None:
@@ -112,7 +104,7 @@ class State(object):
 
     @property
     def https(self) -> str:
-        return self.get('https')
+        return self.get('https', '')
 
     @https.setter
     def https(self, value: str) -> None:
@@ -144,7 +136,7 @@ class State(object):
 
     @property
     def dict_name(self) -> str:
-        return self.get('dict_name')
+        return self.get('dict_name', '')
 
     @dict_name.setter
     def dict_name(self, value: str) -> None:
@@ -152,7 +144,7 @@ class State(object):
 
     @property
     def title(self) -> str:
-        return self.get('title')
+        return self.get('title', '')
 
     @title.setter
     def title(self, value: str) -> None:

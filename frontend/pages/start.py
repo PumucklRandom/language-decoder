@@ -12,12 +12,11 @@ class Start(Page):
         super().__init__()
         self.font_size = 14
 
-    def _open_upload(self) -> None:
+    def _go_to_upload(self) -> None:
         try:
-            self.update_url_history()
-            ui.open(f'{URLS.UPLOAD}')
+            ui.navigate.to(f'{URLS.UPLOAD}')
         except Exception:
-            logger.error(f'Error in "_open_upload" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_upload" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _center(self) -> None:
@@ -49,7 +48,7 @@ class Start(Page):
                         new_tab = True
                     )
                 ui.space()
-                ui.button(text = self.ui_language.START.Explanations.start, on_click = self._open_upload) \
+                ui.button(text = self.ui_language.START.Explanations.start, on_click = self._go_to_upload) \
                     .style(f'font-size:{self.font_size}pt')
                 ui.space()
         except Exception:

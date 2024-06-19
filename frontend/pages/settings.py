@@ -22,29 +22,26 @@ class Settings(Page):
     def get_proxies(self):
         return {'http': self.state.http, 'https': self.state.https}
 
-    def _open_previous_url(self) -> None:
+    def _go_back(self) -> None:
         try:
             self._save_replacements()
             self._update_pdf_params()
             self._update_adv_params()
-            self._refresh_interface()
-            # do not update url history in settings
-            ui.open(f'{self.url_history[0]}')
+            self.state.proxies = self.get_proxies()
+            ui.navigate.back()
         except Exception:
-            logger.error(f'Error in "_open_previous_url" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_back" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _refresh_interface(self) -> None:
+    def _reload_interface(self) -> None:
         try:
-            self.state.proxies = self.get_proxies()
-            ui.open(f'{self.URL}')
+            ui.navigate.reload()
         except Exception:
-            logger.error(f'Error in "_refresh_interface" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_reload_interface" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _reset_interface(self) -> None:
         try:
-
             self.state.dark_mode = True
             self.state.show_tips = True
             self.state.reformatting = True
@@ -57,6 +54,7 @@ class Settings(Page):
 
     def _connection_check(self) -> None:
         try:
+            self.state.proxies = self.get_proxies()
             self.decoder.proxies = self.state.proxies
             self.decoder.translate_source(source = 'test')
             ui.notify(self.ui_language.SETTINGS.Messages.connect_check[0],
@@ -98,7 +96,7 @@ class Settings(Page):
     def _save_replacements(self) -> None:
         try:
             self.dicts.replacements = self.ui_table.get_values(as_dict = True)
-            self.dicts.save(uuid = self.state.uuid)
+            self.dicts.save(user_uuid = self.state.user_uuid)
         except Exception:
             logger.error(f'Error in "_update_replacements" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -187,7 +185,7 @@ class Settings(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = 'GO BACK', on_click = self._open_previous_url)
+                ui.button(text = 'GO BACK', on_click = self._go_back)
                 ui.label('SETTINGS').classes('absolute-center')
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
@@ -195,7 +193,7 @@ class Settings(Page):
 
     def _center(self) -> None:
         try:
-            self.dicts.load(uuid = self.state.uuid)
+            self.dicts.load(user_uuid = self.state.user_uuid)
             with ui.column().classes('w-full items-center').style('font-size:12pt'):
                 with ui.tabs() as tabs:
                     panel0 = ui.tab(self.ui_language.SETTINGS.Panel[0])
@@ -245,13 +243,13 @@ class Settings(Page):
                 ui.separator()
                 ui.label(text = self.ui_language.SETTINGS.Interface.text[4])
                 ui.input(label = 'http proxy', placeholder = 'ip-address:port') \
-                    .bind_value(self, 'http')
+                    .bind_value(self.state, 'http')
                 ui.input(label = 'https proxy', placeholder = 'ip-address:port') \
                     .bind_value(self.state, 'https')
                 ui.button(text = self.ui_language.SETTINGS.Interface.check, on_click = self._connection_check)
             ui.separator()
-            with ui.button(text = self.ui_language.SETTINGS.Interface.apply, on_click = self._refresh_interface):
-                if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.apply)
+            with ui.button(text = self.ui_language.SETTINGS.Interface.reload, on_click = self._reload_interface):
+                if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reload)
             with ui.button(icon = 'restore', on_click = self._reset_interface) \
                     .classes('absolute-bottom-left'):
                 if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reset)

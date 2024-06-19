@@ -13,36 +13,32 @@ class Upload(Page):
     def __init__(self) -> None:
         super().__init__()
 
-    def _open_start_page(self) -> None:
+    def _go_to_start_page(self) -> None:
         try:
-            self.update_url_history()
-            ui.open(f'{URLS.START}')
+            ui.navigate.to(f'{URLS.START}')
         except Exception:
-            logger.error(f'Error in "_open_start_page" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_start_page" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_dictionaries(self) -> None:
+    def _go_to_dictionaries(self) -> None:
         try:
-            self.update_url_history()
-            ui.open(f'{URLS.DICTIONARIES}')
+            ui.navigate.to(f'{URLS.DICTIONARIES}')
         except Exception:
-            logger.error(f'Error in "_open_dictionaries" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_dictionaries" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_settings(self) -> None:
+    def _go_to_settings(self) -> None:
         try:
-            self.update_url_history()
-            ui.open(f'{URLS.SETTINGS}')
+            ui.navigate.to(f'{URLS.SETTINGS}')
         except Exception:
-            logger.error(f'Error in "_open_settings" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_decoding(self) -> None:
+    def _go_to_decoding(self) -> None:
         try:
-            self.update_url_history()
-            ui.open(f'{URLS.DECODING}')
+            ui.navigate.to(f'{URLS.DECODING}')
         except Exception:
-            logger.error(f'Error in "_open_decoding" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_decoding" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _clear_text(self) -> None:
@@ -91,11 +87,11 @@ class Upload(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.UPLOAD.Header.start_page, on_click = self._open_start_page)
+                ui.button(text = self.ui_language.UPLOAD.Header.start_page, on_click = self._go_to_start_page)
                 ui.label(text = self.ui_language.UPLOAD.Header.upload).classes('absolute-center')
                 ui.space()
-                ui.button(text = self.ui_language.UPLOAD.Header.dictionaries, on_click = self._open_dictionaries)
-                ui.button(icon = 'settings', on_click = self._open_settings)
+                ui.button(text = self.ui_language.UPLOAD.Header.dictionaries, on_click = self._go_to_dictionaries)
+                ui.button(icon = 'settings', on_click = self._go_to_settings)
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -156,7 +152,7 @@ class Upload(Page):
                 # with ui.button(icon = 'save', on_click = self._update_text):
                 #     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.save)
                 ui.space()
-                with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._open_decoding):
+                with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._go_to_decoding):
                     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
                 with ui.button(icon = 'delete', on_click = self._clear_text) \
                         .classes('absolute-bottom-right'):

@@ -26,7 +26,7 @@ class LanguageDecoder(object):
     """
 
     def __init__(self,
-                 uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
+                 user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  source_language: str = 'auto',
                  target_language: str = 'english',
                  dict_name: str = None,
@@ -37,7 +37,7 @@ class LanguageDecoder(object):
                  regex: Config.Regex = CONFIG.Regex) -> None:
 
         """
-        :param uuid: user uuid to identify correspondent dictionaries
+        :param user_uuid: user uuid to identify correspondent dictionaries
         :param source_language: the translation source language
         :param target_language: the translation target language
         :param dict_name: the name of the dictionary to select the desires dictionary
@@ -49,12 +49,12 @@ class LanguageDecoder(object):
         """
 
         self._pp = PrettyPrinter(indent = 4)
-        self.uuid = uuid
+        self.user_uuid = user_uuid
         self.source_language = source_language
         self.target_language = target_language
         self.dict_name = dict_name
         self.proxies = proxies
-        self._dicts = Dicts(uuid = self.uuid)
+        self._dicts = Dicts(user_uuid = self.user_uuid)
         self._translator = self.__init_translator__()
         self.regex = regex
         self.new_line = new_line
@@ -117,7 +117,7 @@ class LanguageDecoder(object):
         try:
             # remove new lines and add space at the end of text for regex
             text = ' '.join(text.split()) + ' '
-            self._dicts.load(uuid = self.uuid)
+            self._dicts.load(user_uuid = self.user_uuid)
             # replace special characters with common ones
             for chars in self._dicts.replacements.keys():
                 text = text.replace(chars, self._dicts.replacements.get(chars))
@@ -230,7 +230,7 @@ class LanguageDecoder(object):
         try:
             if not self.dict_name:
                 return target_words
-            self._dicts.load(uuid = self.uuid)
+            self._dicts.load(user_uuid = self.user_uuid)
             dictionary = self._dicts.dictionaries.get(self.dict_name, {})
             target_words_copy = target_words.copy()
             target_words.clear()

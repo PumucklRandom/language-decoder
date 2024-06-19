@@ -1,7 +1,6 @@
 import pathlib
 import asyncio
 import traceback
-from typing import Tuple
 from nicegui import ui, events, Client
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
@@ -25,41 +24,55 @@ class Decoding(Page):
         self.task0: asyncio.Task
         self.task1: asyncio.Task
 
-    def _open_upload(self) -> None:
+    def _go_to_upload(self) -> None:
         try:
             self._update_words()
-            self.del_app_routes(route = f'{URLS.DOWNLOAD}{self.state.id}')
-            self.update_url_history()
-            ui.open(f'{URLS.UPLOAD}')
+            ui.navigate.to(f'{URLS.UPLOAD}')
         except Exception:
-            logger.error(f'Error in "_open_upload" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_upload" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_dictionaries(self) -> None:
+    def _go_to_dictionaries(self) -> None:
         try:
             self._update_words()
-            self.del_app_routes(route = f'{URLS.DOWNLOAD}{self.state.id}')
-            self.update_url_history()
-            ui.open(f'{URLS.DICTIONARIES}')
+            ui.navigate.to(f'{URLS.DICTIONARIES}')
         except Exception:
-            logger.error(f'Error in "_open_dictionaries" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_dictionaries" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_settings(self) -> None:
+    def _go_to_settings(self) -> None:
         try:
             self._update_words()
-            self.del_app_routes(route = f'{URLS.DOWNLOAD}{self.state.id}')
-            self.update_url_history()
-            ui.open(f'{URLS.SETTINGS}')
+            ui.navigate.to(f'{URLS.SETTINGS}')
         except Exception:
-            logger.error(f'Error in "_open_settings" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_pdf_view(self, pdf_view_path: str) -> None:
+    def _open_pdf_view(self, filename: str) -> None:
         try:
-            ui.open(f'{pdf_view_path}', new_tab = True)
+            route = self.upd_app_route(
+                url = URLS.DOWNLOAD,
+                content = self.state.content,
+                file_type = 'pdf',
+                filename = filename,
+                disposition = 'inline'
+            )
+            ui.navigate.to(f'{route}', new_tab = True)
         except Exception:
             logger.error(f'Error in "_open_pdf_view" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    def _download_pdf(self, filename: str) -> None:
+        try:
+            route = self.upd_app_route(
+                url = URLS.DOWNLOAD,
+                content = self.state.content,
+                file_type = 'pdf',
+                filename = filename
+            )
+            ui.download(route)
+        except Exception:
+            logger.error(f'Error in "_download_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _preload_table(self) -> None:
@@ -127,14 +140,14 @@ class Decoding(Page):
 
     async def _decode_words(self) -> None:
         try:
-            _hash = hash(f"{self.state.source_text}{self.state.source_language}{self.state.target_language}")
+            _hash = hash(f'{self.state.source_text}{self.state.source_language}{self.state.target_language}')
             if self.state.d_hash == _hash:
                 self._table.refresh()
                 return
             self.state.d_hash = _hash
             if self.state.source_text:
                 notification = ui.notification(
-                    message = f"{self.ui_language.DECODING.Messages.decoding} {len(self.state.source_words)}",
+                    message = f'{self.ui_language.DECODING.Messages.decoding} {len(self.state.source_words)}',
                     position = 'top',
                     type = 'ongoing',
                     color = 'dark',
@@ -189,9 +202,9 @@ class Decoding(Page):
             logger.error(f'Error in "_apply_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _create_dpf(self) -> Tuple[str, str]:
+    def _create_dpf(self) -> None:
         try:
-            _hash = hash(f"{self.state.dict_name}{self.state.source_words}{self.state.target_words}")
+            _hash = hash(f'{self.state.title}{self.state.source_words}{self.state.target_words}')
             if self.state.c_hash != _hash:
                 self.state.c_hash = _hash
                 pdf = PDF(**self.state.pdf_params)
@@ -200,21 +213,6 @@ class Decoding(Page):
                     source_words = self.state.source_words,
                     target_words = self.state.target_words
                 )
-            filename = self.state.title if self.state.title else 'decoded'
-            route_view = self.upd_app_route(
-                url = URLS.DOWNLOAD,
-                content = self.state.content,
-                file_type = 'pdf',
-                filename = filename,
-                disposition = 'inline'
-            )
-            route_down = self.upd_app_route(
-                url = URLS.DOWNLOAD,
-                content = self.state.content,
-                file_type = 'pdf',
-                filename = filename
-            )
-            return route_view, route_down
         except Exception:
             logger.error(f'Error in "_create_dpf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -235,7 +233,7 @@ class Decoding(Page):
             self.state.source_text = ' '.join(self.state.source_words)
             self.state.s_hash = hash(self.state.source_text)
             self.state.d_hash = hash(
-                f"{self.state.source_text}{self.state.source_language}{self.state.target_language}"
+                f'{self.state.source_text}{self.state.source_language}{self.state.target_language}'
             )
             self._table.refresh()
         except DecoderError:
@@ -265,7 +263,8 @@ class Decoding(Page):
             if not self.state.target_words:
                 return
             self._save_words()
-            route_view, route_down = self._create_dpf()
+            self._create_dpf()
+            filename = self.state.title if self.state.title else 'decoded'
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
                     ui.button(icon = 'close', on_click = dialog.close) \
@@ -275,10 +274,10 @@ class Decoding(Page):
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[0])
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[1])
                     ui.button(text = self.ui_language.DECODING.Dialogs_pdf.view,
-                              on_click = lambda: self._open_pdf_view(route_view))
+                              on_click = lambda: self._open_pdf_view(filename = filename))
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[2])
                     ui.button(text = self.ui_language.DECODING.Dialogs_pdf.download,
-                              on_click = lambda: ui.download(route_down))
+                              on_click = lambda: self._download_pdf(filename = filename))
                     dialog.open()
         except Exception:
             logger.error(f'Error in "_pdf_dialog" with exception:\n{traceback.format_exc()}')
@@ -349,11 +348,11 @@ class Decoding(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DECODING.Header.go_back, on_click = self._open_upload)
+                ui.button(text = self.ui_language.DECODING.Header.go_back, on_click = self._go_to_upload)
                 ui.label(text = self.ui_language.DECODING.Header.decoding).classes('absolute-center')
                 ui.space()
-                ui.button(text = self.ui_language.DECODING.Header.dictionaries, on_click = self._open_dictionaries)
-                ui.button(icon = 'settings', on_click = self._open_settings)
+                ui.button(text = self.ui_language.DECODING.Header.dictionaries, on_click = self._go_to_dictionaries)
+                ui.button(icon = 'settings', on_click = self._go_to_settings)
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
