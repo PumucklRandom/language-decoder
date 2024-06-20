@@ -159,7 +159,7 @@ class PDF(object):
 
             pdf_lines = self._format_lines(source_words = source_words, target_words = target_words)
             pdf_pages = self._format_pages(pdf_lines = pdf_lines)
-            logger.info(f'Formatted PDF file with {len(pdf_pages)} pages.\n')
+            logger.info(f'Formatted PDF file with {len(pdf_pages)} pages.')
             self._format_pdf(title = title, pdf_pages = pdf_pages)
 
             if not pdf_path:

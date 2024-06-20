@@ -33,13 +33,6 @@ class Settings(Page):
             logger.error(f'Error in "_go_back" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _reload_interface(self) -> None:
-        try:
-            ui.navigate.reload()
-        except Exception:
-            logger.error(f'Error in "_reload_interface" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     def _reset_interface(self) -> None:
         try:
             self.state.dark_mode = True
@@ -248,7 +241,7 @@ class Settings(Page):
                     .bind_value(self.state, 'https')
                 ui.button(text = self.ui_language.SETTINGS.Interface.check, on_click = self._connection_check)
             ui.separator()
-            with ui.button(text = self.ui_language.SETTINGS.Interface.reload, on_click = self._reload_interface):
+            with ui.button(text = self.ui_language.SETTINGS.Interface.reload, on_click = ui.navigate.reload):
                 if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.reload)
             with ui.button(icon = 'restore', on_click = self._reset_interface) \
                     .classes('absolute-bottom-left'):

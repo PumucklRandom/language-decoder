@@ -35,8 +35,6 @@ class Page(ABC):
 
     async def __init_ui__(self, client: Client) -> None:
         await client.connected()
-        if not client.disconnect_handlers:
-            client.on_disconnect(handler = lambda: self.del_app_routes(route = f'{URLS.DOWNLOAD}{self.state.uuid}'))
         self.__init_state__(uuid = client.tab_id)
         ui.dark_mode().set_value(self.state.dark_mode)
         self.ui_language = self.state.ui_language
@@ -80,19 +78,19 @@ class Page(ABC):
             )
 
     @staticmethod
-    def del_app_routes(route: str) -> None:
+    def _del_app_routes(route: str) -> None:
         for app_route in app.routes:
             if app_route.path.startswith(route):
                 app.routes.remove(app_route)
 
-    def upd_app_route(self, url: str, content: any, file_type: str,
-                      filename: str, disposition: str = 'attachment') -> str:
+    def _upd_app_route(self, url: str, content: any, file_type: str,
+                       filename: str, disposition: str = 'attachment') -> str:
         route = f'{url}{self.state.uuid}/{self.state.user_uuid}'
         if disposition == 'attachment':
             route = f'{route}.{file_type}'
         else:
             route = f'{route}/'
-        self.del_app_routes(route = route)
+        self._del_app_routes(route = route)
         self._add_app_route(
             route = route,
             content = content,
@@ -101,6 +99,22 @@ class Page(ABC):
             filename = filename
         )
         return route
+
+    async def open_route(self, content: any, file_type: str,
+                         filename: str, disposition: str = 'attachment') -> None:
+        route = self._upd_app_route(
+            url = URLS.DOWNLOAD,
+            content = content,
+            file_type = file_type,
+            filename = filename,
+            disposition = disposition
+        )
+        if disposition == 'attachment':
+            ui.download(route)
+        else:
+            ui.navigate.to(f'{route}', new_tab = True)
+        await ui.context.client.disconnected()
+        self._del_app_routes(route = route)
 
     @abstractmethod
     async def page(self, client: Client) -> None:

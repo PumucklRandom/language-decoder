@@ -140,19 +140,17 @@ class Dictionaries(Page):
             logger.error(f'Error in "_dialog_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _export(self) -> None:
+    async def _export(self) -> None:
         try:
             if not self.state.dict_name:
                 return
             self._save_dict()
             content = self.dicts.export(dict_name = self.state.dict_name)
-            route = self.upd_app_route(
-                url = URLS.DOWNLOAD,
+            await self.open_route(
                 content = content,
                 file_type = 'json',
-                filename = self.state.dict_name,
+                filename = self.state.dict_name
             )
-            ui.download(route)
         except Exception:
             logger.error(f'Error in "_export" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')

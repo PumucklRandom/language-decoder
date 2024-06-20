@@ -20,6 +20,7 @@ class Decoding(Page):
         self.ui_repl_input: ui.input = None  # noqa
         self.find: str = ''
         self.repl: str = ''
+        self.filename: str = 'decoded'
         self.preload: bool = False
         self.task0: asyncio.Task
         self.task1: asyncio.Task
@@ -48,29 +49,25 @@ class Decoding(Page):
             logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _open_pdf_view(self, filename: str) -> None:
+    async def _open_pdf_view(self) -> None:
         try:
-            route = self.upd_app_route(
-                url = URLS.DOWNLOAD,
+            await self.open_route(
                 content = self.state.content,
                 file_type = 'pdf',
-                filename = filename,
+                filename = self.filename,
                 disposition = 'inline'
             )
-            ui.navigate.to(f'{route}', new_tab = True)
         except Exception:
             logger.error(f'Error in "_open_pdf_view" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _download_pdf(self, filename: str) -> None:
+    async def _download_pdf(self) -> None:
         try:
-            route = self.upd_app_route(
-                url = URLS.DOWNLOAD,
+            await self.open_route(
                 content = self.state.content,
                 file_type = 'pdf',
-                filename = filename
+                filename = self.filename
             )
-            ui.download(route)
         except Exception:
             logger.error(f'Error in "_download_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -264,7 +261,6 @@ class Decoding(Page):
                 return
             self._save_words()
             self._create_dpf()
-            filename = self.state.title if self.state.title else 'decoded'
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
                     ui.button(icon = 'close', on_click = dialog.close) \
@@ -274,10 +270,10 @@ class Decoding(Page):
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[0])
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[1])
                     ui.button(text = self.ui_language.DECODING.Dialogs_pdf.view,
-                              on_click = lambda: self._open_pdf_view(filename = filename))
+                              on_click = self._open_pdf_view)
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[2])
                     ui.button(text = self.ui_language.DECODING.Dialogs_pdf.download,
-                              on_click = lambda: self._download_pdf(filename = filename))
+                              on_click = self._download_pdf)
                     dialog.open()
         except Exception:
             logger.error(f'Error in "_pdf_dialog" with exception:\n{traceback.format_exc()}')
@@ -288,17 +284,14 @@ class Decoding(Page):
             if not self.state.target_words:
                 return
             self._update_words()
-            filename = self.state.title if self.state.title else 'decoded'
             content = self.decoder.export(source_words = self.state.source_words,
                                           target_words = self.state.target_words,
                                           sentences = self.state.sentences)
-            route = self.upd_app_route(
-                url = URLS.DOWNLOAD,
+            await self.open_route(
                 content = content,
                 file_type = 'json',
-                filename = filename,
+                filename = self.filename
             )
-            ui.download(route)
         except Exception:
             logger.error(f'Error in "_export" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -414,6 +407,7 @@ class Decoding(Page):
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)
+        if self.state.title: self.filename = self.state.title
         self.set_decoder_state()
         await self._center()
         self._header()
