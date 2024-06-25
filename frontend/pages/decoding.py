@@ -199,9 +199,10 @@ class Decoding(Page):
             logger.error(f'Error in "_apply_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _create_dpf(self) -> None:
+    def create_pdf(self) -> None:
         try:
-            _hash = hash(f'{self.state.title}{self.state.source_words}{self.state.target_words}')
+            _hash = hash(f'{self.state.title}{self.state.source_words}'
+                         f'{self.state.target_words}{self.state.pdf_params}')
             if self.state.c_hash != _hash:
                 self.state.c_hash = _hash
                 pdf = PDF(**self.state.pdf_params)
@@ -210,8 +211,9 @@ class Decoding(Page):
                     source_words = self.state.source_words,
                     target_words = self.state.target_words
                 )
+            if self.state.title: self.filename = self.state.title
         except Exception:
-            logger.error(f'Error in "_create_dpf" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "create_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _on_upload_reject(self) -> None:
@@ -260,7 +262,7 @@ class Decoding(Page):
             if not self.state.target_words:
                 return
             self._save_words()
-            self._create_dpf()
+            self.create_pdf()
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
                     ui.button(icon = 'close', on_click = dialog.close) \
@@ -407,7 +409,6 @@ class Decoding(Page):
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)
-        if self.state.title: self.filename = self.state.title
         self.set_decoder_state()
         await self._center()
         self._header()

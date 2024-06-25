@@ -1,7 +1,7 @@
 from copy import copy
 from typing import Any, List, Union
 from backend.config.config import CONFIG
-from frontend.pages.ui.config import Language, load_language
+from frontend.pages.ui.config import Language
 
 
 class State(object):
@@ -56,7 +56,7 @@ class State(object):
 
     @property
     def ui_language(self) -> Language:
-        return self.get('ui_language', load_language())
+        return self.get('ui_language', None)
 
     @ui_language.setter
     def ui_language(self, value: Language) -> None:
@@ -120,7 +120,7 @@ class State(object):
 
     @property
     def pdf_params(self) -> dict:
-        return self.get('pdf_params', CONFIG.Pdf.__dict__.copy())
+        return self.get('pdf_params', {})
 
     @pdf_params.setter
     def pdf_params(self, value: dict) -> None:
@@ -128,7 +128,7 @@ class State(object):
 
     @property
     def regex(self) -> CONFIG.Regex:
-        return self.get('regex', CONFIG.Regex.copy())
+        return self.get('regex', None)
 
     @regex.setter
     def regex(self, value: CONFIG.Regex) -> None:

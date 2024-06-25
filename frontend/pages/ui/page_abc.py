@@ -4,7 +4,7 @@ from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import URLS, COLORS, HTML, Language
+from frontend.pages.ui.config import URLS, COLORS, HTML, Language, load_language
 from frontend.pages.ui.state import State
 
 
@@ -49,6 +49,7 @@ class Page(ABC):
         self.state = State(store = app.storage.tab)
         self.state.add('uuid', uuid)
         self.state.add('user_uuid', app.storage.browser.get('id'))
+        self.state.add('ui_language', load_language())
         self.state.add('pdf_params', CONFIG.Pdf.__dict__.copy())
         self.state.add('regex', CONFIG.Regex.copy())
 
