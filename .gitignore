@@ -1,5 +1,16 @@
 # Default ignored files
 .idea
+.nicegui
 __pycache__
-_main.py
+logs
+build
+dist
+LanguageDecoder.spec
+/backend/main.py
+__build__.py
+*.json
 *.pkl
+*.txt
+*.pfx
+
+!requirements.txt

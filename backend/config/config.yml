@@ -1,0 +1,40 @@
+on_prem: false
+stream_handler: true
+session_time: 10000
+debounce: 200
+size_factor: 11
+host: '127.0.0.1'
+port: 8080
+title: 'LanguageDecoder'
+favicon: 'pages/ui/icon/LD-icon.png'
+dark: true
+reconnect_timeout: 3
+native: false   # native = true (window mode)
+window_size: null  # [1600, 1000]
+fullscreen: false  # set to false
+frameless: false  # set to false
+reload: true  # set to false for desktop app!!! true for dev
+storage_secret: 'STORAGE_SECRET'
+Upload:
+    max_file_size: 100_000
+    auto_upload: true
+    max_files: 1
+Pdf:
+    page_sep: false
+    tab_size: 4
+    char_lim: 75
+    line_lim: 54
+    title_size: 24
+    font_size: 13.2
+    width: 215
+    title_height: 6.2
+    header_height: 14.2
+    line_height: 5.3
+Regex:
+    puncts: '.!?'
+    begins: '#$'
+    ending: ';?°%'
+    digits: '.,:!€'
+    opens: '<(\[{'
+    close: '>)\]}'
+    quotes: '"´`'
