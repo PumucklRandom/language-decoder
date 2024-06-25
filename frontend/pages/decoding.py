@@ -83,6 +83,7 @@ class Decoding(Page):
 
     def _update_words(self) -> None:
         try:
+            if self.state.title: self.filename = self.state.title
             self.state.source_words, self.state.target_words = self.ui_grid.get_values()
         except Exception:
             logger.error(f'Error in "_update_words" with exception:\n{traceback.format_exc()}')
@@ -211,7 +212,6 @@ class Decoding(Page):
                     source_words = self.state.source_words,
                     target_words = self.state.target_words
                 )
-            if self.state.title: self.filename = self.state.title
         except Exception:
             logger.error(f'Error in "create_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
