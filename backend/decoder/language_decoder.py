@@ -15,7 +15,8 @@ from backend.logger.logger import logger
 from backend.dicts.dictonaries import Dicts
 from backend.utils import utilities as utils
 
-PACKAGE_PATH = os.path.dirname(os.path.relpath(__file__))
+
+# PACKAGE_PATH = os.path.dirname(os.path.relpath(__file__))
 
 
 class LanguageDecoder(object):
@@ -147,9 +148,9 @@ class LanguageDecoder(object):
             raise DecoderError(message)
 
     @staticmethod
-    def _strip_word(target_word: str) -> str:
+    def _strip_word(word: str) -> str:
         # remove all non-alphanumeric and non-minus characters
-        return re.sub('[^\w\s_-]*', '', target_word)
+        return re.sub('\A[\W_]*|[^\w\s_-]*|[\W_]*\Z', '', word)
 
     def _wrap_word(self, source_word: str, target_word: str) -> str:
         # make sure target word is stripped
@@ -158,9 +159,9 @@ class LanguageDecoder(object):
         if all(not char.isalnum() for char in source_word):
             return source_word
         # get marks at the beginning of the word
-        beg = re.search('^\W*', source_word).group()
+        beg = re.search('\A[\W_]*', source_word).group()
         # get marks at the end of the word
-        end = re.search('\W*$', source_word).group()
+        end = re.search('[\W_]*\Z', source_word).group()
         return f'{beg}{target_word}{end}'
 
     def _split_sentences(self, text: str) -> List[str]:
@@ -208,13 +209,15 @@ class LanguageDecoder(object):
     def decode_words(self, source_words: List[str]) -> List[str]:
         try:
             logger.info(f'Decode {len(source_words)} words.')
-            target_words_copy = self.translate_source(source_words)
-            if len(target_words_copy) != len(source_words):
+            # strip source words before translation
+            source_words_strip = list(map(self._strip_word, source_words))
+            target_words_strip = self.translate_source(source_words_strip)
+            if len(target_words_strip) != len(source_words):
                 message = 'Length mismatch between source words and target words'
                 logger.error(message)
                 raise DecoderError(message)
             target_words = list()
-            for source_word, target_word in zip(source_words, target_words_copy):
+            for source_word, target_word in zip(source_words, target_words_strip):
                 # take source word if target word is None
                 target_word = source_word if target_word is None else target_word
                 # add missing marks from source word to target word
@@ -236,7 +239,7 @@ class LanguageDecoder(object):
             target_words.clear()
             for source_word, target_word in zip(source_words, target_words_copy):
                 # first strip the source word for the dictionary keys
-                source_strip = self._strip_word(target_word = source_word)
+                source_strip = self._strip_word(source_word)
                 if source_strip in dictionary.keys():
                     # replace target word if stripped source word is key
                     target_word = dictionary.get(source_strip)
