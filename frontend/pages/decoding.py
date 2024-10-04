@@ -83,8 +83,9 @@ class Decoding(Page):
 
     def _update_words(self) -> None:
         try:
-            if self.state.title: self.filename = self.state.title
             self.state.source_words, self.state.target_words = self.ui_grid.get_values()
+            self.state.source_words = list(map(str.strip, self.state.source_words))
+            self.state.target_words = list(map(str.strip, self.state.target_words))
         except Exception:
             logger.error(f'Error in "_update_words" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -122,6 +123,7 @@ class Decoding(Page):
 
     def _split_text(self) -> None:
         try:
+            self.filename = self.state.title
             _hash = hash(self.state.source_text)
             if self.state.s_hash == _hash:
                 return
@@ -229,6 +231,7 @@ class Decoding(Page):
             data = event.content.read().decode('utf-8')
             self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.import_(data = data)
             self.state.title = pathlib.Path(event.name).stem
+            self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
             self.state.s_hash = hash(self.state.source_text)
             self.state.d_hash = hash(
