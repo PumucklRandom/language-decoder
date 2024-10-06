@@ -27,8 +27,8 @@ import traceback
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.8.8.0', version)
-        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 8, 8, 0', version)
+        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.9.0.0', version)
+        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 9, 0, 0', version)
         file.seek(0)
         file.write(version)
 

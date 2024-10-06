@@ -8,8 +8,11 @@ from backend.error.error import ConfigError
 from backend.logger.logger import logger
 
 app.storage.max_tab_storage_age = CONFIG.session_time
-app.add_static_file(local_file = 'backend/fonts/RobotoMono/RobotoMono.ttf',
-                    url_path = '/fonts/RobotoMono/RobotoMono.ttf')
+app.add_static_file(
+    local_file = os.path.join(os.path.dirname(os.path.relpath(__file__)),
+                              '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
+    url_path = '/fonts/RobotoMono/RobotoMono.ttf'
+)
 
 
 class HTML:
@@ -70,6 +73,10 @@ class COLORS:
         KEY = 'dark'
         VAL = '#1D1D1D'
 
+    class DARK_PAGE:
+        KEY = 'dark-page'
+        VAL = '#121212'
+
     class POSITIVE:
         KEY = 'positive'
         VAL = '#20C040'
@@ -86,27 +93,31 @@ class COLORS:
         KEY = 'warning'
         VAL = '#FFFF40'
 
-    class GREY_1:
+    class GREY1:
         KEY = 'grey-1'
         VAL = '#FAFAFA'
 
-    class GREY_10:
+    class GREY4:
+        KEY = 'grey-1'
+        VAL = '#E0E0E0'
+
+    class GREY10:
         KEY = 'grey-10'
         VAL = '#212121'
 
-    class BLUE_GREY_1:
+    class BLUE_GREY1:
         KEY = 'blue-grey-1'
         VAL = '#ECEFF1'
 
-    class BLUE_GREY_10:
+    class BLUE_GREY10:
         KEY = 'blue-grey-10'
         VAL = '#263238'
 
-    class CYAN_1:
+    class CYAN1:
         KEY = 'cyan-1'
         VAL = '#E0F7FA'
 
-    class CYAN_10:
+    class CYAN10:
         KEY = 'cyan-10'
         VAL = '#006064'
 
