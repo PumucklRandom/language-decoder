@@ -188,22 +188,22 @@ class UIGrid(Table):
     def _set_item_size(self, words: List[str] = None) -> None:
         if words and isinstance(words, list):
             chars = lonlen(words)
-            if chars < 5: chars = 5
-            if chars > 18: chars = 18
-            self.item_size = chars * CONFIG.size_factor
+            self.item_size = int(chars * CONFIG.size_fct + 3 * CONFIG.size_fct)
+            if self.item_size < CONFIG.size_min: self.item_size = CONFIG.size_min
+            if self.item_size > CONFIG.size_max: self.item_size = CONFIG.size_max
 
     def _item(self) -> str:
         # TODO: custom size/width for each input element pair
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
-                    <q-input v-model="props.row.source" dense outlined 
-                    debounce="{CONFIG.debounce}" bg-color={self.scr_color}
+                    <q-input style="font-family:RobotoMono" input-style="color:#dddddd" dense outlined
+                    v-model="props.row.source" debounce="{CONFIG.debounce}" bg-color={self.scr_color}
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input v-model="props.row.target" dense outlined
-                    debounce="{CONFIG.debounce}" bg-color={self.tar_color}
+                    <q-input style="font-family:RobotoMono" input-style="color:#ffffff" dense outlined
+                    v-model="props.row.target"  debounce="{CONFIG.debounce}" bg-color={self.tar_color}
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>

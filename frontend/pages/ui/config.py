@@ -8,6 +8,40 @@ from backend.error.error import ConfigError
 from backend.logger.logger import logger
 
 app.storage.max_tab_storage_age = CONFIG.session_time
+app.add_static_file(local_file = 'backend/fonts/RobotoMono/RobotoMono.ttf',
+                    url_path = '/fonts/RobotoMono/RobotoMono.ttf')
+
+
+class HTML:
+    FLEX_GROW = '<style>.q-textarea.flex-grow .q-field__control{height: 100%}</style>'
+    RobotoMono = '''
+        <style>
+            @font-face{
+                font-family: "RobotoMono";
+                src: url('/fonts/RobotoMono/RobotoMono.ttf');
+            }
+        </style>
+    '''
+
+
+ui.add_head_html(HTML.FLEX_GROW, shared = True)
+ui.add_head_html(HTML.RobotoMono, shared = True)
+ui.select.default_props('outlined')
+ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
+ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
+
+DEFAULT_COLS = [
+    {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
+    {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
+]
+
+DICT_COLS = deepcopy(DEFAULT_COLS)
+DICT_COLS[0].update({'label': 'Source words', 'sortable': True})
+DICT_COLS[1].update({'label': 'Target words', 'sortable': True})
+
+REPLACE_COLS = deepcopy(DEFAULT_COLS)
+REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
+REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
 
 
 class URLS(object):
@@ -75,47 +109,6 @@ class COLORS:
     class CYAN_10:
         KEY = 'cyan-10'
         VAL = '#006064'
-
-
-class HTML:
-    FLEX_GROW = '<style>.q-textarea.flex-grow .q-field__control{height: 100%}</style>'
-    HEADER_STICKY = f'''
-        <style lang="sass">
-            .sticky-header
-                max-height: 100vh
-                .q-table__top,
-                .q-table__bottom,
-                thead tr:first-child th
-                    background-color: {COLORS.PRIMARY.KEY}
-                thead tr th
-                    position: sticky
-                    z-index: 1
-                thead tr:first-child th
-                    top: 0
-                &.q-table--loading thead tr:last-child th
-                    top: 48px
-                tbody
-                    scroll-margin-top: 48px
-        </style>
-    '''
-
-
-ui.select.default_props('outlined')
-ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
-ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
-
-DEFAULT_COLS = [
-    {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
-    {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
-]
-
-DICT_COLS = deepcopy(DEFAULT_COLS)
-DICT_COLS[0].update({'label': 'Source words', 'sortable': True})
-DICT_COLS[1].update({'label': 'Target words', 'sortable': True})
-
-REPLACE_COLS = deepcopy(DEFAULT_COLS)
-REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
-REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
 
 
 class Language(object):
