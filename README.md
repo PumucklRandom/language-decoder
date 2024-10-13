@@ -46,7 +46,7 @@ desired in the config file. (language_decoder/backend/config/config.yml)
 ### Known issues
 
 Windows Security blocks desktop application. (Workaround: Run application as
-admin)
+admin)\
 Desktop application can't download files
 
 ### Credits
