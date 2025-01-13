@@ -10,7 +10,7 @@ from backend.utils import utilities as utils
 class PDF(object):
 
     def __init__(self,
-                 font_path: str = '../fonts/NotoMono/NotoMono.ttf',
+                 font_path: str = '../fonts/RobotoMono/RobotoMono.ttf',
                  new_line: str = '\n',
                  page_sep: bool = False,
                  tab_size: int = 4,
@@ -90,11 +90,11 @@ class PDF(object):
             pdf_lines.append(f'{source_line[0:-self.tab_size]}{self.new_line}')
             pdf_lines.append(f'{target_line[0:-self.tab_size]}{self.new_line}')
             # pdf_lines.append(self.new_line)
+            return pdf_lines
         except Exception:
             message = f'Could not format pdf lines with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)
-        return pdf_lines
 
     def _format_pages(self, pdf_lines: List[str]) -> List[str]:
         try:
@@ -103,17 +103,17 @@ class PDF(object):
             while completed_lines < lines_len:
                 # get the lines for one page
                 page_lines = pdf_lines[completed_lines:completed_lines + self.line_lim]
-                if len(pages) % 2:  # page number is odd
+                if self.page_sep and len(pages) % 2:  # page number is odd
                     # if page number is odd add page separator at the beginning of the line
                     page_lines = [self.page_sep + line for line in page_lines]
                 # join lines to a single page and remove the self.new_lines at the end of the page
                 pages.append(''.join(page_lines)[:-len(self.new_line)])
                 completed_lines += self.line_lim
+            return pages
         except Exception:
             message = f'Could not format pdf pages with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)
-        return pages
 
     def _format_pdf(self, title: str, pdf_pages: List[str]) -> None:
         try:

@@ -9,7 +9,7 @@ class State(object):
     def __init__(self, store: dict):
         self.store = store
 
-    def get(self, key: str, default: any = None):
+    def get(self, key: str, default: any = None) -> Any:
         return self.store.get(key, default)
 
     def update(self, key: str, value: Any) -> None:
@@ -136,7 +136,7 @@ class State(object):
 
     @property
     def dict_name(self) -> str:
-        return self.get('dict_name', '')
+        return self.get('dict_name', None)
 
     @dict_name.setter
     def dict_name(self, value: str) -> None:

@@ -115,13 +115,13 @@ class UITable(Table):
                  row_key: str = 'id', dark_mode: bool = True) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key)
         if dark_mode:
-            self.scr_color = COLORS.GREY_10.VAL
-            self.tar_color = COLORS.BLUE_GREY_10.VAL
-            self.btn_color = COLORS.CYAN_10.VAL
+            self.scr_color = COLORS.GREY10.VAL
+            self.tar_color = COLORS.BLUE_GREY10.VAL
+            self.btn_color = COLORS.CYAN10.VAL
         else:
-            self.scr_color = COLORS.GREY_1.VAL
-            self.tar_color = COLORS.BLUE_GREY_1.VAL
-            self.btn_color = COLORS.CYAN_1.VAL
+            self.scr_color = COLORS.GREY1.VAL
+            self.tar_color = COLORS.BLUE_GREY1.VAL
+            self.btn_color = COLORS.CYAN1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
         self.props('flat bordered separator=cell')
@@ -175,11 +175,15 @@ class UIGrid(Table):
         if preload:
             target_words = [''] * len(source_words)
         if dark_mode:
-            self.scr_color = COLORS.GREY_10.KEY
-            self.tar_color = COLORS.BLUE_GREY_10.KEY
+            self.scr_color = COLORS.GREY4.VAL
+            self.scr_bg_color = COLORS.GREY10.KEY
+            self.tar_color = COLORS.GREY1.VAL
+            self.tar_bg_color = COLORS.BLUE_GREY10.KEY
         else:
-            self.scr_color = COLORS.GREY_1.KEY
-            self.tar_color = COLORS.BLUE_GREY_1.KEY
+            self.scr_color = COLORS.GREY10.VAL
+            self.scr_bg_color = COLORS.GREY1.KEY
+            self.tar_color = COLORS.DARK_PAGE.VAL
+            self.tar_bg_color = COLORS.BLUE_GREY1.KEY
         self._set_item_size(words = source_words + target_words)
         self.add_slot('item', self._item())
         self.props('hide-header grid')
@@ -188,23 +192,23 @@ class UIGrid(Table):
     def _set_item_size(self, words: List[str] = None) -> None:
         if words and isinstance(words, list):
             chars = lonlen(words)
-            if chars < 5: chars = 5
-            if chars > 18: chars = 18
-            self.item_size = chars * CONFIG.size_factor
+            self.item_size = int(chars * CONFIG.size_fct + 3 * CONFIG.size_fct)
+            if self.item_size < CONFIG.size_min: self.item_size = CONFIG.size_min
+            if self.item_size > CONFIG.size_max: self.item_size = CONFIG.size_max
 
     def _item(self) -> str:
         # TODO: custom size/width for each input element pair
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
-                    <q-input v-model="props.row.source" dense outlined 
-                    debounce="{CONFIG.debounce}" bg-color={self.scr_color}
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                    <q-input style="font-family:RobotoMono" input-style="color:{self.scr_color}"
+                    v-model="props.row.source" debounce="{CONFIG.debounce}" bg-color={self.scr_bg_color}
+                    dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input v-model="props.row.target" dense outlined
-                    debounce="{CONFIG.debounce}" bg-color={self.tar_color}
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                    <q-input style="font-family:RobotoMono" input-style="color:{self.tar_color}"
+                    v-model="props.row.target"  debounce="{CONFIG.debounce}" bg-color={self.tar_bg_color}
+                    dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>
         '''
