@@ -102,7 +102,7 @@ class Dictionaries(Page):
             logger.error(f'Error in "_deselect_table" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _remove_select_option(self, option) -> None:
+    def _remove_select_option(self, option: str) -> None:
         try:
             if option in self.ui_selector.options:
                 self.ui_selector.options.remove(option)
