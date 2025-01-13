@@ -333,7 +333,7 @@ class Decoding(Page):
                         self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
                     with ui.menu_item(auto_close = False):
                         self.ui_repl_input = ui.input(label = 'replace').bind_value(self, 'repl')
-                    with ui.menu_item(auto_close = False).style('justify-content: center'):
+                    with ui.menu_item(auto_close = False).style('justify-content:center'):
                         with ui.row():
                             ui.button(text = self.ui_language.DECODING.Footer.replace,
                                       on_click = self._replace_words).props('dense')
@@ -403,7 +403,7 @@ class Decoding(Page):
                 ui.space()
                 with ui.button(text = self.ui_language.DECODING.Footer.export, on_click = self._export):
                     if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.export)
-                ui.space().style()
+                ui.space()
                 with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
                     if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.view)
         except Exception:

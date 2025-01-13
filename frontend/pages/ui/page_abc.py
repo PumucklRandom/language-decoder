@@ -4,7 +4,7 @@ from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import URLS, COLORS, HTML, Language, load_language
+from frontend.pages.ui.config import URLS, COLORS, Language, load_language
 from frontend.pages.ui.state import State
 
 
@@ -42,8 +42,6 @@ class Page(ABC):
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
                   dark = COLORS.DARK.VAL, positive = COLORS.POSITIVE.VAL, negative = COLORS.NEGATIVE.VAL,
                   info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
-        ui.add_head_html(HTML.FLEX_GROW)
-        # ui.add_head_html(HTML.HEADER_STICKY)
 
     def __init_state__(self, uuid: str) -> None:
         self.state = State(store = app.storage.tab)
