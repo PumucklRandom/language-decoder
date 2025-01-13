@@ -391,7 +391,6 @@ class LanguageDecoder(object):
         except Exception:
             message = f'Could not decode source text to file with exception:\n{traceback.format_exc()}'
             logger.error(message)
-            return
 
     def _save_decode_text(self, decode_text: str) -> str:
         destin_path, _ = self._get_destin_paths(source_path = self.source_path)
