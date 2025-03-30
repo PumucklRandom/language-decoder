@@ -7,7 +7,8 @@ START:
         text: [
             'Der LanguageDecoder übersetzt einen gegebenen Text von der Ausgangssprache
                 Wort für Wort in die gewünschte Zielsprache (Dekodierung).',
-            'Dafür wird im Backend der Google-Übersetzer verwendet.',
+            'Für diesen Zweck wird im Backend der Google Translator verwendet 
+                (Oder wahlweise ein experimenteller AI-Übersetzer).',
             'Um die Übersetzung zu verbessern, kann ein Wörterbuch erstellt werden,
                 dass gängige Übersetzungsfehler automatisch korrigiert.',
             'Anschließend kann der entschlüsselte Text in eine PDF-Datei exportiert werden.',
@@ -49,7 +50,7 @@ UPLOAD:
     ]
     Title: 'Titel'
     Input_txt: [
-        'Geben Sie einen Text ein',
+        'Geben Sie einen Text ein. Wortlimit: ',
         'Eingabe starten'
     ]
     Messages:
@@ -57,6 +58,7 @@ UPLOAD:
         invalid: 'Ungültige Textdatei. Verwenden Sie eine andere Datei oder fügen Sie unten einen Text ein.'
         success: 'Hochladen beendet.'
         reject: 'Hochladen einer Textdatei mit maximal:'
+        limit: 'Reduzieren Sie die Textmenge auf maximal:'
     Tips:
         help: 'Hilfe'
         title: 'Titel des Textes'
@@ -75,7 +77,7 @@ DECODING:
     Dialogs: [
         'Hier sehen Sie das Ergebnis der Dekodierung.',
         'Für jedes Wort sollte es eine entsprechende Übersetzung geben.',
-        'Falls Sie mit der von Google gelieferten Übersetzung nicht zufrieden sind,
+        'Falls Sie mit der Übersetzung nicht zufrieden sind,
             können Sie die Übersetzung direkt im Eingabefeld korrigieren.',
         'Wenn ein Fehler häufig auftritt, wird empfohlen dafür ein Wörterbuch auf der Seite Wörterbücher
             anzulegen, um die Korrekturen automatisch vorzunehmen.',
@@ -197,10 +199,13 @@ SETTINGS:
     Dialogs_interface: [
         'Auf dieser Registerkarte können Sie grundlegende Programmeinstellungen ändern.',
         '/n', '/N', '/n',
-        'Der erste Abschnitt enthält Schalter zum Aktivieren oder Deaktivieren verschiedener Einstellungen,
-            wie z. B.: "Dunkler Modus", "Hinweise" und "Textumformung bei der Eingabe".',
-        'Mit dem Umschalter "Umformung" wird der Eingabetext mit einem "regular expression" umformatiert,
+        'Der erste Abschnitt enthält Schalter zum Aktivieren oder Deaktivieren verschiedener Einstellungen, wie z. B.:
+            "Dunkler Modus", "Hinweise", "Textumformung bei der Eingabe" und "Experimenteller AI-Übersetzer."',
+        'Mit dem Umschalter "Umformatieren" wird der Eingabetext mit einem "regular expression" umformatiert,
             um die Wörter bei der Dekodierung voneinander unterscheiden zu können.',
+        'Der alternative experimentelle KI-Übersetzer verwendet LLMs/GPTs auf Basis von gängigen neuronalen Netzen
+            für die Dekodierung. Im Allgemeinen wird damit ein besseres Ergebnis erzielt. Allerdings ist die
+            Übersetzung nicht deterministisch und kann in manchen Fällen zu Ausführungsfehlern führen.',
         '/n', '/N', '/n',
         'Im zweiten Abschnitt finden Sie eine Auswahl, mit der Sie die aktuelle Anzeigesprache ändern können.',
         '/n', '/N', '/n',
@@ -217,6 +222,7 @@ SETTINGS:
             'Dunkler Modus',
             'Zeige Hinweise',
             'Eingabetext umformatieren',
+            'Experimentelle AI Übersetzung',
             'Sprache auswählen',
             'Proxy-Konfiguration:'
         ]

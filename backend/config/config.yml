@@ -17,8 +17,18 @@ fullscreen: false  # set to false
 frameless: false  # set to false
 reload: true  # set to false for desktop app!!! true for dev
 storage_secret: 'STORAGE_SECRET'
+api_url: 'https://openrouter.ai/api/v1'
+api_key: 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNzRlZGJhYmQyNzUxNjRmNWMyYzI3Mw=='
+model: 'google/gemini-2.0-flash-exp:free'
+# model: google/gemini-2.0-pro-exp-02-05:free
+# model: google/gemini-2.0-flash-lite-preview-02-05:free
+model_temp: 0.0
+model_seed: 0
+char_limit: 2850
+max_json_size: 100_000
 Upload:
-    max_file_size: 100_000
+    word_limit: 750
+    max_file_size: 15_000
     auto_upload: true
     max_files: 1
 Pdf:

@@ -7,8 +7,9 @@ START:
         text: [
             'The LanguageDecoder translates a given text from the source language
                 to the desired target language word by word (decoding).',
-            'Therefor the Google translator is used in the backend.',
-            'To improve the translation, a dictionary can be created 
+            'For this purpose, the Google Translator is used in the backend
+                (Or alternatively an experimental AI translator).',
+            'To improve the translation, a dictionary can be created
                 to automatically correct common translation errors.',
             'Afterwards, the decoded text can be exported to a PDF file.',
             'The LanguageDecoder can also be used to create language learning lessons based
@@ -45,7 +46,7 @@ UPLOAD:
     ]
     Title: 'Title'
     Input_txt: [
-        'Enter some text',
+        'Enter some text. Max Words: ',
         'start typing'
     ]
     Messages:
@@ -53,6 +54,7 @@ UPLOAD:
         invalid: 'Invalid text file. Use a different one or paste some text below.'
         success: 'Upload finished.'
         reject: 'Upload a text file with max:'
+        limit: 'Reduce the text size to max:'
     Tips:
         help: 'Help'
         title: 'Title of text'
@@ -65,13 +67,13 @@ UPLOAD:
         decode: 'DECODE'
 DECODING:
     Header:
-        go_back: 'GO BACK TO UPLOAD'
+        go_back: 'BACK TO UPLOAD'
         decoding: 'DECODING'
         dictionaries: 'DICTIONARIES'
     Dialogs: [
         'Here you can see the result of th decoding process.',
         'For each input word should be a corresponding translation.',
-        'In case you are not satisfied with the translation provided by google,
+        'In case you are not satisfied with the translation, 
             you may correct the translation directly in the input field.',
         'If an error occurs frequently, it is better to create a dictionary for it on the dictionaries page
             in order to set the corrections automatically.',
@@ -189,9 +191,12 @@ SETTINGS:
         'On this tab, you can change basic interface settings.',
         '/n', '/N', '/n',
         'The first Section contains switches for enabling or disabling various settings such as:
-            "dark mode", "tooltips" and "input text reformation".',
+            "dark mode", "tooltips", "input text reformation" and "Experimental AI translator".',
         'With the "reformation toggle", the input text will be reformatted with "regular expression",
             to be able to distinguish the words from each other for the decoding process.',
+        'The alternative experimental AI translator uses LLMs/GPTs based on common neural networks for the decoding.
+            In general, a better result is achieved. However, the translation is not deterministic and may lead
+            in some cases to execution errors.',
         '/n', '/N', '/n',
         'In the second Section is a selection to change the current display language.',
         '/n', '/N', '/n',
@@ -206,6 +211,7 @@ SETTINGS:
             'Dark mode',
             'Show tooltips',
             'Reformat input text',
+            'Experimental AI translator',
             'Select language',
             'Proxy configuration:'
         ]

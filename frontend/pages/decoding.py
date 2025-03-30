@@ -15,15 +15,14 @@ class Decoding(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ui_grid: UIGrid = None  # noqa
-        self.ui_find_input: ui.input = None  # noqa
-        self.ui_repl_input: ui.input = None  # noqa
+        self.ui_grid: UIGrid
+        self.ui_find_input: ui.input
+        self.ui_repl_input: ui.input
         self.find: str = ''
         self.repl: str = ''
         self.filename: str = 'decoded'
         self.preload: bool = False
-        self.task0: asyncio.Task
-        self.task1: asyncio.Task
+        self.task: asyncio.Task
 
     def _go_to_upload(self) -> None:
         try:
@@ -101,9 +100,11 @@ class Decoding(Page):
     def _replace_words(self) -> None:
         try:
             self._update_words()
-            self.state.source_words, self.state.target_words = self.decoder.find_replace(
-                source_words = self.state.source_words, target_words = self.state.target_words,
-                find = self.find, repl = self.repl
+            self.decoder.find_replace(
+                source_words = self.state.source_words,
+                target_words = self.state.target_words,
+                find = self.find,
+                repl = self.repl
             )
             self._table.refresh()
         except Exception:
@@ -158,7 +159,6 @@ class Decoding(Page):
                     on_dismiss = self._task_cancel
                 )
                 await self._task_handler()
-                self._apply_dict()
                 notification.dismiss()
         except Exception:
             logger.error(f'Error in "_decode_words" with exception:\n{traceback.format_exc()}')
@@ -166,14 +166,18 @@ class Decoding(Page):
 
     async def _task_handler(self):
         try:
-            self.task0 = asyncio.create_task(
-                asyncio.to_thread(self.decoder.decode_words, self.state.source_words)
-            )
-            self.task1 = asyncio.create_task(
-                asyncio.to_thread(self.decoder.decode_sentences, self.state.source_words)
-            )
-            self.state.target_words = await self.task0
-            self.state.sentences = await self.task1
+            self.task = asyncio.create_task(asyncio.to_thread(
+                self.decoder.decode_words,
+                source_words = self.state.source_words
+            ))
+            self.state.target_words = await self.task
+            self.task = asyncio.create_task(asyncio.to_thread(
+                self.decoder.decode_sentences,
+                source_words = self.state.source_words
+            ))
+            self.state.sentences = await self.task
+            self._apply_dict()
+            logger.info('Decoding done.')
         except asyncio.exceptions.CancelledError:
             logger.info('Decoding cancelled')
             self.state.s_hash = 0
@@ -184,8 +188,7 @@ class Decoding(Page):
 
     def _task_cancel(self):
         try:
-            self.task0.cancel()
-            self.task1.cancel()
+            self.task.cancel()
         except AttributeError:
             return
         except Exception:
@@ -194,8 +197,9 @@ class Decoding(Page):
 
     def _apply_dict(self) -> None:
         try:
-            self.state.target_words = self.decoder.apply_dict(
-                source_words = self.state.source_words, target_words = self.state.target_words
+            self.decoder.apply_dict(
+                source_words = self.state.source_words,
+                target_words = self.state.target_words
             )
             self._table.refresh()
         except Exception:
@@ -220,7 +224,7 @@ class Decoding(Page):
 
     def _on_upload_reject(self) -> None:
         try:
-            ui.notify(f'{self.ui_language.DECODING.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+            ui.notify(f'{self.ui_language.DECODING.Messages.reject} {self.max_json_size / 10 ** 3} KB',
                       type = 'warning', position = 'top')
         except Exception:
             logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
@@ -229,7 +233,9 @@ class Decoding(Page):
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
             data = event.content.read().decode('utf-8')
-            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.import_(data = data)
+            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.import_(
+                data = data
+            )
             self.state.title = pathlib.Path(event.name).stem
             self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
@@ -289,9 +295,11 @@ class Decoding(Page):
             if not self.state.target_words:
                 return
             self._update_words()
-            content = self.decoder.export(source_words = self.state.source_words,
-                                          target_words = self.state.target_words,
-                                          sentences = self.state.sentences)
+            content = self.decoder.export(
+                source_words = self.state.source_words,
+                target_words = self.state.target_words,
+                sentences = self.state.sentences
+            )
             await self.open_route(
                 content = content,
                 file_type = 'json',
@@ -313,7 +321,7 @@ class Decoding(Page):
                         label = self.ui_language.DECODING.Dialogs_import[1],
                         on_upload = self._upload_handler,
                         on_rejected = self._on_upload_reject,
-                        max_file_size = self.max_file_size,
+                        max_file_size = self.max_json_size,
                         auto_upload = self.auto_upload,
                         max_files = self.max_files) \
                         .props('accept=.json flat dense')
@@ -327,8 +335,6 @@ class Decoding(Page):
             with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
                 if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)
                 with ui.menu():
-                    # with ui.menu_item(auto_close = False):
-                    #     ui.toggle(['source', 'both', 'target'], value = 'both').props('dense')
                     with ui.menu_item(auto_close = False):
                         self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
                     with ui.menu_item(auto_close = False):

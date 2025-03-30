@@ -1,3 +1,4 @@
+import re
 import pathlib
 import traceback
 from nicegui import ui, events, Client
@@ -7,11 +8,14 @@ from frontend.pages.ui.custom import ui_dialog, abs_top_left
 from frontend.pages.ui.page_abc import Page
 
 
+# TODO: enable re-decoding for AI translation
+
 class Upload(Page):
     _URL = URLS.UPLOAD
 
     def __init__(self) -> None:
         super().__init__()
+        self.pattern = re.compile('\S+|\s+')
 
     def _go_to_start_page(self) -> None:
         try:
@@ -45,11 +49,16 @@ class Upload(Page):
         try:
             self.state.title = ''
             self.state.source_text = ''
-            # self.state.source_language = 'auto'
-            # self.state.target_language = 'english'
         except Exception:
             logger.error(f'Error in "_clear_text" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    def _check_source_text(self) -> None:
+        word_space_split = re.findall(self.pattern, self.state.source_text)
+        if len(word_space_split) > 2 * self.word_limit:
+            self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
+            ui.notify(f'{self.ui_language.UPLOAD.Messages.limit} {self.word_limit} words',
+                      type = 'warning', position = 'top')
 
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
@@ -63,6 +72,7 @@ class Upload(Page):
         try:
             self.state.title = pathlib.Path(event.name).stem
             self.state.source_text = text
+            self._check_source_text()
             event.sender.reset()  # noqa upload reset
             ui.notify(self.ui_language.UPLOAD.Messages.success, type = 'positive', position = 'top')
         except Exception:
@@ -71,7 +81,7 @@ class Upload(Page):
 
     def _on_upload_reject(self) -> None:
         try:
-            ui.notify(f'{self.ui_language.UPLOAD.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+            ui.notify(f'{self.ui_language.UPLOAD.Messages.reject} {self.max_file_size} Bytes',
                       type = 'warning', position = 'top')
         except Exception:
             logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
@@ -118,9 +128,9 @@ class Upload(Page):
                             .bind_value(self.state, 'title'):
                         if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
                     ui.textarea(
-                        label = self.ui_language.UPLOAD.Input_txt[0],
+                        label = f'{self.ui_language.UPLOAD.Input_txt[0]} {self.word_limit}',
                         placeholder = self.ui_language.UPLOAD.Input_txt[1],
-                        on_change = None) \
+                        on_change = self._check_source_text) \
                         .classes('w-full h-full flex-grow') \
                         .style('font-size:12pt') \
                         .bind_value(self.state, 'source_text')
@@ -135,7 +145,6 @@ class Upload(Page):
             with ui.row():
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.source,
-                    # value = 'auto',
                     options = ['auto'] + languages) \
                     .props('dense options-dense') \
                     .style('min-width:200px; font-size:12pt') \
@@ -143,14 +152,11 @@ class Upload(Page):
                 ui.space()
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.target,
-                    # value = 'english',
                     options = languages) \
                     .props('dense options-dense') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'target_language')
                 ui.space()
-                # with ui.button(icon = 'save', on_click = self._update_text):
-                #     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.save)
                 ui.space()
                 with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._go_to_decoding):
                     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)

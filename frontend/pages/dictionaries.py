@@ -15,9 +15,9 @@ class Dictionaries(Page):
     def __init__(self) -> None:
         super().__init__()
         self.dicts: Dicts = Dicts()
-        self.ui_rename_flag: ui.checkbox = None  # noqa
-        self.ui_selector: ui.select = None  # noqa
-        self.ui_table: UITable = None  # noqa
+        self.ui_rename_flag: ui.checkbox  # noqa
+        self.ui_selector: ui.select  # noqa
+        self.ui_table: UITable  # noqa
 
     def _go_back(self) -> None:
         try:
@@ -157,7 +157,7 @@ class Dictionaries(Page):
 
     def _on_upload_reject(self) -> None:
         try:
-            ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+            ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_json_size / 10 ** 3} KB',
                       type = 'warning', position = 'top')
         except Exception:
             logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
@@ -168,7 +168,7 @@ class Dictionaries(Page):
             data = event.content.read().decode('utf-8')
             dict_name = pathlib.Path(event.name).stem
             self.dicts.import_(dict_name = dict_name, data = data)
-            self.ui_selector._handle_new_value(dict_name)  # needed to add new value to selection list
+            self.ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
             self.ui_selector.set_value(dict_name)
             self._load_table()
             # self._save_dict()
@@ -192,7 +192,7 @@ class Dictionaries(Page):
                         label = self.ui_language.DICTIONARY.Dialogs_import[1],
                         on_upload = self._upload_handler,
                         on_rejected = self._on_upload_reject,
-                        max_file_size = self.max_file_size,
+                        max_file_size = self.max_json_size,
                         auto_upload = self.auto_upload,
                         max_files = self.max_files) \
                         .props('accept=.json flat dense')

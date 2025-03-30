@@ -95,6 +95,14 @@ class State(object):
         self.update('reformatting', value)
 
     @property
+    def alt_trans(self) -> bool:
+        return self.get('alt_trans', False)
+
+    @alt_trans.setter
+    def alt_trans(self, value: bool) -> None:
+        self.update('alt_trans', value)
+
+    @property
     def http(self) -> str:
         return self.get('http', '')
 

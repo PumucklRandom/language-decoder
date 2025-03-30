@@ -156,8 +156,8 @@ def load_language(language: str = 'english') -> Language:
         logger.critical(message)
         raise ConfigError(message)
     try:
-        with open(file = language_path, mode = 'r', encoding = 'utf-8') as config_file:
-            language = dict_as_object(dictionary = yaml.safe_load(config_file), object_type = Language)
+        with open(file = language_path, mode = 'r', encoding = 'utf-8') as file:
+            language = dict_as_object(dictionary = yaml.safe_load(file), object_type = Language)
             logger.info('parsed language')
             return language
     except Exception as e:

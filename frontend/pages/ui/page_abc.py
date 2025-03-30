@@ -29,6 +29,8 @@ class Page(ABC):
         self.state: State
         self.ui_language: Language
         self.decoder: LanguageDecoder = LanguageDecoder()
+        self.max_json_size: int = CONFIG.max_json_size
+        self.word_limit: int = CONFIG.Upload.word_limit
         self.max_file_size: int = CONFIG.Upload.max_file_size
         self.auto_upload: bool = CONFIG.Upload.auto_upload
         self.max_files: int = CONFIG.Upload.max_files
@@ -57,6 +59,7 @@ class Page(ABC):
         self.decoder.target_language = self.state.target_language
         self.decoder.dict_name = self.state.dict_name
         self.decoder.reformatting = self.state.reformatting
+        self.decoder.alt_trans = self.state.alt_trans
         self.decoder.proxies = self.state.proxies
         self.decoder.regex = self.state.regex
 

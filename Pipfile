@@ -12,6 +12,7 @@ pip = "*"
 wheel = "*"
 setuptools = "*"
 nicegui = "*"
+openai = "*"
 
 [dev-packages]
 

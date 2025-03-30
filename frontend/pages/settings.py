@@ -15,9 +15,9 @@ class Settings(Page):
     def __init__(self) -> None:
         super().__init__()
         self.dicts: Dicts = Dicts()
-        self.ui_table: UITable = None  # noqa
-        self.ui_pdf_list: UIList = None  # noqa
-        self.ui_adv_list: UIList = None  # noqa
+        self.ui_table: UITable
+        self.ui_pdf_list: UIList
+        self.ui_adv_list: UIList
 
     def get_proxies(self):
         return {'http': self.state.http, 'https': self.state.https}
@@ -38,6 +38,7 @@ class Settings(Page):
             self.state.dark_mode = True
             self.state.show_tips = True
             self.state.reformatting = True
+            self.state.alt_trans = False
             self.state.language = 'english'
             self.state.http = ''
             self.state.https = ''
@@ -49,7 +50,11 @@ class Settings(Page):
         try:
             self.state.proxies = self.get_proxies()
             self.decoder.proxies = self.state.proxies
-            self.decoder.translate_source(source = 'test')
+            if self.state.alt_trans:
+                self.decoder.alt_trans = self.state.alt_trans
+                self.decoder.translate(source = 'test', alt_trans = True)
+            else:
+                self.decoder.translate(source = 'test')
             ui.notify(self.ui_language.SETTINGS.Messages.connect_check[0],
                       type = 'positive', position = 'top')
         except DecoderError as exception:
@@ -224,17 +229,17 @@ class Settings(Page):
                 ui.checkbox(self.ui_language.SETTINGS.Interface.text[0]).bind_value(self.state, 'dark_mode')
                 ui.checkbox(self.ui_language.SETTINGS.Interface.text[1]).bind_value(self.state, 'show_tips')
                 ui.checkbox(self.ui_language.SETTINGS.Interface.text[2]).bind_value(self.state, 'reformatting')
+                ui.checkbox(self.ui_language.SETTINGS.Interface.text[3]).bind_value(self.state, 'alt_trans')
                 ui.separator()
                 ui.select(
-                    label = self.ui_language.SETTINGS.Interface.text[3],
-                    # value = 'english',
+                    label = self.ui_language.SETTINGS.Interface.text[4],
                     options = get_languages(),
                     on_change = self._on_select) \
                     .props('dense options-dense') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'language')
                 ui.separator()
-                ui.label(text = self.ui_language.SETTINGS.Interface.text[4])
+                ui.label(text = self.ui_language.SETTINGS.Interface.text[5])
                 ui.input(label = 'http proxy', placeholder = 'ip-address:port') \
                     .bind_value(self.state, 'http')
                 ui.input(label = 'https proxy', placeholder = 'ip-address:port') \
