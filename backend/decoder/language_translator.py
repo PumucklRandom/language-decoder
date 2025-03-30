@@ -110,7 +110,7 @@ class LanguageTranslator(object):
         # remove rows without "\t"
         for row in invalid_rows: rows.remove(row)
         # ensure, that the list is as long as the input
-        rows + [rows[-1]] * (csv_len - len(rows))
+        rows = rows + [rows[-1]] * (csv_len - len(rows))
         # ensure, that the list is max length of the input
         return self.from_csv('\n'.join(rows[:csv_len]))
 
