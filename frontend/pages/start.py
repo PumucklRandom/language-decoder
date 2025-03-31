@@ -12,13 +12,6 @@ class Start(Page):
         super().__init__()
         self.font_size = 14
 
-    def _go_to_upload(self) -> None:
-        try:
-            ui.navigate.to(f'{URLS.UPLOAD}')
-        except Exception:
-            logger.error(f'Error in "_go_to_upload" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     def _center(self) -> None:
         try:
             with ui.column().classes('w-full items-center').style(f'font-size:{self.font_size}pt'):
@@ -48,8 +41,8 @@ class Start(Page):
                         new_tab = True
                     )
                 ui.space()
-                ui.button(text = self.ui_language.START.Explanations.start, on_click = self._go_to_upload) \
-                    .style(f'font-size:{self.font_size}pt')
+                ui.button(text = self.ui_language.START.Explanations.start,
+                          on_click = lambda: self.goto(URLS.UPLOAD)).style(f'font-size:{self.font_size}pt')
                 ui.space()
         except Exception:
             logger.error(f'Error in "_explanation" with exception:\n{traceback.format_exc()}')

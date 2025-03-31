@@ -15,25 +15,9 @@ class Dictionaries(Page):
     def __init__(self) -> None:
         super().__init__()
         self.dicts: Dicts = Dicts()
-        self.ui_rename_flag: ui.checkbox  # noqa
-        self.ui_selector: ui.select  # noqa
-        self.ui_table: UITable  # noqa
-
-    def _go_back(self) -> None:
-        try:
-            self._save_dict()
-            ui.navigate.back()
-        except Exception:
-            logger.error(f'Error in "_go_back" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_settings(self) -> None:
-        try:
-            self._save_dict()
-            ui.navigate.to(f'{URLS.SETTINGS}')
-        except Exception:
-            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+        self.ui_rename_flag: ui.checkbox
+        self.ui_selector: ui.select
+        self.ui_table: UITable
 
     def _clear_table(self) -> None:
         try:
@@ -204,10 +188,11 @@ class Dictionaries(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DICTIONARY.Header.go_back, on_click = self._go_back)
+                ui.button(text = self.ui_language.DICTIONARY.Header.go_back,
+                          on_click = lambda: self.goto('back', call = self._save_dict))
                 ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
                 ui.space()
-                ui.button(icon = 'settings', on_click = self._go_to_settings)
+                ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._save_dict))
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')

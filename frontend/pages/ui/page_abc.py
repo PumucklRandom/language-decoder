@@ -1,8 +1,10 @@
+import traceback
 from urllib import parse
 from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
+from backend.logger.logger import logger
 from backend.decoder.language_decoder import LanguageDecoder
 from frontend.pages.ui.config import URLS, COLORS, Language, load_language
 from frontend.pages.ui.state import State
@@ -66,6 +68,18 @@ class Page(ABC):
     @Classproperty
     def URL(cls) -> str:
         return cls._URL
+
+    def goto(self, url: str, call: callable = None) -> None:
+        try:
+            if call:
+                call()
+            if url == 'back':
+                ui.navigate.back()
+            else:
+                ui.navigate.to(f'{url}')
+        except Exception:
+            logger.error(f'Error in "goto" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     @staticmethod
     def _add_app_route(route: str, content: any, file_type: str, disposition: str, filename: str) -> None:

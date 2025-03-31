@@ -71,7 +71,7 @@ UPLOAD:
         decode: 'DEKODIEREN'
 DECODING:
     Header:
-        go_back: 'ZURÜCK ZUM HOCHLADEN'
+        upload: 'ZURÜCK ZUM HOCHLADEN'
         decoding: 'DEKODIERUNG'
         dictionaries: 'WÖRTERBÜCHER'
     Dialogs: [

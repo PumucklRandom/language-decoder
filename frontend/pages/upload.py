@@ -17,34 +17,6 @@ class Upload(Page):
         super().__init__()
         self.pattern = re.compile('\S+|\s+')
 
-    def _go_to_start_page(self) -> None:
-        try:
-            ui.navigate.to(f'{URLS.START}')
-        except Exception:
-            logger.error(f'Error in "_go_to_start_page" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_dictionaries(self) -> None:
-        try:
-            ui.navigate.to(f'{URLS.DICTIONARIES}')
-        except Exception:
-            logger.error(f'Error in "_go_to_dictionaries" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_settings(self) -> None:
-        try:
-            ui.navigate.to(f'{URLS.SETTINGS}')
-        except Exception:
-            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_decoding(self) -> None:
-        try:
-            ui.navigate.to(f'{URLS.DECODING}')
-        except Exception:
-            logger.error(f'Error in "_go_to_decoding" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     def _clear_text(self) -> None:
         try:
             self.state.title = ''
@@ -97,11 +69,13 @@ class Upload(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.UPLOAD.Header.start_page, on_click = self._go_to_start_page)
+                ui.button(text = self.ui_language.UPLOAD.Header.start_page,
+                          on_click = lambda: self.goto(URLS.START))
                 ui.label(text = self.ui_language.UPLOAD.Header.upload).classes('absolute-center')
                 ui.space()
-                ui.button(text = self.ui_language.UPLOAD.Header.dictionaries, on_click = self._go_to_dictionaries)
-                ui.button(icon = 'settings', on_click = self._go_to_settings)
+                ui.button(text = self.ui_language.UPLOAD.Header.dictionaries,
+                          on_click = lambda: self.goto(URLS.DICTIONARIES))
+                ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS))
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -158,7 +132,8 @@ class Upload(Page):
                     .bind_value(self.state, 'target_language')
                 ui.space()
                 ui.space()
-                with ui.button(text = self.ui_language.UPLOAD.Footer.decode, on_click = self._go_to_decoding):
+                with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
+                               on_click = lambda: self.goto(URLS.DECODING)):
                     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
                 with ui.button(icon = 'delete', on_click = self._clear_text) \
                         .classes('absolute-bottom-right'):

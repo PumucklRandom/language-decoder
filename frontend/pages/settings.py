@@ -19,19 +19,14 @@ class Settings(Page):
         self.ui_pdf_list: UIList
         self.ui_adv_list: UIList
 
+    def _save_settings(self):
+        self._save_replacements()
+        self._update_pdf_params()
+        self._update_adv_params()
+        self.state.proxies = self.get_proxies()
+
     def get_proxies(self):
         return {'http': self.state.http, 'https': self.state.https}
-
-    def _go_back(self) -> None:
-        try:
-            self._save_replacements()
-            self._update_pdf_params()
-            self._update_adv_params()
-            self.state.proxies = self.get_proxies()
-            ui.navigate.back()
-        except Exception:
-            logger.error(f'Error in "_go_back" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _reset_interface(self) -> None:
         try:
@@ -183,7 +178,7 @@ class Settings(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = 'GO BACK', on_click = self._go_back)
+                ui.button(text = 'GO BACK', on_click = lambda: self.goto('back', call = self._save_settings))
                 ui.label('SETTINGS').classes('absolute-center')
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')

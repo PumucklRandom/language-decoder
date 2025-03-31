@@ -67,7 +67,7 @@ UPLOAD:
         decode: 'DECODE'
 DECODING:
     Header:
-        go_back: 'BACK TO UPLOAD'
+        upload: 'BACK TO UPLOAD'
         decoding: 'DECODING'
         dictionaries: 'DICTIONARIES'
     Dialogs: [

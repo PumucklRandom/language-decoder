@@ -24,30 +24,6 @@ class Decoding(Page):
         self.preload: bool = False
         self.task: asyncio.Task
 
-    def _go_to_upload(self) -> None:
-        try:
-            self._update_words()
-            ui.navigate.to(f'{URLS.UPLOAD}')
-        except Exception:
-            logger.error(f'Error in "_go_to_upload" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_dictionaries(self) -> None:
-        try:
-            self._update_words()
-            ui.navigate.to(f'{URLS.DICTIONARIES}')
-        except Exception:
-            logger.error(f'Error in "_go_to_dictionaries" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_settings(self) -> None:
-        try:
-            self._update_words()
-            ui.navigate.to(f'{URLS.SETTINGS}')
-        except Exception:
-            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     async def _open_pdf_view(self) -> None:
         try:
             await self.open_route(
@@ -352,11 +328,13 @@ class Decoding(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DECODING.Header.go_back, on_click = self._go_to_upload)
+                ui.button(text = self.ui_language.DECODING.Header.upload,
+                          on_click = lambda: self.goto(URLS.UPLOAD, call = self._update_words))
                 ui.label(text = self.ui_language.DECODING.Header.decoding).classes('absolute-center')
                 ui.space()
-                ui.button(text = self.ui_language.DECODING.Header.dictionaries, on_click = self._go_to_dictionaries)
-                ui.button(icon = 'settings', on_click = self._go_to_settings)
+                ui.button(text = self.ui_language.DECODING.Header.dictionaries,
+                          on_click = lambda: self.goto(URLS.DICTIONARIES, call = self._update_words))
+                ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._update_words))
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
