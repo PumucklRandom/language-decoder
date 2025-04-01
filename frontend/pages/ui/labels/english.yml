@@ -30,6 +30,7 @@ UPLOAD:
     Header:
         start_page: 'START PAGE'
         upload: 'UPLOAD'
+        decoding: 'DECODING'
         dictionaries: 'DICTIONARIES'
     Dialogs: [
         'Here you can either upload a text file via the uploader or enter some text in the text area.',
@@ -129,7 +130,6 @@ DECODING:
         replace: 'APPLY'
 DICTIONARY:
     Header:
-        go_back: 'GO BACK'
         dictionaries: 'DICTIONARIES'
     Dialogs_select: [
         'Here you can select between previously created dictionaries or create a new one.',
@@ -179,7 +179,6 @@ DICTIONARY:
         export: 'EXPORT'
 SETTINGS:
     Header:
-        go_back: 'GO BACK'
         dictionaries: 'SETTINGS'
     Panel: [
         'INTERFACE SETTINGS',

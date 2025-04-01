@@ -76,7 +76,7 @@ class Page(ABC):
             if url == 'back':
                 ui.navigate.back()
             else:
-                ui.navigate.to(f'{url}')
+                ui.navigate.to(url)
         except Exception:
             logger.error(f'Error in "goto" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')

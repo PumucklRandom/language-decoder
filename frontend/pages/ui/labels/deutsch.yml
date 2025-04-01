@@ -30,6 +30,7 @@ UPLOAD:
     Header:
         start_page: 'STARTSEITE'
         upload: 'HOCHLADEN'
+        decoding: 'DEKODIERUNG'
         dictionaries: 'WÖRTERBÜCHER'
     Dialogs: [
         'Hier können Sie entweder eine Textdatei über den Uploader hochladen
@@ -137,7 +138,6 @@ DECODING:
         replace: 'ANWENDEN'
 DICTIONARY:
     Header:
-        go_back: 'ZURÜCK'
         dictionaries: 'WÖRTERBÜCHER'
     Dialogs_select: [
         'Hier können Sie zwischen bereits erstellten Wörterbüchern wählen oder ein neues erstellen.',
@@ -188,7 +188,6 @@ DICTIONARY:
         export: 'EXPORTIEREN'
 SETTINGS:
     Header:
-        go_back: 'ZURÜCK'
         dictionaries: 'EINSTELLUNGEN'
     Panel: [
         'PROGRAMM EINSTELLUNGEN',

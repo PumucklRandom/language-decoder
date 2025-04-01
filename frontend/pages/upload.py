@@ -8,8 +8,6 @@ from frontend.pages.ui.custom import ui_dialog, abs_top_left
 from frontend.pages.ui.page_abc import Page
 
 
-# TODO: enable re-decoding for AI translation
-
 class Upload(Page):
     _URL = URLS.UPLOAD
 
@@ -31,6 +29,23 @@ class Upload(Page):
             self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
             ui.notify(f'{self.ui_language.UPLOAD.Messages.limit} {self.word_limit} words',
                       type = 'warning', position = 'top')
+
+    def _split_text(self) -> None:
+        try:
+            if not self.state.source_text:
+                # self.state.source_words.clear()
+                # self.state.target_words.clear()
+                # self.state.sentences.clear()
+                return
+            self.state.decode = True
+            _hash = hash(self.state.source_text)
+            if self.state.s_hash == _hash:
+                return
+            self.state.s_hash = _hash
+            self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
+        except Exception:
+            logger.error(f'Error in "_split_text" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
@@ -73,6 +88,8 @@ class Upload(Page):
                           on_click = lambda: self.goto(URLS.START))
                 ui.label(text = self.ui_language.UPLOAD.Header.upload).classes('absolute-center')
                 ui.space()
+                ui.button(text = self.ui_language.UPLOAD.Header.decoding,
+                          on_click = lambda: self.goto(URLS.DECODING))
                 ui.button(text = self.ui_language.UPLOAD.Header.dictionaries,
                           on_click = lambda: self.goto(URLS.DICTIONARIES))
                 ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS))
@@ -130,10 +147,9 @@ class Upload(Page):
                     .props('dense options-dense') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'target_language')
-                ui.space()
-                ui.space()
+                ui.space().style('width:50px')
                 with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
-                               on_click = lambda: self.goto(URLS.DECODING)):
+                               on_click = lambda: self.goto(URLS.DECODING, call = self._split_text)):
                     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
                 with ui.button(icon = 'delete', on_click = self._clear_text) \
                         .classes('absolute-bottom-right'):

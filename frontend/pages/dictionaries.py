@@ -188,8 +188,7 @@ class Dictionaries(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DICTIONARY.Header.go_back,
-                          on_click = lambda: self.goto('back', call = self._save_dict))
+                ui.button(icon = 'keyboard_backspace', on_click = lambda: self.goto('back', call = self._save_dict))
                 ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
                 ui.space()
                 ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._save_dict))
@@ -245,7 +244,7 @@ class Dictionaries(Page):
             DICT_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
             DICT_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
             self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.state.dark_mode) \
-                .style('min-width:500px; max-height:75vh')
+                .classes('sticky-header').style('min-width:500px; max-height:75vh')
             self._load_table()
         except Exception:
             logger.error(f'Error in "_table" with exception:\n{traceback.format_exc()}')

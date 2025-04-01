@@ -18,8 +18,6 @@ class Decoding(Page):
         self.ui_grid: UIGrid
         self.ui_find_input: ui.input
         self.ui_repl_input: ui.input
-        self.find: str = ''
-        self.repl: str = ''
         self.filename: str = 'decoded'
         self.preload: bool = False
         self.task: asyncio.Task
@@ -47,15 +45,6 @@ class Decoding(Page):
             logger.error(f'Error in "_download_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _preload_table(self) -> None:
-        try:
-            self.preload = True
-            self._table.refresh()
-            self.preload = False
-        except Exception:
-            logger.error(f'Error in "_preload_table" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     def _update_words(self) -> None:
         try:
             self.state.source_words, self.state.target_words = self.ui_grid.get_values()
@@ -76,11 +65,11 @@ class Decoding(Page):
     def _replace_words(self) -> None:
         try:
             self._update_words()
-            self.decoder.find_replace(
+            self.state.source_words, self.state.target_words = self.decoder.find_replace(
                 source_words = self.state.source_words,
                 target_words = self.state.target_words,
-                find = self.find,
-                repl = self.repl
+                find = self.state.find,
+                repl = self.state.repl
             )
             self._table.refresh()
         except Exception:
@@ -88,7 +77,7 @@ class Decoding(Page):
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _clear_replace(self) -> None:
-        self.find, self.repl = '', ''
+        self.state.find, self.state.repl = '', ''
 
     def _refresh_replace(self) -> None:
         try:
@@ -98,31 +87,12 @@ class Decoding(Page):
             logger.error(f'Error in "_refresh_replace" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _split_text(self) -> None:
-        try:
-            self.filename = self.state.title
-            _hash = hash(self.state.source_text)
-            if self.state.s_hash == _hash:
-                return
-            self.state.s_hash = _hash
-            if not self.state.source_text:
-                self.state.source_words.clear()
-                self.state.target_words.clear()
-                self.state.sentences.clear()
-                return
-            self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
-        except Exception:
-            logger.error(f'Error in "_split_text" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     async def _decode_words(self) -> None:
         try:
-            _hash = hash(f'{self.state.source_text}{self.state.source_language}{self.state.target_language}')
-            if self.state.d_hash == _hash:
+            if self.state.source_words and self.state.decode:
+                self.preload = True
                 self._table.refresh()
-                return
-            self.state.d_hash = _hash
-            if self.state.source_text:
+                self.preload = False
                 notification = ui.notification(
                     message = f'{self.ui_language.DECODING.Messages.decoding} {len(self.state.source_words)}',
                     position = 'top',
@@ -136,6 +106,9 @@ class Decoding(Page):
                 )
                 await self._task_handler()
                 notification.dismiss()
+            else:
+                self._table.refresh()
+            self.state.decode = False
         except Exception:
             logger.error(f'Error in "_decode_words" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -156,8 +129,6 @@ class Decoding(Page):
             logger.info('Decoding done.')
         except asyncio.exceptions.CancelledError:
             logger.info('Decoding cancelled')
-            self.state.s_hash = 0
-            self.state.d_hash = 0
         except Exception:
             logger.error(f'Error in "_task_handler" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -173,7 +144,7 @@ class Decoding(Page):
 
     def _apply_dict(self) -> None:
         try:
-            self.decoder.apply_dict(
+            self.state.target_words = self.decoder.apply_dict(
                 source_words = self.state.source_words,
                 target_words = self.state.target_words
             )
@@ -216,9 +187,6 @@ class Decoding(Page):
             self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
             self.state.s_hash = hash(self.state.source_text)
-            self.state.d_hash = hash(
-                f'{self.state.source_text}{self.state.source_language}{self.state.target_language}'
-            )
             self._table.refresh()
         except DecoderError:
             ui.notify(self.ui_language.DECODING.Messages.invalid, type = 'warning', position = 'top')
@@ -246,7 +214,7 @@ class Decoding(Page):
         try:
             if not self.state.target_words:
                 return
-            self._save_words()
+            self._update_words()
             self.create_pdf()
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
@@ -312,9 +280,9 @@ class Decoding(Page):
                 if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)
                 with ui.menu():
                     with ui.menu_item(auto_close = False):
-                        self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
+                        self.ui_find_input = ui.input(label = 'find').bind_value(self.state, 'find')
                     with ui.menu_item(auto_close = False):
-                        self.ui_repl_input = ui.input(label = 'replace').bind_value(self, 'repl')
+                        self.ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')
                     with ui.menu_item(auto_close = False).style('justify-content:center'):
                         with ui.row():
                             ui.button(text = self.ui_language.DECODING.Footer.replace,
@@ -341,11 +309,9 @@ class Decoding(Page):
 
     async def _center(self) -> None:
         try:
-            self._split_text()
             with ui.column().classes('w-full items-center'):
                 with ui.card().style('min-width:1000px; min-height:562px'):
                     self._table()  # noqa
-            self._preload_table()
             await self._decode_words()
             with ui.row().classes('absolute-top-right').style('gap:0.0rem'):
                 with ui.column().style('gap:0.0rem'):

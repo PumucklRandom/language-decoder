@@ -19,7 +19,7 @@ class Settings(Page):
         self.ui_pdf_list: UIList
         self.ui_adv_list: UIList
 
-    def _save_settings(self):
+    def _save_state(self):
         self._save_replacements()
         self._update_pdf_params()
         self._update_adv_params()
@@ -178,7 +178,7 @@ class Settings(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = 'GO BACK', on_click = lambda: self.goto('back', call = self._save_settings))
+                ui.button(icon = 'keyboard_backspace', on_click = lambda: self.goto('back', call = self._save_state))
                 ui.label('SETTINGS').classes('absolute-center')
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
@@ -255,7 +255,7 @@ class Settings(Page):
             REPLACE_COLS[0].update({'label': self.ui_language.SETTINGS.Table.key})
             REPLACE_COLS[1].update({'label': self.ui_language.SETTINGS.Table.val})
             self.ui_table = UITable(columns = REPLACE_COLS, dark_mode = self.state.dark_mode) \
-                .style('min-width:450px; max-height:80vh')
+                .classes('sticky-header').style('min-width:450px; max-height:80vh')
             ui.separator()
             with ui.row():
                 with ui.button(icon = 'save', on_click = self._save_replacements):
