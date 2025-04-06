@@ -34,8 +34,8 @@ class Dicts(object):
             self.save(user_uuid = user_uuid)
             return
         try:
-            with open(file = json_path, mode = 'r', encoding = 'utf-8') as json_file:
-                data = json.load(json_file)
+            with open(file = json_path, mode = 'r', encoding = 'utf-8') as file:
+                data = json.load(file)
             self.replacements = data.get('replacements', REPLACEMENTS)
             self.dictionaries = data.get('dictionaries', {})
             logger.info('parsed dictionaries')
@@ -53,8 +53,8 @@ class Dicts(object):
             os.makedirs(self.folder_path, exist_ok = True)
             json_path = os.path.join(self.folder_path, f'{user_uuid}.json')
             data = {'replacements': self.replacements, 'dictionaries': self.dictionaries}
-            with open(file = json_path, mode = 'w', encoding = 'utf-8') as json_file:
-                json.dump(data, json_file, ensure_ascii = False, indent = 4)
+            with open(file = json_path, mode = 'w', encoding = 'utf-8') as file:
+                json.dump(data, file, ensure_ascii = False, indent = 4)
             logger.info('saved dictionaries')
         except Exception:
             message = f'Could not save json file dict with exception:\n{traceback.format_exc()}'

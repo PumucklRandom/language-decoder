@@ -5,6 +5,7 @@ How to create certificate for the application:
 New-SelfSignedCertificate -Type Custom -Subject "CN=PumucklRandom" -KeyUsage DigitalSignature
     -FriendlyName "LanguageDecoder" -CertStoreLocation "Cert:/CurrentUser/My"
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+    -NotAfter (Get-Date).AddYears(10)
 
 # Get certificate
 Get-childitem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Subject
@@ -12,6 +13,9 @@ Get-childitem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Su
 $password = ConvertTo-SecureString -String "password" -Force -AsPlainText
 # Export certificate with Thumbprint
 Export-PfxCertificate -cert "Cert:/CurrentUser/My/Thumbprint" -FilePath certificate.pfx -Password $password
+
+# In case a certificate have to be removed
+Remove-Item Cert:\CurrentUser\My\Thumbprint
 """
 
 import os
@@ -27,8 +31,8 @@ import traceback
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.9.1.0', version)
-        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 9, 1, 0', version)
+        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.10.3.0', version)
+        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 10, 3, 0', version)
         file.seek(0)
         file.write(version)
 
@@ -74,6 +78,7 @@ try:
         '--version-file', '_data/version.rc',
         '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
         '--add-data', f'./_data/config.yml{os.pathsep}./backend/config/',
+        '--add-data', f'./backend/decoder/prompt.txt{os.pathsep}./backend/decoder/',
         '--add-data', f'./backend/fonts/{os.pathsep}./backend/fonts/',
         '--add-data', f'./frontend/pages/ui/labels/{os.pathsep}./frontend/pages/ui/labels/',
         '--add-data', f'./frontend/pages/ui/icon/{os.pathsep}./frontend/pages/ui/icon/',
@@ -83,7 +88,7 @@ try:
     password = get_password()
     if password and os.path.isfile('./_data/certificate.pfx'):
         cmd_sign = [
-            'signtool', 'sign',
+            'signtool', 'sign', '/debug',
             '/f', './_data/certificate.pfx',
             '/fd', 'SHA256',
             '/td', 'SHA256',

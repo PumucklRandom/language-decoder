@@ -15,25 +15,9 @@ class Dictionaries(Page):
     def __init__(self) -> None:
         super().__init__()
         self.dicts: Dicts = Dicts()
-        self.ui_rename_flag: ui.checkbox = None  # noqa
-        self.ui_selector: ui.select = None  # noqa
-        self.ui_table: UITable = None  # noqa
-
-    def _go_back(self) -> None:
-        try:
-            self._save_dict()
-            ui.navigate.back()
-        except Exception:
-            logger.error(f'Error in "_go_back" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_settings(self) -> None:
-        try:
-            self._save_dict()
-            ui.navigate.to(f'{URLS.SETTINGS}')
-        except Exception:
-            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+        self.ui_rename_flag: ui.checkbox
+        self.ui_selector: ui.select
+        self.ui_table: UITable
 
     def _clear_table(self) -> None:
         try:
@@ -157,7 +141,7 @@ class Dictionaries(Page):
 
     def _on_upload_reject(self) -> None:
         try:
-            ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+            ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_json_size / 10 ** 3} KB',
                       type = 'warning', position = 'top')
         except Exception:
             logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
@@ -168,7 +152,7 @@ class Dictionaries(Page):
             data = event.content.read().decode('utf-8')
             dict_name = pathlib.Path(event.name).stem
             self.dicts.import_(dict_name = dict_name, data = data)
-            self.ui_selector._handle_new_value(dict_name)  # needed to add new value to selection list
+            self.ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
             self.ui_selector.set_value(dict_name)
             self._load_table()
             # self._save_dict()
@@ -192,7 +176,7 @@ class Dictionaries(Page):
                         label = self.ui_language.DICTIONARY.Dialogs_import[1],
                         on_upload = self._upload_handler,
                         on_rejected = self._on_upload_reject,
-                        max_file_size = self.max_file_size,
+                        max_file_size = self.max_json_size,
                         auto_upload = self.auto_upload,
                         max_files = self.max_files) \
                         .props('accept=.json flat dense')
@@ -204,10 +188,10 @@ class Dictionaries(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DICTIONARY.Header.go_back, on_click = self._go_back)
+                ui.button(icon = 'keyboard_backspace', on_click = lambda: self.goto('back', call = self._save_dict))
                 ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
                 ui.space()
-                ui.button(icon = 'settings', on_click = self._go_to_settings)
+                ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._save_dict))
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -260,7 +244,7 @@ class Dictionaries(Page):
             DICT_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
             DICT_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
             self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.state.dark_mode) \
-                .style('min-width:500px; max-height:75vh')
+                .classes('sticky-header').style('min-width:500px; max-height:75vh')
             self._load_table()
         except Exception:
             logger.error(f'Error in "_table" with exception:\n{traceback.format_exc()}')

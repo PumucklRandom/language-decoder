@@ -3,10 +3,11 @@
 ## Language Decoder
 
 The LanguageDecoder translates a given text from the source language to a
-desired target language word by word (decoding). Therefore, the Google
-translator is used in the backend. To improve the translation, a dictionary can
-be created to automatically correct common translation errors. Afterwards, the
-decoded text can be exported to a PDF file.
+desired target language word by word (decoding). For this purpose, the Google
+translator is used in the backend (Or alternatively an experimental AI
+translator). To improve the translation, a dictionary can be created to
+automatically correct common translation errors. Afterwards, the decoded text
+can be exported to a PDF file.
 
 The LanguageDecoder can also be used to create language learning lessons based
 on the

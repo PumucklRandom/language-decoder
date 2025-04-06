@@ -15,39 +15,12 @@ class Decoding(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ui_grid: UIGrid = None  # noqa
-        self.ui_find_input: ui.input = None  # noqa
-        self.ui_repl_input: ui.input = None  # noqa
-        self.find: str = ''
-        self.repl: str = ''
+        self.ui_grid: UIGrid
+        self.ui_find_input: ui.input
+        self.ui_repl_input: ui.input
         self.filename: str = 'decoded'
         self.preload: bool = False
-        self.task0: asyncio.Task
-        self.task1: asyncio.Task
-
-    def _go_to_upload(self) -> None:
-        try:
-            self._update_words()
-            ui.navigate.to(f'{URLS.UPLOAD}')
-        except Exception:
-            logger.error(f'Error in "_go_to_upload" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_dictionaries(self) -> None:
-        try:
-            self._update_words()
-            ui.navigate.to(f'{URLS.DICTIONARIES}')
-        except Exception:
-            logger.error(f'Error in "_go_to_dictionaries" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _go_to_settings(self) -> None:
-        try:
-            self._update_words()
-            ui.navigate.to(f'{URLS.SETTINGS}')
-        except Exception:
-            logger.error(f'Error in "_go_to_settings" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+        self.task: asyncio.Task
 
     async def _open_pdf_view(self) -> None:
         try:
@@ -72,15 +45,6 @@ class Decoding(Page):
             logger.error(f'Error in "_download_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _preload_table(self) -> None:
-        try:
-            self.preload = True
-            self._table.refresh()
-            self.preload = False
-        except Exception:
-            logger.error(f'Error in "_preload_table" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     def _update_words(self) -> None:
         try:
             self.state.source_words, self.state.target_words = self.ui_grid.get_values()
@@ -102,8 +66,10 @@ class Decoding(Page):
         try:
             self._update_words()
             self.state.source_words, self.state.target_words = self.decoder.find_replace(
-                source_words = self.state.source_words, target_words = self.state.target_words,
-                find = self.find, repl = self.repl
+                source_words = self.state.source_words,
+                target_words = self.state.target_words,
+                find = self.state.find,
+                repl = self.state.repl
             )
             self._table.refresh()
         except Exception:
@@ -111,7 +77,7 @@ class Decoding(Page):
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _clear_replace(self) -> None:
-        self.find, self.repl = '', ''
+        self.state.find, self.state.repl = '', ''
 
     def _refresh_replace(self) -> None:
         try:
@@ -121,31 +87,12 @@ class Decoding(Page):
             logger.error(f'Error in "_refresh_replace" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _split_text(self) -> None:
-        try:
-            self.filename = self.state.title
-            _hash = hash(self.state.source_text)
-            if self.state.s_hash == _hash:
-                return
-            self.state.s_hash = _hash
-            if not self.state.source_text:
-                self.state.source_words.clear()
-                self.state.target_words.clear()
-                self.state.sentences.clear()
-                return
-            self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
-        except Exception:
-            logger.error(f'Error in "_split_text" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
     async def _decode_words(self) -> None:
         try:
-            _hash = hash(f'{self.state.source_text}{self.state.source_language}{self.state.target_language}')
-            if self.state.d_hash == _hash:
+            if self.state.source_words and self.state.decode:
+                self.preload = True
                 self._table.refresh()
-                return
-            self.state.d_hash = _hash
-            if self.state.source_text:
+                self.preload = False
                 notification = ui.notification(
                     message = f'{self.ui_language.DECODING.Messages.decoding} {len(self.state.source_words)}',
                     position = 'top',
@@ -158,34 +105,37 @@ class Decoding(Page):
                     on_dismiss = self._task_cancel
                 )
                 await self._task_handler()
-                self._apply_dict()
                 notification.dismiss()
+            else:
+                self._table.refresh()
+            self.state.decode = False
         except Exception:
             logger.error(f'Error in "_decode_words" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     async def _task_handler(self):
         try:
-            self.task0 = asyncio.create_task(
-                asyncio.to_thread(self.decoder.decode_words, self.state.source_words)
-            )
-            self.task1 = asyncio.create_task(
-                asyncio.to_thread(self.decoder.decode_sentences, self.state.source_words)
-            )
-            self.state.target_words = await self.task0
-            self.state.sentences = await self.task1
+            self.task = asyncio.create_task(asyncio.to_thread(
+                self.decoder.decode_words,
+                source_words = self.state.source_words
+            ))
+            self.state.target_words = await self.task
+            self.task = asyncio.create_task(asyncio.to_thread(
+                self.decoder.decode_sentences,
+                source_words = self.state.source_words
+            ))
+            self.state.sentences = await self.task
+            self._apply_dict()
+            logger.info('Decoding done.')
         except asyncio.exceptions.CancelledError:
             logger.info('Decoding cancelled')
-            self.state.s_hash = 0
-            self.state.d_hash = 0
         except Exception:
             logger.error(f'Error in "_task_handler" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _task_cancel(self):
         try:
-            self.task0.cancel()
-            self.task1.cancel()
+            self.task.cancel()
         except AttributeError:
             return
         except Exception:
@@ -195,7 +145,8 @@ class Decoding(Page):
     def _apply_dict(self) -> None:
         try:
             self.state.target_words = self.decoder.apply_dict(
-                source_words = self.state.source_words, target_words = self.state.target_words
+                source_words = self.state.source_words,
+                target_words = self.state.target_words
             )
             self._table.refresh()
         except Exception:
@@ -220,7 +171,7 @@ class Decoding(Page):
 
     def _on_upload_reject(self) -> None:
         try:
-            ui.notify(f'{self.ui_language.DECODING.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+            ui.notify(f'{self.ui_language.DECODING.Messages.reject} {self.max_json_size / 10 ** 3} KB',
                       type = 'warning', position = 'top')
         except Exception:
             logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
@@ -229,14 +180,13 @@ class Decoding(Page):
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
             data = event.content.read().decode('utf-8')
-            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.import_(data = data)
+            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.import_(
+                data = data
+            )
             self.state.title = pathlib.Path(event.name).stem
             self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
             self.state.s_hash = hash(self.state.source_text)
-            self.state.d_hash = hash(
-                f'{self.state.source_text}{self.state.source_language}{self.state.target_language}'
-            )
             self._table.refresh()
         except DecoderError:
             ui.notify(self.ui_language.DECODING.Messages.invalid, type = 'warning', position = 'top')
@@ -264,7 +214,7 @@ class Decoding(Page):
         try:
             if not self.state.target_words:
                 return
-            self._save_words()
+            self._update_words()
             self.create_pdf()
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
@@ -289,9 +239,11 @@ class Decoding(Page):
             if not self.state.target_words:
                 return
             self._update_words()
-            content = self.decoder.export(source_words = self.state.source_words,
-                                          target_words = self.state.target_words,
-                                          sentences = self.state.sentences)
+            content = self.decoder.export(
+                source_words = self.state.source_words,
+                target_words = self.state.target_words,
+                sentences = self.state.sentences
+            )
             await self.open_route(
                 content = content,
                 file_type = 'json',
@@ -313,7 +265,7 @@ class Decoding(Page):
                         label = self.ui_language.DECODING.Dialogs_import[1],
                         on_upload = self._upload_handler,
                         on_rejected = self._on_upload_reject,
-                        max_file_size = self.max_file_size,
+                        max_file_size = self.max_json_size,
                         auto_upload = self.auto_upload,
                         max_files = self.max_files) \
                         .props('accept=.json flat dense')
@@ -327,12 +279,10 @@ class Decoding(Page):
             with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
                 if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)
                 with ui.menu():
-                    # with ui.menu_item(auto_close = False):
-                    #     ui.toggle(['source', 'both', 'target'], value = 'both').props('dense')
                     with ui.menu_item(auto_close = False):
-                        self.ui_find_input = ui.input(label = 'find').bind_value(self, 'find')
+                        self.ui_find_input = ui.input(label = 'find').bind_value(self.state, 'find')
                     with ui.menu_item(auto_close = False):
-                        self.ui_repl_input = ui.input(label = 'replace').bind_value(self, 'repl')
+                        self.ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')
                     with ui.menu_item(auto_close = False).style('justify-content:center'):
                         with ui.row():
                             ui.button(text = self.ui_language.DECODING.Footer.replace,
@@ -346,22 +296,22 @@ class Decoding(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(text = self.ui_language.DECODING.Header.go_back, on_click = self._go_to_upload)
+                ui.button(text = self.ui_language.DECODING.Header.upload,
+                          on_click = lambda: self.goto(URLS.UPLOAD, call = self._update_words))
                 ui.label(text = self.ui_language.DECODING.Header.decoding).classes('absolute-center')
                 ui.space()
-                ui.button(text = self.ui_language.DECODING.Header.dictionaries, on_click = self._go_to_dictionaries)
-                ui.button(icon = 'settings', on_click = self._go_to_settings)
+                ui.button(text = self.ui_language.DECODING.Header.dictionaries,
+                          on_click = lambda: self.goto(URLS.DICTIONARIES, call = self._update_words))
+                ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._update_words))
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     async def _center(self) -> None:
         try:
-            self._split_text()
             with ui.column().classes('w-full items-center'):
                 with ui.card().style('min-width:1000px; min-height:562px'):
                     self._table()  # noqa
-            self._preload_table()
             await self._decode_words()
             with ui.row().classes('absolute-top-right').style('gap:0.0rem'):
                 with ui.column().style('gap:0.0rem'):

@@ -1,8 +1,10 @@
+import traceback
 from urllib import parse
 from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
+from backend.logger.logger import logger
 from backend.decoder.language_decoder import LanguageDecoder
 from frontend.pages.ui.config import URLS, COLORS, Language, load_language
 from frontend.pages.ui.state import State
@@ -29,6 +31,8 @@ class Page(ABC):
         self.state: State
         self.ui_language: Language
         self.decoder: LanguageDecoder = LanguageDecoder()
+        self.max_json_size: int = CONFIG.max_json_size
+        self.word_limit: int = CONFIG.Upload.word_limit
         self.max_file_size: int = CONFIG.Upload.max_file_size
         self.auto_upload: bool = CONFIG.Upload.auto_upload
         self.max_files: int = CONFIG.Upload.max_files
@@ -57,12 +61,25 @@ class Page(ABC):
         self.decoder.target_language = self.state.target_language
         self.decoder.dict_name = self.state.dict_name
         self.decoder.reformatting = self.state.reformatting
+        self.decoder.alt_trans = self.state.alt_trans
         self.decoder.proxies = self.state.proxies
         self.decoder.regex = self.state.regex
 
     @Classproperty
     def URL(cls) -> str:
         return cls._URL
+
+    def goto(self, url: str, call: callable = None) -> None:
+        try:
+            if call:
+                call()
+            if url == 'back':
+                ui.navigate.back()
+            else:
+                ui.navigate.to(url)
+        except Exception:
+            logger.error(f'Error in "goto" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     @staticmethod
     def _add_app_route(route: str, content: any, file_type: str, disposition: str, filename: str) -> None:

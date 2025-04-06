@@ -95,6 +95,14 @@ class State(object):
         self.update('reformatting', value)
 
     @property
+    def alt_trans(self) -> bool:
+        return self.get('alt_trans', False)
+
+    @alt_trans.setter
+    def alt_trans(self, value: bool) -> None:
+        self.update('alt_trans', value)
+
+    @property
     def http(self) -> str:
         return self.get('http', '')
 
@@ -207,20 +215,36 @@ class State(object):
         self.update('content', value)
 
     @property
+    def decode(self) -> bool:
+        return self.get('decode', False)
+
+    @decode.setter
+    def decode(self, value: bool) -> None:
+        self.update('decode', value)
+
+    @property
+    def find(self) -> str:
+        return self.get('find', '')
+
+    @find.setter
+    def find(self, value: str) -> None:
+        self.update('find', value)
+
+    @property
+    def repl(self) -> str:
+        return self.get('repl', '')
+
+    @repl.setter
+    def repl(self, value: str) -> None:
+        self.update('repl', value)
+
+    @property
     def s_hash(self) -> int:
         return self.get('s_hash', 0)
 
     @s_hash.setter
     def s_hash(self, value: int) -> None:
         self.update('s_hash', value)
-
-    @property
-    def d_hash(self) -> int:
-        return self.get('d_hash', 0)
-
-    @d_hash.setter
-    def d_hash(self, value: int) -> None:
-        self.update('d_hash', value)
 
     @property
     def c_hash(self) -> int:

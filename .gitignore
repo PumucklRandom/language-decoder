@@ -14,3 +14,4 @@ __build__.py
 *.pfx
 
 !requirements.txt
+!prompt.txt

@@ -31,8 +31,16 @@ class Config(object):
     frameless: bool
     reload: bool
     storage_secret: str
+    api_url: str
+    api_key: str
+    model: str
+    model_temp: float
+    model_seed: int
+    char_limit: int
+    max_json_size: int
 
     class Upload:
+        word_limit: int
         max_file_size: int
         auto_upload: bool
         max_files: int
@@ -83,8 +91,8 @@ def load_config(config_path: str = 'config.yml') -> Config:
         logger.critical(message)
         raise ConfigError(message)
     try:
-        with open(file = config_path, mode = 'r', encoding = 'utf-8') as config_file:
-            config = dict_as_object(dictionary = yaml.safe_load(config_file), object_type = Config)
+        with open(file = config_path, mode = 'r', encoding = 'utf-8') as file:
+            config = dict_as_object(dictionary = yaml.safe_load(file), object_type = Config)
             logger.info('parsed config')
             return config
     except Exception:
