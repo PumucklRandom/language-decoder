@@ -177,6 +177,7 @@ DICTIONARY:
         reject: 'Hochladen einer json-Datei mit maximal:'
         invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
     Tips:
+        back: 'Zurück'
         help: 'Hilfe'
         delete: 'Wörterbuch löschen'
         clear: 'Wörterbuch zurücksetzen'
@@ -296,6 +297,7 @@ SETTINGS:
             - 'Verbindung erfolgreich'
             - '500 Internal server error'
     Tips:
+        back: 'Zurück'
         interface:
             help: 'Hilfe'
             reload: 'Seite neu laden'

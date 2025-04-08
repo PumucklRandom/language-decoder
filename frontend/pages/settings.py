@@ -178,7 +178,9 @@ class Settings(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(icon = 'keyboard_backspace', on_click = lambda: self.goto('back', call = self._save_state))
+                with ui.button(icon = 'keyboard_backspace',
+                               on_click = lambda: self.goto('back', call = self._save_state)):
+                    if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.back)
                 ui.label('SETTINGS').classes('absolute-center')
         except Exception:
             logger.error(f'Error in "_header" with exception:\n{traceback.format_exc()}')

@@ -89,6 +89,7 @@ class Decoding(Page):
 
     async def _decode_words(self) -> None:
         try:
+            if self.state.title: self.filename = self.state.title
             if self.state.source_words and self.state.decode:
                 self.preload = True
                 self._table.refresh()

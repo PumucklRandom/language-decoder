@@ -168,6 +168,7 @@ DICTIONARY:
         reject: 'Upload a json file with max:'
         invalid: 'Invalid json file. Upload a previously exported json file.'
     Tips:
+        back: 'Go back'
         help: 'Help'
         delete: 'Delete dictionary'
         clear: 'Clear dictionary'
@@ -279,6 +280,7 @@ SETTINGS:
             - 'Connection successful'
             - '500 Internal server error'
     Tips:
+        back: 'Go back'
         interface:
             help: 'Help'
             reload: 'Reload page'

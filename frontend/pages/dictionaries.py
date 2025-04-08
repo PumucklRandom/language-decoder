@@ -188,7 +188,9 @@ class Dictionaries(Page):
     def _header(self) -> None:
         try:
             with ui.header():
-                ui.button(icon = 'keyboard_backspace', on_click = lambda: self.goto('back', call = self._save_dict))
+                with ui.button(icon = 'keyboard_backspace',
+                               on_click = lambda: self.goto('back', call = self._save_dict)):
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DICTIONARY.Tips.back)
                 ui.label(self.ui_language.DICTIONARY.Header.dictionaries).classes('absolute-center')
                 ui.space()
                 ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._save_dict))
