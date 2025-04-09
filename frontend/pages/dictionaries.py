@@ -3,7 +3,7 @@ import traceback
 from nicegui import ui, events, Client
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger
-from backend.dicts.dictonaries import Dicts
+from backend.dicts.dictionaries import Dicts
 from frontend.pages.ui.config import URLS, DICT_COLS
 from frontend.pages.ui.custom import ui_dialog, UITable
 from frontend.pages.ui.page_abc import Page
@@ -129,7 +129,7 @@ class Dictionaries(Page):
             if not self.state.dict_name:
                 return
             self._save_dict()
-            content = self.dicts.export(dict_name = self.state.dict_name)
+            content = self.dicts.to_json_str(dict_name = self.state.dict_name)
             await self.open_route(
                 content = content,
                 file_type = 'json',
@@ -151,7 +151,7 @@ class Dictionaries(Page):
         try:
             data = event.content.read().decode('utf-8')
             dict_name = pathlib.Path(event.name).stem
-            self.dicts.import_(dict_name = dict_name, data = data)
+            self.dicts.from_json_str(dict_name = dict_name, data = data)
             self.ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
             self.ui_selector.set_value(dict_name)
             self._load_table()
@@ -216,7 +216,7 @@ class Dictionaries(Page):
             logger.error(f'Error in "_center" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _selector(self):
+    def _selector(self) -> None:
         try:
             with ui.card().style('width:500px'):
                 self.ui_rename_flag = ui.checkbox(

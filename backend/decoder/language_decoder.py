@@ -13,7 +13,7 @@ from backend.decoder.language_translator import LanguageTranslator
 from backend.config.config import CONFIG, Config
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
-from backend.dicts.dictonaries import Dicts
+from backend.dicts.dictionaries import Dicts
 from backend.utils import utilities as utils
 
 
@@ -69,12 +69,12 @@ class LanguageDecoder(object):
             proxies = self.proxies
         )
 
-    def config_translator(self):
+    def config_translator(self) -> None:
         self._translator.source, self._translator.target = self._translator._map_language_to_code(  # noqa
             self.source_language, self.target_language)
         self._translator.proxies = self.proxies
 
-    def config_langslator(self):
+    def config_langslator(self) -> None:
         self._langslator.__config__(
             source = self.source_language,
             target = self.target_language,
@@ -280,7 +280,7 @@ class LanguageDecoder(object):
         return source_words, target_words
 
     @staticmethod
-    def import_(data: str) -> Tuple[List[str], List[str], List[str]]:
+    def from_json_str(data: str) -> Tuple[List[str], List[str], List[str]]:
         try:
             data = json.loads(data)
             if len(data.get('source', [])) != len(data.get('target', [])):
@@ -302,17 +302,10 @@ class LanguageDecoder(object):
             raise DecoderError(message)
 
     @staticmethod
-    def export(source_words: List[str], target_words: List[str],
-               sentences: List[str], destin_path: str = '') -> str:
+    def to_json_str(source_words: List[str], target_words: List[str], sentences: List[str]) -> str:
         try:
             data = {'source': source_words, 'target': target_words, 'sentences': sentences}
-            data_str = json.dumps(data, ensure_ascii = False, indent = 4)
-            if not destin_path:
-                return data_str
-            title = os.path.basename(destin_path).split('.')[0]
-            path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
-            with open(file = path, mode = 'w', encoding = 'utf-8') as file:
-                file.write(data_str)
+            return json.dumps(data, ensure_ascii = False, indent = 4)
         except Exception:
             message = f'Could not execute export with exception:\n{traceback.format_exc()}'
             logger.error(message)

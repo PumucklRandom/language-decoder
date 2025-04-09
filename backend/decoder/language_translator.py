@@ -47,12 +47,12 @@ class LanguageTranslator(object):
         )
         self.set_proxy(proxies = proxies)
 
-    def __config__(self, source: str, target: str, proxies: dict = None):
+    def __config__(self, source: str, target: str, proxies: dict = None) -> None:
         self.source = source
         self.target = target
         self.set_proxy(proxies = proxies)
 
-    def set_proxy(self, proxies: dict = None):
+    def set_proxy(self, proxies: dict = None) -> None:
         if isinstance(proxies, dict):
             if proxies.get('http', None):
                 proxies.update({'http://': httpx.HTTPTransport(proxy = f'http://{proxies.get("http")}')})
@@ -77,9 +77,8 @@ class LanguageTranslator(object):
             )
             return self.check_response(
                 content = response.choices[0].message.content,
-                csv_len = len(csv_string.split('\n')) - 1
-            )  # -1 because of last \n
-
+                csv_len = len(csv_string.split('\n')) - 1  # -1 because of last \n
+            )
         except openai.RateLimitError:
             message = 'Rate Limit is reached! Try again on another day!'
             logger.error(f'{message} with exception:\n{traceback.format_exc()}')
@@ -101,7 +100,7 @@ class LanguageTranslator(object):
             logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise Exception(message)
 
-    def check_response(self, content: str, csv_len: int):
+    def check_response(self, content: str, csv_len: int) -> List[str]:
         rows = content.split('\n')
         invalid_rows = list()
         for row in rows:
@@ -114,7 +113,7 @@ class LanguageTranslator(object):
         # ensure, that the list is max length of the input
         return self.from_csv('\n'.join(rows[:csv_len]))
 
-    def get_prompt(self):
+    def get_prompt(self) -> str:
         return self.prompt.replace('<SOURCE>', f'{self.source}').replace('<TARGET>', f'{self.target}')
 
     @staticmethod
@@ -138,7 +137,7 @@ class LanguageTranslator(object):
             return list(list(zip(*list(csv.reader(io_string, delimiter = '\t'))[1:]))[-1])
 
     @staticmethod
-    def load_prompt(prompt_path: str = 'prompt.txt'):
+    def load_prompt(prompt_path: str = 'prompt.txt') -> str:
         prompt_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), prompt_path)
         if not os.path.isfile(prompt_path):
             message = f'Prompt file not found at "{prompt_path}"'

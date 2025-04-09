@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import json
 import yaml
@@ -75,7 +76,7 @@ class Config(object):
     def __str__(self) -> str:
         return self.__dict__.__str__()
 
-    def copy(self):
+    def copy(self) -> Config:
         return copy(self)
 
 
