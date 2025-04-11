@@ -1,6 +1,6 @@
 import os
 import traceback
-from typing import Optional, Tuple, List, Union
+from typing import List, Union
 from fpdf import FPDF
 from backend.error.error import PDFFormatterError
 from backend.logger.logger import logger
