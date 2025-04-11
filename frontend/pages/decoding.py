@@ -114,7 +114,7 @@ class Decoding(Page):
             logger.error(f'Error in "_decode_words" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    async def _task_handler(self):
+    async def _task_handler(self) -> None:
         try:
             self.task = asyncio.create_task(asyncio.to_thread(
                 self.decoder.decode_words,
@@ -134,7 +134,7 @@ class Decoding(Page):
             logger.error(f'Error in "_task_handler" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _task_cancel(self):
+    def _task_cancel(self) -> None:
         try:
             self.task.cancel()
         except AttributeError:
@@ -181,7 +181,7 @@ class Decoding(Page):
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
             data = event.content.read().decode('utf-8')
-            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.import_(
+            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.from_json_str(
                 data = data
             )
             self.state.title = pathlib.Path(event.name).stem
@@ -240,7 +240,7 @@ class Decoding(Page):
             if not self.state.target_words:
                 return
             self._update_words()
-            content = self.decoder.export(
+            content = self.decoder.to_json_str(
                 source_words = self.state.source_words,
                 target_words = self.state.target_words,
                 sentences = self.state.sentences
@@ -275,7 +275,7 @@ class Decoding(Page):
             logger.error(f'Error in "_import" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
-    def _replace(self):
+    def _replace(self) -> None:
         try:
             with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
                 if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)

@@ -3,7 +3,7 @@ from nicegui import ui, Client
 from backend.config.config import CONFIG, REPLACEMENTS
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
-from backend.dicts.dictonaries import Dicts
+from backend.dicts.dictionaries import Dicts
 from frontend.pages.ui.config import URLS, REPLACE_COLS, load_language, get_languages
 from frontend.pages.ui.custom import ui_dialog, UITable, UIList
 from frontend.pages.ui.page_abc import Page
@@ -19,7 +19,7 @@ class Settings(Page):
         self.ui_pdf_list: UIList
         self.ui_adv_list: UIList
 
-    def _save_state(self):
+    def _save_state(self) -> None:
         self._save_replacements()
         self._update_pdf_params()
         self._update_adv_params()

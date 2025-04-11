@@ -5,7 +5,7 @@ def lonlen(a_list: list) -> int:
     return 0
 
 
-def yield_batch(string_list: list, char_limit: int, offset: int = 1):
+def yield_batch(string_list: list, char_limit: int, offset: int = 1) -> list:
     batch, batch_len = [], 0
     for string in string_list:
         # Check if adding the current word exceeds the character limit

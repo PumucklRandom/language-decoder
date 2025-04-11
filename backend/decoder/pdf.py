@@ -62,7 +62,7 @@ class PDF(object):
         self._fpdf.set_margins(left = -0.8, top = 2, right = -1)
         return self._fpdf
 
-    def _format_lines(self, source_words, target_words) -> List[str]:
+    def _format_lines(self, source_words: List[str], target_words: List[str]) -> List[str]:
         try:
             line_len = 0
             source_line = ''
@@ -147,77 +147,16 @@ class PDF(object):
             logger.error(message)
             raise PDFFormatterError(message)
 
-    def convert2pdf(self, title: str = '', source_words: list = None, target_words: list = None,
-                    decode_path: str = '') -> Union[None, bytes, str]:
+    def convert2pdf(self, title: str = '', source_words: List[str] = None,
+                    target_words: List[str] = None) -> Union[None, bytes, str]:
         try:
-            pdf_path = None
-            if decode_path:
-                pdf_path, title = self._get_pdf_paths(decode_path = decode_path)
-                source_words, target_words = self._read_decode_text(decode_path = decode_path)
-            if not source_words:
-                return
-
             pdf_lines = self._format_lines(source_words = source_words, target_words = target_words)
             pdf_pages = self._format_pages(pdf_lines = pdf_lines)
             logger.info(f'Formatted PDF file with {len(pdf_pages)} pages.')
             self._format_pdf(title = title, pdf_pages = pdf_pages)
-
-            if not pdf_path:
-                # return pdf as bytes
-                buffer = bytes(self._fpdf.output())
-                return buffer
-
-            if not os.path.isfile(pdf_path):
-                # save pdf as file
-                self._fpdf.output(pdf_path)
-                return pdf_path
-
+            # return pdf as bytes
+            return bytes(self._fpdf.output())
         except Exception:
             message = f'Could not convert words to pdf with exception:\n{traceback.format_exc()}'
-            logger.error(message)
-            raise PDFFormatterError(message)
-
-    ####################################################################################################
-    # Methods for backend only
-    ####################################################################################################
-
-    @staticmethod
-    def _get_pdf_paths(decode_path: str) -> Tuple[str, str]:
-        if not os.path.isfile(decode_path):
-            message = f'Text file not found at "{decode_path}"'
-            logger.error(message)
-            raise PDFFormatterError(message)
-        title = os.path.basename(decode_path).split('_')[0]
-        pdf_path = os.path.join(os.path.dirname(decode_path), f'{title}.pdf')
-        return pdf_path, title
-
-    def _read_decode_text(self, decode_path: str) -> Tuple[Optional[List[str]], Optional[List[str]]]:
-        try:
-            pdf_path, _ = self._get_pdf_paths(decode_path = decode_path)
-
-            if os.path.isfile(pdf_path):
-                # logger.info(f'PDF already created at: "{pdf_path}"')
-                return None, None
-            logger.info(f'Create PDF for: `{decode_path}´.')
-
-            try:
-                # read text file as lines
-                with open(file = decode_path, mode = 'r', encoding = 'utf-8') as file:
-                    lines = file.readlines()
-            except IOError:
-                message = f'Could not open file at "{decode_path}" with exception:\n{traceback.format_exc()}'
-                logger.error(message)
-                raise PDFFormatterError(message)
-            # split lines in source and decode
-            source_words = list()
-            target_words = list()
-            for i, line in enumerate(lines):
-                if i % 3 == 0:
-                    source_words += line.split()
-                if i % 3 == 1:
-                    target_words += line.split()
-            return source_words, target_words
-        except Exception:
-            message = f'Could not parse decoded text file with exception:\n{traceback.format_exc()}'
             logger.error(message)
             raise PDFFormatterError(message)

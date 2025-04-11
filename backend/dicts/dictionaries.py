@@ -61,7 +61,7 @@ class Dicts(object):
             logger.error(message)
             raise DictionaryError(message)
 
-    def import_(self, dict_name: str, data: str) -> None:
+    def from_json_str(self, dict_name: str, data: str) -> None:
         try:
             data = json.loads(data)
             if any(not isinstance(key, str) for key in data.keys()) or \
@@ -75,16 +75,10 @@ class Dicts(object):
             logger.error(message)
             raise DictionaryError(message)
 
-    def export(self, dict_name: str, destin_path: str = '') -> str:
+    def to_json_str(self, dict_name: str) -> str:
         try:
             data = self.dictionaries.get(dict_name, {})
-            data_str = json.dumps(data, ensure_ascii = False, indent = 4)
-            if not destin_path:
-                return data_str
-            title = os.path.basename(destin_path).split('.')[0]
-            path = os.path.join(os.path.dirname(destin_path), f'{title}.json')
-            with open(file = path, mode = 'w', encoding = 'utf-8') as file:
-                file.write(data_str)
+            return json.dumps(data, ensure_ascii = False, indent = 4)
         except Exception:
             message = f'Could not execute export with exception:\n{traceback.format_exc()}'
             logger.error(message)
