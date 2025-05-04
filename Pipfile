@@ -13,6 +13,7 @@ wheel = "*"
 setuptools = "*"
 nicegui = "*"
 openai = "*"
+h11 = "==0.16.0"
 
 [dev-packages]
 

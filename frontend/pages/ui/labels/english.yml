@@ -267,13 +267,14 @@ SETTINGS:
         'To reset the "regular expression" settings, just press the button on the bottom left side of the tab.'
     ]
     Advanced: [
-        'Punctuations',
-        'Starting Marks',
-        'Finishing Marks',
-        'Number Marks',
-        'Opening Marks',
-        'Closing Marks',
-        'Quotations'
+        'End of sentence marks',
+        'Punctuation marks',
+        'Starting marks',
+        'Finishing marks',
+        'Number marks',
+        'Opening marks',
+        'Closing marks',
+        'Quotation marks'
     ]
     Messages:
         connect_check:

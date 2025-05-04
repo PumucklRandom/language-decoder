@@ -239,14 +239,6 @@ class State(object):
         self.update('repl', value)
 
     @property
-    def s_hash(self) -> int:
-        return self.get('s_hash', 0)
-
-    @s_hash.setter
-    def s_hash(self, value: int) -> None:
-        self.update('s_hash', value)
-
-    @property
     def c_hash(self) -> int:
         return self.get('c_hash', 0)
 

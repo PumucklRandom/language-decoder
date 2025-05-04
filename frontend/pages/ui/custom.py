@@ -233,7 +233,7 @@ class UIList(Table):
             <q-tr :props="props">
                 <q-td key="source" :props="props">
                     {{{{ props.row.source }}}}
-                    <q-input v-model="props.row.target" type="{self.val_type}"
+                    <q-input style="font-family:RobotoMono" v-model="props.row.target" type="{self.val_type}"
                      dense outlined debounce="{CONFIG.debounce}"
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>

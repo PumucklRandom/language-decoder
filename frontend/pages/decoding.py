@@ -90,7 +90,8 @@ class Decoding(Page):
     async def _decode_words(self) -> None:
         try:
             if self.state.title: self.filename = self.state.title
-            if self.state.source_words and self.state.decode:
+            if self.state.source_text and self.state.decode:
+                self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
                 self.preload = True
                 self._table.refresh()
                 self.preload = False
@@ -122,7 +123,7 @@ class Decoding(Page):
             ))
             self.state.target_words = await self.task
             self.task = asyncio.create_task(asyncio.to_thread(
-                self.decoder.decode_sentences,
+                self.decoder.translate_sentences,
                 source_words = self.state.source_words
             ))
             self.state.sentences = await self.task
@@ -147,7 +148,8 @@ class Decoding(Page):
         try:
             self.state.target_words = self.decoder.apply_dict(
                 source_words = self.state.source_words,
-                target_words = self.state.target_words
+                target_words = self.state.target_words,
+                dict_name = self.state.dict_name
             )
             self._table.refresh()
         except Exception:
@@ -187,7 +189,6 @@ class Decoding(Page):
             self.state.title = pathlib.Path(event.name).stem
             self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
-            self.state.s_hash = hash(self.state.source_text)
             self._table.refresh()
         except DecoderError:
             ui.notify(self.ui_language.DECODING.Messages.invalid, type = 'warning', position = 'top')

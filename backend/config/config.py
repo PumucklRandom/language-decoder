@@ -59,6 +59,7 @@ class Config(object):
         line_height: float
 
     class Regex:
+        endofs: str
         puncts: str
         begins: str
         ending: str

@@ -30,21 +30,11 @@ class Upload(Page):
             ui.notify(f'{self.ui_language.UPLOAD.Messages.limit} {self.word_limit} words',
                       type = 'warning', position = 'top')
 
-    def _split_text(self) -> None:
+    def _decode(self) -> None:
         try:
-            if not self.state.source_text:
-                # self.state.source_words.clear()
-                # self.state.target_words.clear()
-                # self.state.sentences.clear()
-                return
             self.state.decode = True
-            _hash = hash(self.state.source_text)
-            if self.state.s_hash == _hash:
-                return
-            self.state.s_hash = _hash
-            self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
         except Exception:
-            logger.error(f'Error in "_split_text" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_decode" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
@@ -149,7 +139,7 @@ class Upload(Page):
                     .bind_value(self.state, 'target_language')
                 ui.space().style('width:50px')
                 with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
-                               on_click = lambda: self.goto(URLS.DECODING, call = self._split_text)):
+                               on_click = lambda: self.goto(URLS.DECODING, call = self._decode)):
                     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
                 with ui.button(icon = 'delete', on_click = self._clear_text) \
                         .classes('absolute-bottom-right'):

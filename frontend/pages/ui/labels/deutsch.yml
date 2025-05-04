@@ -284,12 +284,13 @@ SETTINGS:
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
     Advanced: [
+        'Satzende-Markierungen',
         'Zeichensetzung',
         'Startzeichen',
-        'Abschlusszeichen',
+        'Schlusszeichen',
         'Zahlenmarkierungen',
         'Eröffnungszeichen',
-        'Abschlusszeichen',
+        'Schließungsszeichen',
         'Zitatmarkierungen'
     ]
     Messages:
