@@ -328,6 +328,7 @@ class Decoding(Page):
     @ui.refreshable
     def _table(self) -> None:
         try:
+            # TODO: custom server side pagination (for better performance!?)
             self.ui_grid = UIGrid(
                 source_words = self.state.source_words,
                 target_words = self.state.target_words,

@@ -19,8 +19,9 @@ reload: false  # set to false for desktop app!!! true for dev
 storage_secret: 'STORAGE_SECRET'
 api_url: 'https://openrouter.ai/api/v1'
 api_key: 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNzRlZGJhYmQyNzUxNjRmNWMyYzI3Mw=='
-model: 'google/learnlm-1.5-pro-experimental:free'
 #model: 'google/gemini-2.0-flash-exp:free'
+model: 'google/learnlm-1.5-pro-experimental:free'
+#model: 'deepseek/deepseek-chat:free'
 model_temp: 0.0
 model_seed: 0
 char_limit: 2850

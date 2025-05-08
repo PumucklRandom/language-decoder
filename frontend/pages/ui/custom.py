@@ -58,12 +58,13 @@ def rel_top_abs_left(top: int = 0, left: int = 0) -> str:
 
 class Table(ui.table):
 
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id') -> None:
+    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
+                 row_key: str = 'id', *args, **kwargs) -> None:
         if columns is None:
             columns = DEFAULT_COLS
         if rows is None:
             rows = []
-        super().__init__(columns = columns, rows = rows, row_key = row_key)
+        super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         self.on('_upd_row', self._upd_row)
         self.on('_del_row', self._del_row)
         self.on('_add_row', self._add_row)
@@ -111,9 +112,9 @@ class Table(ui.table):
 
 
 class UITable(Table):
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
-                 row_key: str = 'id', dark_mode: bool = True) -> None:
-        super().__init__(columns = columns, rows = rows, row_key = row_key)
+    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id',
+                 dark_mode: bool = True, *args, **kwargs) -> None:
+        super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         if dark_mode:
             self.scr_color = COLORS.GREY10.VAL
             self.tar_color = COLORS.BLUE_GREY10.VAL
@@ -124,7 +125,10 @@ class UITable(Table):
             self.btn_color = COLORS.CYAN1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
+        # TODO: 'virtual-scroll' improves performance, but somehow disables event trigger!?
         self.props('flat bordered separator=cell')
+        self.props['rows-per-page-options'] = [0, 10, 15, 20, 25, 30, 50]
+        # self.props['rows-per-page'] = 50
 
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
@@ -169,8 +173,8 @@ class UITable(Table):
 class UIGrid(Table):
     def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id',
                  source_words: List[str] = None, target_words: List[str] = None,
-                 preload: bool = False, dark_mode: bool = True) -> None:
-        super().__init__(columns = columns, rows = rows, row_key = row_key)
+                 preload: bool = False, dark_mode: bool = True, *args, **kwargs) -> None:
+        super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         self.item_size = 100
         if preload:
             target_words = [''] * len(source_words)
@@ -216,8 +220,8 @@ class UIGrid(Table):
 
 class UIList(Table):
     def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
-                 row_key: str = 'id', val_type: str = 'text') -> None:
-        super().__init__(columns = columns, rows = rows, row_key = row_key)
+                 row_key: str = 'id', val_type: str = 'text', *args, **kwargs) -> None:
+        super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         self.val_type = val_type
         self.add_slot('body', self._body())
         self.props('hide-header separator=none')

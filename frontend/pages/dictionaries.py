@@ -245,8 +245,11 @@ class Dictionaries(Page):
         try:
             DICT_COLS[0].update({'label': self.ui_language.DICTIONARY.Table.key})
             DICT_COLS[1].update({'label': self.ui_language.DICTIONARY.Table.val})
-            self.ui_table = UITable(columns = DICT_COLS, dark_mode = self.state.dark_mode) \
-                .classes('sticky-header').style('min-width:500px; max-height:75vh')
+            self.ui_table = UITable(
+                columns = DICT_COLS,
+                dark_mode = self.state.dark_mode,
+                pagination = 50
+            ).classes('sticky-header').style('min-width:500px; max-height:75vh')
             self._load_table()
         except Exception:
             logger.error(f'Error in "_table" with exception:\n{traceback.format_exc()}')
