@@ -245,3 +245,19 @@ class State(object):
     @c_hash.setter
     def c_hash(self, value: int) -> None:
         self.update('c_hash', value)
+
+    @property
+    def table_page(self) -> dict:
+        return self.get('table_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[-1]})
+
+    @table_page.setter
+    def table_page(self, value: dict) -> None:
+        self.update('table_page', value)
+
+    @property
+    def grid_page(self) -> dict:
+        return self.get('grid_page', {'page': 1, 'rowsPerPage': CONFIG.grid_options[-1]})
+
+    @grid_page.setter
+    def grid_page(self, value: dict) -> None:
+        self.update('grid_page', value)

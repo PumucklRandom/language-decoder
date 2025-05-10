@@ -39,6 +39,8 @@ class Config(object):
     model_seed: int
     char_limit: int
     max_json_size: int
+    table_options: list
+    grid_options: list
 
     class Upload:
         word_limit: int

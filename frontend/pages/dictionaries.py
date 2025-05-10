@@ -48,8 +48,7 @@ class Dictionaries(Page):
 
     def _select_table(self) -> None:
         try:
-            if not self.ui_selector:
-                return
+            if not self.ui_selector: return
             if not self.ui_selector.value:
                 self._deselect_table()
                 return
@@ -110,6 +109,9 @@ class Dictionaries(Page):
             logger.error(f'Error in "_save_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
+    def update_table_state(self) -> None:
+        self.state.table_page = self.ui_table.pagination
+
     def _dialog_select(self) -> ui_dialog:
         try:
             return ui_dialog(label_list = self.ui_language.DICTIONARY.Dialogs_select)
@@ -126,8 +128,7 @@ class Dictionaries(Page):
 
     async def _export(self) -> None:
         try:
-            if not self.state.dict_name:
-                return
+            if not self.state.dict_name: return
             self._save_dict()
             content = self.dicts.to_json_str(dict_name = self.state.dict_name)
             await self.open_route(
@@ -169,8 +170,8 @@ class Dictionaries(Page):
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
                     ui.button(icon = 'close', on_click = dialog.close) \
-                        .classes('absolute-top-right') \
-                        .props('dense round size=12px')
+                        .props('dense round size=12px') \
+                        .classes('absolute-top-right')
                     ui.label(text = self.ui_language.DICTIONARY.Dialogs_import[0])
                     ui.upload(
                         label = self.ui_language.DICTIONARY.Dialogs_import[1],
@@ -201,9 +202,9 @@ class Dictionaries(Page):
     def _center(self) -> None:
         try:
             self.dicts.load(user_uuid = self.state.user_uuid)
-            with ui.column().classes('w-full items-center').style('font-size:12pt'):
+            with ui.column().style('font-size:12pt').classes('w-full items-center'):
                 self._selector()
-                with ui.card().classes('items-center').style('width:650px'):
+                with ui.card().style('width:650px').classes('items-center'):
                     with ui.element():  # is somehow needed for the table border
                         self._table()
                     with ui.button(icon = 'help', on_click = self._dialog_table().open) \
@@ -230,6 +231,7 @@ class Dictionaries(Page):
                     new_value_mode = 'add-unique',
                     on_change = self._select_table,
                     clearable = True) \
+                    .props('outlined') \
                     .style('width:350px')
                 with ui.button(icon = 'help', on_click = self._dialog_select().open) \
                         .classes('absolute-top-right'):
@@ -248,8 +250,9 @@ class Dictionaries(Page):
             self.ui_table = UITable(
                 columns = DICT_COLS,
                 dark_mode = self.state.dark_mode,
-                pagination = 50
-            ).classes('sticky-header').style('min-width:500px; max-height:75vh')
+                pagination = self.state.table_page,
+                on_pagination_change = self.update_table_state
+            ).style('min-width:500px; max-height:75vh').classes('sticky-header')
             self._load_table()
         except Exception:
             logger.error(f'Error in "_table" with exception:\n{traceback.format_exc()}')

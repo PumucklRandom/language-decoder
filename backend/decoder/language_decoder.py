@@ -252,8 +252,7 @@ class LanguageDecoder(object):
 
     def apply_dict(self, source_words: List[str], target_words: List[str], dict_name: str = '') -> List[str]:
         try:
-            if not dict_name:
-                return target_words
+            if not dict_name: return target_words
             self._dicts.load(user_uuid = self.user_uuid)
             dictionary = self._dicts.dictionaries.get(dict_name, {})
             target_words_copy = target_words.copy()

@@ -14,7 +14,7 @@ class Start(Page):
 
     def _center(self) -> None:
         try:
-            with ui.column().classes('w-full items-center').style(f'font-size:{self.font_size}pt'):
+            with ui.column().style(f'font-size:{self.font_size}pt').classes('w-full items-center'):
                 self._explanation()
                 ui.separator()
                 self._disclaimer()
@@ -24,8 +24,7 @@ class Start(Page):
 
     def _explanation(self) -> None:
         try:
-            with ui.card().classes('w-[60%] items-center') \
-                    .style('min-width:1000px; min-height:562px; height:60vh'):
+            with ui.card().style('min-width:1000px; min-height:562px; height:60vh').classes('w-[60%] items-center'):
                 ui.label(text = self.ui_language.START.Explanations.title) \
                     .style(f'font-size:{self.font_size * 1.2}pt')
                 labels = ''
@@ -50,8 +49,8 @@ class Start(Page):
 
     def _disclaimer(self) -> None:
         try:
-            with ui.column().classes('w-[60%] items-center') \
-                    .style(f'min-width:1000px; font-size:{self.font_size * 0.8}pt'):
+            with ui.column().style(f'min-width:1000px; font-size:{self.font_size * 0.8}pt') \
+                    .classes('w-[60%] items-center'):
                 ui.label(text = self.ui_language.START.Disclaimers.title) \
                     .style(f'font-size:{self.font_size}pt')
                 labels = ''

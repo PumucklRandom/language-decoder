@@ -6,7 +6,7 @@ from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.decoder.pdf import PDF
 from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import UIGrid, ui_dialog
+from frontend.pages.ui.custom import UIGridPages, ui_dialog
 from frontend.pages.ui.page_abc import Page
 
 
@@ -15,12 +15,11 @@ class Decoding(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ui_grid: UIGrid
+        self.filename: str = 'decoded'
+        self.task: asyncio.Task
+        self.ui_grid: UIGridPages
         self.ui_find_input: ui.input
         self.ui_repl_input: ui.input
-        self.filename: str = 'decoded'
-        self.preload: bool = False
-        self.task: asyncio.Task
 
     async def _open_pdf_view(self) -> None:
         try:
@@ -45,21 +44,33 @@ class Decoding(Page):
             logger.error(f'Error in "_download_pdf" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
+    def _refresh_grid(self) -> None:
+        try:
+            self._update_words()
+            self._update_grid()
+        except Exception:
+            logger.error(f'Error in "_refresh_grid" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    def _update_grid(self, preload: bool = False, new_source: bool = False, new_indices: bool = False) -> None:
+        try:
+            self.ui_grid.set_values(
+                source_words = self.state.source_words,
+                target_words = self.state.target_words,
+                preload = preload,
+                new_source = new_source,
+                new_indices = new_indices
+            )
+        except Exception:
+            logger.error(f'Error in "_update_grid" with exception:\n{traceback.format_exc()}')
+            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
     def _update_words(self) -> None:
         try:
             self.state.source_words, self.state.target_words = self.ui_grid.get_values()
-            self.state.source_words = list(map(str.strip, self.state.source_words))
-            self.state.target_words = list(map(str.strip, self.state.target_words))
+            self.state.grid_page = self.ui_grid.get_grid_page()
         except Exception:
             logger.error(f'Error in "_update_words" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    def _save_words(self) -> None:
-        try:
-            self._update_words()
-            self._table.refresh()
-        except Exception:
-            logger.error(f'Error in "_save_words" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _replace_words(self) -> None:
@@ -71,7 +82,7 @@ class Decoding(Page):
                 find = self.state.find,
                 repl = self.state.repl
             )
-            self._table.refresh()
+            self._update_grid()
         except Exception:
             logger.error(f'Error in "_replace_words" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -92,9 +103,7 @@ class Decoding(Page):
             if self.state.title: self.filename = self.state.title
             if self.state.source_text and self.state.decode:
                 self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
-                self.preload = True
-                self._table.refresh()
-                self.preload = False
+                self._update_grid(preload = True, new_source = True)
                 notification = ui.notification(
                     message = f'{self.ui_language.DECODING.Messages.decoding} {len(self.state.source_words)}',
                     position = 'top',
@@ -109,7 +118,7 @@ class Decoding(Page):
                 await self._task_handler()
                 notification.dismiss()
             else:
-                self._table.refresh()
+                self._update_grid(new_indices = True)
             self.state.decode = False
         except Exception:
             logger.error(f'Error in "_decode_words" with exception:\n{traceback.format_exc()}')
@@ -151,7 +160,7 @@ class Decoding(Page):
                 target_words = self.state.target_words,
                 dict_name = self.state.dict_name
             )
-            self._table.refresh()
+            self._update_grid()
         except Exception:
             logger.error(f'Error in "_apply_dict" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -189,7 +198,7 @@ class Decoding(Page):
             self.state.title = pathlib.Path(event.name).stem
             self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
-            self._table.refresh()
+            self._update_grid(new_source = True)
         except DecoderError:
             ui.notify(self.ui_language.DECODING.Messages.invalid, type = 'warning', position = 'top')
         except Exception:
@@ -214,15 +223,14 @@ class Decoding(Page):
 
     def _pdf_dialog(self) -> None:
         try:
-            if not self.state.target_words:
-                return
+            if not self.state.target_words: return
             self._update_words()
             self.create_pdf()
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
                     ui.button(icon = 'close', on_click = dialog.close) \
-                        .classes('absolute-top-right') \
-                        .props('dense round size=12px')
+                        .props('dense round size=12px') \
+                        .classes('absolute-top-right')
                     ui.space()
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[0])
                     ui.label(self.ui_language.DECODING.Dialogs_pdf.text[1])
@@ -238,8 +246,7 @@ class Decoding(Page):
 
     async def _export(self) -> None:
         try:
-            if not self.state.target_words:
-                return
+            if not self.state.target_words: return
             self._update_words()
             content = self.decoder.to_json_str(
                 source_words = self.state.source_words,
@@ -260,8 +267,8 @@ class Decoding(Page):
             with ui.dialog() as dialog:
                 with ui.card().classes('items-center'):
                     ui.button(icon = 'close', on_click = dialog.close) \
-                        .classes('absolute-top-right') \
-                        .props('dense round size=12px')
+                        .props('dense round size=12px') \
+                        .classes('absolute-top-right')
                     ui.label(text = self.ui_language.DECODING.Dialogs_import[0])
                     ui.upload(
                         label = self.ui_language.DECODING.Dialogs_import[1],
@@ -311,11 +318,15 @@ class Decoding(Page):
 
     async def _center(self) -> None:
         try:
-            with ui.column().classes('w-full items-center'):
-                with ui.card().style('min-width:1000px; min-height:562px'):
-                    self._table()  # noqa
+            with ui.element().classes('w-full items-center'):
+                self.ui_grid = UIGridPages(
+                    grid_page = self.state.grid_page,
+                    endofs = self.decoder.regex.endofs + self.decoder.regex.quotes,
+                    dark_mode = self.state.dark_mode,
+                )
+                self.ui_grid()
             await self._decode_words()
-            with ui.row().classes('absolute-top-right').style('gap:0.0rem'):
+            with ui.row().style('gap:0.0rem').classes('absolute-top-right'):
                 with ui.column().style('gap:0.0rem'):
                     ui.space().style('height:5px')
                     with ui.button(icon = 'help', on_click = self._dialog().open).props('dense'):
@@ -323,20 +334,6 @@ class Decoding(Page):
                 ui.space().style('width:5px')
         except Exception:
             logger.error(f'Error in "_center" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    @ui.refreshable
-    def _table(self) -> None:
-        try:
-            # TODO: custom server side pagination (for better performance!?)
-            self.ui_grid = UIGrid(
-                source_words = self.state.source_words,
-                target_words = self.state.target_words,
-                preload = self.preload,
-                dark_mode = self.state.dark_mode
-            )
-        except Exception:
-            logger.error(f'Error in "_open_start_page" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _footer(self) -> None:
@@ -349,8 +346,8 @@ class Decoding(Page):
                 ui.space()
                 ui.button(text = self.ui_language.DECODING.Footer.apply, on_click = self._apply_dict)
                 ui.space()
-                with ui.button(icon = 'save', on_click = self._save_words):
-                    if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.save)
+                with ui.button(icon = 'refresh', on_click = self._refresh_grid):
+                    if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.refresh)
                 ui.space()
                 ui.button(text = self.ui_language.DECODING.Footer.create, on_click = self._pdf_dialog)
                 ui.space()

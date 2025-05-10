@@ -7,8 +7,9 @@ pp = PrettyPrinter(indent = 4)
 # LanguageDecoder
 URL = 'https://openrouter.ai/api/v1'
 API_KEY = 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNzRlZGJhYmQyNzUxNjRmNWMyYzI3Mw=='
-# MODEL = 'google/gemini-2.0-flash-exp:free'
-MODEL = 'google/learnlm-1.5-pro-experimental:free'
+MODEL = 'google/gemini-2.0-flash-exp:free'
+# MODEL = 'google/learnlm-1.5-pro-experimental:free'
+# MODEL = 'deepseek/deepseek-chat:free'
 
 base_path = r'./'
 prompt_path = os.path.join(base_path, 'prompt.txt')

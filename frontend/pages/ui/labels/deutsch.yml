@@ -93,8 +93,8 @@ DECODING:
         'Die dritte Option "WÖRTERBUCH ANWENDEN" wird verwendet, 
             um das aktuell ausgewählte Wörterbuch auf die dekodierten Wörter anzuwenden.',
         '/n',
-        'Um Ihre letzten Änderungen zu speichern, verwenden Sie die Schaltfläche "SPEICHERN"
-            in der Mitte der Fußzeile.',
+        'Für den Fall, dass das aktuelle Layout nicht zur Größe der Wörter passt,
+            können Sie das Layout mit der Schaltfläche "AKTUALISIEREN" in der Mitte der Fußzeile neu anordnen.',
         '/n',
         'Wenn Sie die Dekodierung abgeschlossen haben, können Sie mit der Schaltfläche "PDF ERSTELLEN",
             eine PDF-Datei der Dekodierung ansehen und herunterladen.',
@@ -127,7 +127,7 @@ DECODING:
         help: 'Hilfe'
         replace: 'Austauschen'
         import_: 'Wörter importieren'
-        save: 'Dekodierung speichern'
+        refresh: 'Layout neu anordnen'
         export: 'Wörter exportieren'
         view: 'Satzansicht'
     Footer:

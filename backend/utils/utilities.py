@@ -22,7 +22,7 @@ def yield_batch(string_list: list, char_limit: int, offset: int = 1) -> list:
         yield batch
 
 
-def yield_batch_eos(string_list: list, char_limit: int, offset: int = 1, endofs: str = '.!?', ) -> list:
+def yield_batch_eos(string_list: list, char_limit: int, offset: int = 1, endofs: str = '.!?\'"') -> list:
     batch, batch_len = [], 0
     last_valid_index = 0
     for string in string_list:

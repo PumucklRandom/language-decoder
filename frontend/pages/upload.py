@@ -4,7 +4,7 @@ import traceback
 from nicegui import ui, events, Client
 from backend.logger.logger import logger
 from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import ui_dialog, abs_top_left
+from frontend.pages.ui.custom import ui_dialog, top_left
 from frontend.pages.ui.page_abc import Page
 
 
@@ -90,8 +90,8 @@ class Upload(Page):
     def _center(self) -> None:
         try:
             with ui.column().classes('w-full items-center'):
-                with ui.card().classes('w-[50%] items-center') \
-                        .style('min-width:1000px; min-height:562px; height:85vh'):
+                with ui.card().style('min-width:1000px; min-height:562px; height:85vh') \
+                        .classes('w-[50%] items-center'):
                     with ui.button(icon = 'help', on_click = self._dialog().open) \
                             .classes('absolute-top-right'):
                         if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.help)
@@ -105,15 +105,15 @@ class Upload(Page):
                         max_files = self.max_files) \
                         .props('accept=.txt flat dense')
                     with ui.input(label = self.ui_language.UPLOAD.Title) \
-                            .classes(abs_top_left(130, 160)) \
+                            .classes(top_left(150, 160)) \
                             .bind_value(self.state, 'title'):
                         if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
                     ui.textarea(
                         label = f'{self.ui_language.UPLOAD.Input_txt[0]} {self.word_limit}',
                         placeholder = self.ui_language.UPLOAD.Input_txt[1],
                         on_change = self._check_source_text) \
-                        .classes('w-full h-full flex-grow') \
                         .style('font-size:12pt') \
+                        .classes('w-full h-full flex-grow') \
                         .bind_value(self.state, 'source_text')
                     self._language_selector()
         except Exception:
@@ -127,14 +127,14 @@ class Upload(Page):
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.source,
                     options = ['auto'] + languages) \
-                    .props('dense options-dense') \
+                    .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'source_language')
                 ui.space()
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.target,
                     options = languages) \
-                    .props('dense options-dense') \
+                    .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'target_language')
                 ui.space().style('width:50px')
