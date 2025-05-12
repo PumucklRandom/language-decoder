@@ -248,7 +248,7 @@ class State(object):
 
     @property
     def table_page(self) -> dict:
-        return self.get('table_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[-1]})
+        return self.get('table_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[2]})
 
     @table_page.setter
     def table_page(self, value: dict) -> None:
@@ -256,7 +256,7 @@ class State(object):
 
     @property
     def grid_page(self) -> dict:
-        return self.get('grid_page', {'page': 1, 'rowsPerPage': CONFIG.grid_options[-1]})
+        return self.get('grid_page', {'page': 1, 'rowsPerPage': CONFIG.grid_options[2]})
 
     @grid_page.setter
     def grid_page(self, value: dict) -> None:

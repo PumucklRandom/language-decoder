@@ -289,6 +289,7 @@ class Decoding(Page):
                 if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)
                 with ui.menu():
                     with ui.menu_item(auto_close = False):
+                        # TODO: add highlighting of matches while typing
                         self.ui_find_input = ui.input(label = 'find').bind_value(self.state, 'find')
                     with ui.menu_item(auto_close = False):
                         self.ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')

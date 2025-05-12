@@ -26,8 +26,8 @@ model_temp: 0.0
 model_seed: 0
 char_limit: 2850
 max_json_size: 100_000
-table_options: [0, 10, 15, 20, 25, 30, 50]
-grid_options: [0, 100, 150, 200, 250, 300]
+table_options: [10, 15, 20, 25, 30, 50, 0]
+grid_options: [100, 150, 200, 250, 300, 'All']
 Upload:
     word_limit: 1000
     max_file_size: 15_000

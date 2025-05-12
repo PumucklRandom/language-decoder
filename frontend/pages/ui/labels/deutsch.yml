@@ -161,7 +161,7 @@ DICTIONARY:
         '/n',
         'Um das aktuell ausgewählte Wörterbuch zu löschen, drücken Sie die untere Taste "Mülleimer".',
         '/n', '/N', '/n',
-        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
+        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte dauerhaft zu speichern und zu übernehmen.',
         '/n',
         'Mit den Optionen "IMPORTIEREN" und "EXPORTIEREN" können Sie ein Wörterbuch importieren und exportieren.'
     ]

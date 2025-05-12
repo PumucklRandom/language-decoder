@@ -153,7 +153,7 @@ DICTIONARY:
         '/n',
         'To clear the currently selected dictionary, press the lower "trash bin" button.',
         '/n', '/N', '/n',
-        'Click on the "SAVE" button to store and apply your values.',
+        'Click on the "SAVE" button to permanently store and apply your values.',
         '/n',
         'With the "IMPORT" and "EXPORT" options, you can import and export a dictionary.'
     ]

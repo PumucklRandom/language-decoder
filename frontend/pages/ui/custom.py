@@ -23,7 +23,7 @@ def ui_dialog(label_list: List[str], classes: str = 'max-w-[80%]',
     return dialog
 
 
-def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = True):
+def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = True) -> str:
     """
     :param top: distance from top
     :param left: distance from left
@@ -36,7 +36,7 @@ def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px',
     return f'absolute left-[{left}{u_left}] top-[{top}{u_top}] translate-x-[-50%] translate-y-[-50%]'
 
 
-def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = True):
+def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = True) -> str:
     """
     :param top: distance from top
     :param right: distance from right
@@ -49,7 +49,7 @@ def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'p
     return f'absolute right-[{right}{u_right}] top-[{top}{u_top}] translate-x-[+50%] translate-y-[-50%]'
 
 
-def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = True):
+def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = True) -> str:
     """
     :param bot: distance from bottom
     :param left: distance from left
@@ -62,7 +62,7 @@ def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px',
     return f'absolute left-[{left}{u_left}] bottom-[{bot}{u_bot}] translate-x-[-50%] translate-y-[-50%]'
 
 
-def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = True):
+def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = True) -> str:
     """
     :param bot: distance from bottom
     :param right: distance from right
@@ -145,7 +145,7 @@ class UITable(Table):
         # TODO: 'virtual-scroll' improves performance, but somehow disables event trigger!?
         self.props('flat bordered separator=cell')
         self.props['rows-per-page-options'] = CONFIG.table_options
-        self.props['rows-per-page'] = CONFIG.table_options[-1]
+        self.props['rows-per-page'] = CONFIG.table_options[2]
 
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
@@ -267,7 +267,7 @@ class UIList(Table):
 class UIGridPages(object):
     def __init__(self, grid_page: dict = None, endofs: str = '.!?\'"', dark_mode: bool = True) -> None:
         self.page_number: int = 1
-        self.page_size: int = CONFIG.grid_options[-1]
+        self.page_size: int = CONFIG.grid_options[2]
         self.prev_page: int = 1
         self.set_grid_page(grid_page)
         self.endofs = endofs
@@ -287,7 +287,7 @@ class UIGridPages(object):
             with ui.row().classes('absolute-bottom-right').bind_visibility_from(self, 'visible'):
                 ui.label('Max words per page:').classes(bot_left(10, -540, center = False))
                 ui.select(options = CONFIG.grid_options,
-                          value = CONFIG.grid_options[-1],
+                          value = CONFIG.grid_options[2],
                           on_change = self.repage) \
                     .props('dense options-dense borderless') \
                     .style('width:50px') \
@@ -327,7 +327,7 @@ class UIGridPages(object):
     def set_indices(self) -> None:
         if not self.eos_indices: return
         self.indices, p, _i = [0], 0, 0
-        if self.page_size:
+        if self.page_size != 'All':
             for i in self.eos_indices:
                 if i > (self.indices[p] + self.page_size):
                     self.indices.append(_i)
@@ -338,20 +338,23 @@ class UIGridPages(object):
         self.ui_page.max = len(self.indices) - 1
 
     def repage(self) -> None:
-        # Here it is important that the page reset is done first, to trigger the right scrolling!
         if not hasattr(self, 'ui_page'): return
+        # Here it is important that the page reset is done first, to trigger the right scrolling!
         self.ui_page.value = 1  # have to be first!!!
         self.prev_page = 1
         self.set_indices()
         self._table.refresh()
 
     def scroll(self) -> None:
+        self.upd_values()
+        self.prev_page = self.page_number
+        self._table.refresh()
+
+    def upd_values(self):
         if self.source_words and self.indices:
             p = self.prev_page - 1
             (self.source_words[self.indices[p]:self.indices[p + 1]],
              self.target_words[self.indices[p]:self.indices[p + 1]]) = self.ui_grid.get_values()
-        self.prev_page = self.page_number
-        self._table.refresh()
 
     def set_values(self, source_words: List[str], target_words: List[str], preload: bool = False,
                    new_source: bool = False, new_indices: bool = False) -> None:
@@ -368,14 +371,15 @@ class UIGridPages(object):
         self.target_words = target_words
         self._table.refresh(preload = preload)
 
-    def get_values(self) -> Tuple[list, list]:
+    def get_values(self) -> Tuple[List[str], List[str]]:
+        self.upd_values()
         return self.source_words, self.target_words
 
-    def get_grid_page(self):
+    def get_grid_page(self) -> dict:
         return {'page': self.page_number, 'rowsPerPage': self.page_size}
 
     def set_grid_page(self, grid_page: dict) -> None:
         if grid_page is None: grid_page = {}
         self.page_number = grid_page.get('page', 1)
-        self.page_size = grid_page.get('rowsPerPage', CONFIG.grid_options[-1])
+        self.page_size = grid_page.get('rowsPerPage', CONFIG.grid_options[2])
         self.prev_page = self.page_number
