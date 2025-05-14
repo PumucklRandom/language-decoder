@@ -1,11 +1,11 @@
-from typing import Union, Tuple, Dict, List, Iterable
+from typing import Union, Iterable
 from nicegui import ui, events
 from backend.config.config import CONFIG
 from backend.utils.utilities import lonlen
 from frontend.pages.ui.config import COLORS, DEFAULT_COLS
 
 
-def ui_dialog(label_list: List[str], classes: str = 'max-w-[80%]',
+def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
               style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
     with ui.dialog() as dialog:
         with ui.card().style(f'{style}; min-height:112px; font-size:11pt; gap:0.0rem').classes(f'{classes}'):
@@ -77,7 +77,7 @@ def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'p
 
 class Table(ui.table):
 
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
+    def __init__(self, columns: list[dict] = None, rows: list[dict] = None,
                  row_key: str = 'id', *args, **kwargs) -> None:
         if columns is None: columns = DEFAULT_COLS
         if rows is None: rows = []
@@ -106,10 +106,10 @@ class Table(ui.table):
             if row.get('id') == event.args.get('id'):
                 row.update(event.args)
 
-    def _set_type(self, values) -> List[Union[str, float]]:
+    def _set_type(self, values) -> list[Union[str, float]]:
         return values
 
-    def set_values(self, sources: Union[Dict, Iterable[str]],
+    def set_values(self, sources: Union[dict, Iterable[str]],
                    targets: Iterable[Union[str, float]] = None) -> None:
         if isinstance(sources, dict):
             targets = sources.values()
@@ -120,7 +120,7 @@ class Table(ui.table):
             self.rows.append({'id': i, 'source': source, 'target': target})
         self.update()
 
-    def get_values(self, as_dict: bool = False) -> Union[Dict, Tuple[List, List]]:
+    def get_values(self, as_dict: bool = False) -> Union[dict, tuple[list, list]]:
         sources = [f"{row.get('source')}".strip() for row in self.rows]
         targets = self._set_type([f"{row.get('target')}".strip() for row in self.rows])
         if as_dict:
@@ -129,7 +129,7 @@ class Table(ui.table):
 
 
 class UITable(Table):
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id',
+    def __init__(self, columns: list[dict] = None, rows: list[dict] = None, row_key: str = 'id',
                  dark_mode: bool = True, *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         if dark_mode:
@@ -188,8 +188,8 @@ class UITable(Table):
 
 
 class UIGrid(Table):
-    def __init__(self, source_words: List[str] = None, target_words: List[str] = None,
-                 columns: List[Dict] = None, rows: List[Dict] = None, row_key: str = 'id',
+    def __init__(self, source_words: list[str] = None, target_words: list[str] = None,
+                 columns: list[dict] = None, rows: list[dict] = None, row_key: str = 'id',
                  preload: bool = False, dark_mode: bool = True, *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         if source_words is None: source_words = []
@@ -212,7 +212,7 @@ class UIGrid(Table):
         self.props('hide-header grid')
         self.set_values(source_words, target_words)
 
-    def _set_item_size(self, words: List[str] = None) -> None:
+    def _set_item_size(self, words: list[str] = None) -> None:
         if words and isinstance(words, list):
             chars = lonlen(words)
             self.item_size = int(chars * CONFIG.size_fct + 3 * CONFIG.size_fct)
@@ -238,7 +238,7 @@ class UIGrid(Table):
 
 
 class UIList(Table):
-    def __init__(self, columns: List[Dict] = None, rows: List[Dict] = None,
+    def __init__(self, columns: list[dict] = None, rows: list[dict] = None,
                  row_key: str = 'id', val_type: str = 'text', *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         self.val_type = val_type
@@ -246,7 +246,7 @@ class UIList(Table):
         self.props('hide-header separator=none')
         self.style('min-width:400px')
 
-    def _set_type(self, values) -> List[float]:
+    def _set_type(self, values) -> list[float]:
         if self.val_type == 'number':
             return list(map(float, values))
         return values
@@ -320,7 +320,7 @@ class UIGridPages(object):
             *args, **kwargs
         )
 
-    def get_indices(self, source_words: List[str]) -> None:
+    def get_indices(self, source_words: list[str]) -> None:
         self.eos_indices = [i + 1 for i, word in enumerate(source_words)
                             if word.endswith(tuple(self.endofs))]
 
@@ -356,7 +356,7 @@ class UIGridPages(object):
             (self.source_words[self.indices[p]:self.indices[p + 1]],
              self.target_words[self.indices[p]:self.indices[p + 1]]) = self.ui_grid.get_values()
 
-    def set_values(self, source_words: List[str], target_words: List[str], preload: bool = False,
+    def set_values(self, source_words: list[str], target_words: list[str], preload: bool = False,
                    new_source: bool = False, new_indices: bool = False) -> None:
         if not source_words: return
         if new_source:
@@ -371,7 +371,7 @@ class UIGridPages(object):
         self.target_words = target_words
         self._table.refresh(preload = preload)
 
-    def get_values(self) -> Tuple[List[str], List[str]]:
+    def get_values(self) -> tuple[list[str], list[str]]:
         self.upd_values()
         return self.source_words, self.target_words
 

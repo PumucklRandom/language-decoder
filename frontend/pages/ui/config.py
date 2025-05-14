@@ -1,6 +1,5 @@
 import os
 import yaml
-from typing import List
 from copy import deepcopy
 from nicegui import ui, app
 from backend.config.config import CONFIG, dict_as_object
@@ -151,7 +150,7 @@ class Language(object):
         return self.__dict__.__str__()
 
 
-def get_languages() -> List[str]:
+def get_languages() -> list[str]:
     label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
     languages = list()
     for language_file in os.listdir(label_folder):

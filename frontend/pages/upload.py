@@ -13,7 +13,7 @@ class Upload(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.pattern = re.compile('\S+|\s+')
+        self.pattern = re.compile(r'\S+|\s+')
 
     def _clear_text(self) -> None:
         try:

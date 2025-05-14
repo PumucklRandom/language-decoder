@@ -1,3 +1,6 @@
+from typing import Iterator
+
+
 def lonlen(a_list: list) -> int:
     # get the length of the longest list element
     if a_list:
@@ -5,7 +8,7 @@ def lonlen(a_list: list) -> int:
     return 0
 
 
-def yield_batch(string_list: list, char_limit: int, offset: int = 1) -> list:
+def yield_batch(string_list: list[str], char_limit: int, offset: int = 1) -> Iterator[list[str]]:
     batch, batch_len = [], 0
     for string in string_list:
         batch_len += len(string) + offset
@@ -22,7 +25,8 @@ def yield_batch(string_list: list, char_limit: int, offset: int = 1) -> list:
         yield batch
 
 
-def yield_batch_eos(string_list: list, char_limit: int, offset: int = 1, endofs: str = '.!?\'"') -> list:
+def yield_batch_eos(string_list: list[str], char_limit: int, offset: int = 1,
+                    endofs: str = '.!?\'"') -> Iterator[list[str]]:
     batch, batch_len = [], 0
     last_valid_index = 0
     for string in string_list:

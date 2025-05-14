@@ -5,7 +5,7 @@ import traceback
 from uuid import UUID
 from openai import OpenAIError
 from pprint import PrettyPrinter
-from typing import Tuple, List, Union
+from typing import Union
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
 from backend.decoder.language_translator import LanguageTranslator
@@ -77,7 +77,7 @@ class LanguageDecoder(object):
             proxies = self.proxies
         )
 
-    def get_supported_languages(self, show: bool = False) -> List[str]:
+    def get_supported_languages(self, show: bool = False) -> list[str]:
         try:
             languages = self._translator.get_supported_languages(as_dict = True)
             if show: self._pp.pprint(languages.keys())
@@ -87,13 +87,13 @@ class LanguageDecoder(object):
             logger.error(message)
             raise DecoderError(message)
 
-    def translate_batch(self, source: List[str]) -> List[str]:
+    def translate_batch(self, source: list[str]) -> list[str]:
         result = list()
         for batch in utils.yield_batch_eos(source, self.char_limit, endofs = self.regex.endofs + self.regex.quotes):
             result.extend(self._translator.translate('\n'.join(batch)).split('\n'))
         return result
 
-    def translate(self, source: Union[List[str], str], alt_trans: bool = False) -> Union[List[str], str]:
+    def translate(self, source: Union[list[str], str], alt_trans: bool = False) -> Union[list[str], str]:
         try:
             if isinstance(source, list):
                 if self.alt_trans and alt_trans:
@@ -137,19 +137,19 @@ class LanguageDecoder(object):
             for chars in self._dicts.replacements.keys():
                 text = text.replace(chars, self._dicts.replacements.get(chars))
             # swap quotes/brackets with EndOfSentence marks if quotes/brackets are followed by EndOfSentence marks
-            text = re.sub(f'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.endofs}])', r'\2\1', text)
+            text = re.sub(rf'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.endofs}])', r'\2\1', text)
             # remove any white whitespaces after "begin marks" and add one whitespace before "begin marks"
-            text = re.sub(f'([{self.regex.begins}{self.regex.opens}])\s*', r' \1', text)
+            text = re.sub(rf'([{self.regex.begins}{self.regex.opens}])\s*', r' \1', text)
             # remove any white whitespaces before "ending marks" and add one whitespace after "ending marks"
-            text = re.sub(f'\s*([{self.regex.ending}{self.regex.close}])', r'\1 ', text)
+            text = re.sub(rf'\s*([{self.regex.ending}{self.regex.close}])', r'\1 ', text)
             # remove any whitespaces around "digit marks"
-            text = re.sub(f'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
+            text = re.sub(rf'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
             # remove any white whitespaces before "punctuations" and add one whitespace after "punctuations"
             #   if "punctuations" are followed by letters or whitespace
-            text = re.sub(f'\s*([{self.regex.puncts}]+)([^\W\d_]|[{self.regex.puncts}\s])', r'\1 \2', text)
+            text = re.sub(rf'\s*([{self.regex.puncts}]+)([^\W\d_]|[{self.regex.puncts}\s])', r'\1 \2', text)
             # remove any whitespaces inside quote pairs and add one whitespaces outside of quote pairs
             for quote in self.regex.quotes:
-                text = re.sub(f'([{quote}])\s*(.*?)\s*([{quote}])', r' \1\2\3 ', text)
+                text = re.sub(rf'([{quote}])\s*(.*?)\s*([{quote}])', r' \1\2\3 ', text)
             # remove redundant whitespaces
             text = ' '.join(text.split())
             # add a dot at the end of the text in case of missing EndOfSentence mark
@@ -164,25 +164,25 @@ class LanguageDecoder(object):
     @staticmethod
     def _strip_word(word: str) -> str:
         # check word if all non-alphanumeric
-        if bool(re.fullmatch('[\W_]*', word)):
+        if bool(re.fullmatch(r'[\W_]*', word)):
             return word
         # remove all non-alphanumeric and non-minus characters
-        return re.sub('\A[\W_]*|[\W_]*\Z', '', word)
+        return re.sub(r'\A[\W_]*|[\W_]*\Z', '', word)
 
     def _wrap_word(self, source_word: str, target_word: str) -> str:
         # make sure target word is stripped
         target_word = self._strip_word(target_word)
         # check source word if all non-alphanumeric
-        if bool(re.fullmatch('[\W_]*', source_word)):
+        if bool(re.fullmatch(r'[\W_]*', source_word)):
             return source_word
         # get marks at the beginning of the source word
-        beg = re.search('\A[\W_]*', source_word).group()
+        beg = re.search(r'\A[\W_]*', source_word).group()
         # get marks at the end of the source word
-        end = re.search('[\W_]*\Z', source_word).group()
+        end = re.search(r'[\W_]*\Z', source_word).group()
         # add marks around the target word
         return f'{beg}{target_word}{end}'
 
-    def split_text(self, source_text: str) -> List[str]:
+    def split_text(self, source_text: str) -> list[str]:
         try:
             if len(source_text) == 0:
                 message = 'Source Text is empty'
@@ -200,7 +200,7 @@ class LanguageDecoder(object):
             logger.error(message)
             raise DecoderError(message)
 
-    def decode_words(self, source_words: List[str]) -> List[str]:
+    def decode_words(self, source_words: list[str]) -> list[str]:
         try:
             logger.info(f'Decode {len(source_words)} words.')
             # strip source words before translation
@@ -223,11 +223,11 @@ class LanguageDecoder(object):
             logger.error(message)
             raise DecoderError(message)
 
-    def _split_sentences(self, text: str) -> List[str]:
+    def _split_sentences(self, text: str) -> list[str]:
         # spit text into sentences with consideration of quotes and brackets
-        return re.findall(f'(.*?[{self.regex.endofs}][{self.regex.quotes}]?)\s+', f'{text} ')
+        return re.findall(rf'(.*?[{self.regex.endofs}][{self.regex.quotes}]?)\s+', f'{text} ')
 
-    def translate_sentences(self, source_words: List[str]) -> List[str]:
+    def translate_sentences(self, source_words: list[str]) -> list[str]:
         try:
             text = ' '.join(source_words)
             # add a dot at the end of the text in case of missing EndOfSentence mark
@@ -250,7 +250,7 @@ class LanguageDecoder(object):
             logger.error(message)
             raise DecoderError(message)
 
-    def apply_dict(self, source_words: List[str], target_words: List[str], dict_name: str = '') -> List[str]:
+    def apply_dict(self, source_words: list[str], target_words: list[str], dict_name: str = '') -> list[str]:
         try:
             if not dict_name: return target_words
             self._dicts.load(user_uuid = self.user_uuid)
@@ -272,15 +272,15 @@ class LanguageDecoder(object):
             raise DecoderError(message)
 
     @staticmethod
-    def find_replace(source_words: List[str], target_words: List[str],
-                     find: str, repl: str) -> Tuple[List[str], List[str]]:
+    def find_replace(source_words: list[str], target_words: list[str],
+                     find: str, repl: str) -> tuple[list[str], list[str]]:
         for i, (source, target) in enumerate(zip(source_words, target_words)):
             source_words[i] = source.replace(find, repl)
             target_words[i] = target.replace(find, repl)
         return source_words, target_words
 
     @staticmethod
-    def from_json_str(data: str) -> Tuple[List[str], List[str], List[str]]:
+    def from_json_str(data: str) -> tuple[list[str], list[str], list[str]]:
         try:
             data = json.loads(data)
             if len(data.get('source', [])) != len(data.get('target', [])):
@@ -302,7 +302,7 @@ class LanguageDecoder(object):
             raise DecoderError(message)
 
     @staticmethod
-    def to_json_str(source_words: List[str], target_words: List[str], sentences: List[str]) -> str:
+    def to_json_str(source_words: list[str], target_words: list[str], sentences: list[str]) -> str:
         try:
             data = {'source': source_words, 'target': target_words, 'sentences': sentences}
             return json.dumps(data, ensure_ascii = False, indent = 4)

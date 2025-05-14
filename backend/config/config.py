@@ -4,7 +4,6 @@ import json
 import yaml
 import traceback
 from copy import copy
-from typing import Tuple
 from backend.error.error import ConfigError
 from backend.logger.logger import logger, stream_handler
 
@@ -27,7 +26,7 @@ class Config(object):
     dark: bool
     reconnect_timeout: int
     native: bool
-    window_size: Tuple[int, int]
+    window_size: tuple[int, int]
     fullscreen: bool
     frameless: bool
     reload: bool

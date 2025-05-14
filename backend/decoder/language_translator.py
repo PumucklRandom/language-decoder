@@ -5,7 +5,6 @@ import httpx
 import base64
 import traceback
 import openai
-from typing import List
 from backend.config.config import CONFIG
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
@@ -65,7 +64,7 @@ class LanguageTranslator(object):
             proxies.pop('https', None)
         self.client._client = httpx.Client(mounts = proxies)
 
-    def translate(self, source_words: List[str]) -> List[str]:
+    def translate(self, source_words: list[str]) -> list[str]:
         try:
             csv_string = self.to_csv(source_words)
             response = self.client.chat.completions.create(
@@ -110,7 +109,7 @@ class LanguageTranslator(object):
             logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise Exception(message)
 
-    def check_content(self, content: str, csv_len: int) -> List[str]:
+    def check_content(self, content: str, csv_len: int) -> list[str]:
         rows = content.split('\n')
         invalid_rows = list()
         for row in rows:
@@ -135,14 +134,14 @@ class LanguageTranslator(object):
         return base64.b64decode(api_key.encode()).decode()
 
     @staticmethod
-    def to_csv(source_words: List[str]) -> str:
+    def to_csv(source_words: list[str]) -> str:
         with io.StringIO() as io_string:
             csv_writer = csv.writer(io_string, delimiter = '\t', lineterminator = '\n')
             csv_writer.writerows([('Source', 'Target')] + list(zip(source_words)))
             return io_string.getvalue()
 
     @staticmethod
-    def from_csv(csv_string: str) -> List[str]:
+    def from_csv(csv_string: str) -> list[str]:
         with io.StringIO(csv_string) as io_string:
             return list(list(zip(*list(csv.reader(io_string, delimiter = '\t'))[1:]))[-1])
 

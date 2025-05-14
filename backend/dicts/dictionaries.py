@@ -2,7 +2,7 @@ import os
 import json
 import traceback
 from uuid import UUID
-from typing import Dict, Union
+from typing import Union
 from backend.config.config import CONFIG, REPLACEMENTS
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger
@@ -21,8 +21,8 @@ class Dicts(object):
         module_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), folder_path)
         self.user_uuid = user_uuid
         self.folder_path = os.path.join(module_path, 'json')
-        self.replacements: Dict[str, str] = REPLACEMENTS
-        self.dictionaries: Dict[str, Dict[str, str]] = {}
+        self.replacements: dict[str, str] = REPLACEMENTS
+        self.dictionaries: dict[str, dict[str, str]] = {}
 
     def load(self, user_uuid: Union[UUID, str]) -> None:
         """
