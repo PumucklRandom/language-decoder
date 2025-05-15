@@ -283,13 +283,14 @@ class LanguageDecoder(object):
     def from_json_str(data: str) -> tuple[list[str], list[str], list[str]]:
         try:
             data = json.loads(data)
-            if len(data.get('source', [])) != len(data.get('target', [])):
+            words_lists = list(zip(*data.get('decoded', [])))
+            if not words_lists: raise DecoderError('Invalid json file')
+            if len(words_lists) != 2:
                 raise DecoderError('Unequal number of source and target words')
-            if any(not isinstance(scr, str) for scr in data.get('source', [])) or \
-                    any(not isinstance(tar, str) for tar in data.get('target', [])):
+            if any(not isinstance(word, str) for word in words_lists[0] + words_lists[1]):
                 raise DecoderError('Found a non-string value in data')
-            source_words = data.get('source', [])
-            target_words = data.get('target', [])
+            source_words = list(words_lists[0])
+            target_words = list(words_lists[1])
             sentences = []
             if all(isinstance(sentence, str) for sentence in data.get('sentences', [])):
                 sentences = data.get('sentences', [])
@@ -304,8 +305,9 @@ class LanguageDecoder(object):
     @staticmethod
     def to_json_str(source_words: list[str], target_words: list[str], sentences: list[str]) -> str:
         try:
-            data = {'source': source_words, 'target': target_words, 'sentences': sentences}
-            return json.dumps(data, ensure_ascii = False, indent = 4)
+            data = {'decoded': list(zip(source_words, target_words)), 'sentences': sentences}
+            return re.sub(r'\[\s*"([^"]*)",\s*"([^"]*)"\s*\]', r'["\1", "\2"]',
+                          json.dumps(data, ensure_ascii = False, indent = 4))
         except Exception:
             message = f'Could not execute export with exception:\n{traceback.format_exc()}'
             logger.error(message)
