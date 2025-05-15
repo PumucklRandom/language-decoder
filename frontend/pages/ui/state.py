@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Any, List, Union
+from typing import Union
 from backend.config.config import CONFIG
 from frontend.pages.ui.config import Language
 
@@ -9,13 +9,13 @@ class State(object):
     def __init__(self, store: dict):
         self.store = store
 
-    def get(self, key: str, default: any = None) -> Any:
+    def get(self, key: str, default: any = None) -> any:
         return self.store.get(key, default)
 
-    def update(self, key: str, value: Any) -> None:
+    def update(self, key: str, value: any) -> None:
         self.store.update({key: value})
 
-    def add(self, key: str, value: Any) -> None:
+    def add(self, key: str, value: any) -> None:
         if key not in self.store: self.update(key, value)
 
     def keys(self):
@@ -183,27 +183,27 @@ class State(object):
         self.update('source_text', value)
 
     @property
-    def source_words(self) -> List[str]:
+    def source_words(self) -> list[str]:
         return self.get('source_words', [])
 
     @source_words.setter
-    def source_words(self, value: List[str]) -> None:
+    def source_words(self, value: list[str]) -> None:
         self.update('source_words', value)
 
     @property
-    def target_words(self) -> List[str]:
+    def target_words(self) -> list[str]:
         return self.get('target_words', [])
 
     @target_words.setter
-    def target_words(self, value: List[str]) -> None:
+    def target_words(self, value: list[str]) -> None:
         self.update('target_words', value)
 
     @property
-    def sentences(self) -> List[str]:
+    def sentences(self) -> list[str]:
         return self.get('sentences', [])
 
     @sentences.setter
-    def sentences(self, value: List[str]) -> None:
+    def sentences(self, value: list[str]) -> None:
         self.update('sentences', value)
 
     @property
@@ -239,17 +239,25 @@ class State(object):
         self.update('repl', value)
 
     @property
-    def s_hash(self) -> int:
-        return self.get('s_hash', 0)
-
-    @s_hash.setter
-    def s_hash(self, value: int) -> None:
-        self.update('s_hash', value)
-
-    @property
     def c_hash(self) -> int:
         return self.get('c_hash', 0)
 
     @c_hash.setter
     def c_hash(self, value: int) -> None:
         self.update('c_hash', value)
+
+    @property
+    def table_page(self) -> dict:
+        return self.get('table_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[2]})
+
+    @table_page.setter
+    def table_page(self, value: dict) -> None:
+        self.update('table_page', value)
+
+    @property
+    def grid_page(self) -> dict:
+        return self.get('grid_page', {'page': 1, 'rowsPerPage': CONFIG.grid_options[2]})
+
+    @grid_page.setter
+    def grid_page(self, value: dict) -> None:
+        self.update('grid_page', value)

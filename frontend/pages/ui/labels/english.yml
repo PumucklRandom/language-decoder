@@ -87,7 +87,8 @@ DECODING:
         '/n',
         'The third option "APPLY DICT" is used to apply the currently selected dictionary to the decoded words.',
         '/n',
-        'To save your last changes, use the "SAVE" button in the middle of the footer.',
+        'In the case that the current layout does not fit the size of the words,
+            you can reorder the layout using the "REFRESH" button in the middle of the footer.',
         '/n',
         'Once you have finished the decoding, you can click the "CREATE PDF" button
             to view and download a pdf file from the decoding work.',
@@ -119,7 +120,7 @@ DECODING:
         help: 'Help'
         replace: 'Replace'
         import_: 'Import words'
-        save: 'Save decoding'
+        refresh: 'Refresh grid'
         export: 'Export words'
         view: 'Sentence view'
     Footer:
@@ -152,7 +153,7 @@ DICTIONARY:
         '/n',
         'To clear the currently selected dictionary, press the lower "trash bin" button.',
         '/n', '/N', '/n',
-        'Click on the "SAVE" button to store and apply your values.',
+        'Click on the "SAVE" button to permanently store and apply your values.',
         '/n',
         'With the "IMPORT" and "EXPORT" options, you can import and export a dictionary.'
     ]
@@ -267,13 +268,14 @@ SETTINGS:
         'To reset the "regular expression" settings, just press the button on the bottom left side of the tab.'
     ]
     Advanced: [
-        'Punctuations',
-        'Starting Marks',
-        'Finishing Marks',
-        'Number Marks',
-        'Opening Marks',
-        'Closing Marks',
-        'Quotations'
+        'End of sentence marks',
+        'Punctuation marks',
+        'Starting marks',
+        'Finishing marks',
+        'Number marks',
+        'Opening marks',
+        'Closing marks',
+        'Quotation marks'
     ]
     Messages:
         connect_check:

@@ -4,7 +4,7 @@ import traceback
 from nicegui import ui, events, Client
 from backend.logger.logger import logger
 from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import ui_dialog, abs_top_left
+from frontend.pages.ui.custom import ui_dialog, top_left
 from frontend.pages.ui.page_abc import Page
 
 
@@ -13,7 +13,7 @@ class Upload(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.pattern = re.compile('\S+|\s+')
+        self.pattern = re.compile(r'\S+|\s+')
 
     def _clear_text(self) -> None:
         try:
@@ -30,21 +30,11 @@ class Upload(Page):
             ui.notify(f'{self.ui_language.UPLOAD.Messages.limit} {self.word_limit} words',
                       type = 'warning', position = 'top')
 
-    def _split_text(self) -> None:
+    def _decode(self) -> None:
         try:
-            if not self.state.source_text:
-                # self.state.source_words.clear()
-                # self.state.target_words.clear()
-                # self.state.sentences.clear()
-                return
             self.state.decode = True
-            _hash = hash(self.state.source_text)
-            if self.state.s_hash == _hash:
-                return
-            self.state.s_hash = _hash
-            self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
         except Exception:
-            logger.error(f'Error in "_split_text" with exception:\n{traceback.format_exc()}')
+            logger.error(f'Error in "_decode" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
@@ -100,8 +90,8 @@ class Upload(Page):
     def _center(self) -> None:
         try:
             with ui.column().classes('w-full items-center'):
-                with ui.card().classes('w-[50%] items-center') \
-                        .style('min-width:1000px; min-height:562px; height:85vh'):
+                with ui.card().style('min-width:1000px; min-height:562px; height:85vh') \
+                        .classes('w-[50%] items-center'):
                     with ui.button(icon = 'help', on_click = self._dialog().open) \
                             .classes('absolute-top-right'):
                         if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.help)
@@ -115,15 +105,15 @@ class Upload(Page):
                         max_files = self.max_files) \
                         .props('accept=.txt flat dense')
                     with ui.input(label = self.ui_language.UPLOAD.Title) \
-                            .classes(abs_top_left(130, 160)) \
+                            .classes(top_left(150, 160)) \
                             .bind_value(self.state, 'title'):
                         if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
                     ui.textarea(
                         label = f'{self.ui_language.UPLOAD.Input_txt[0]} {self.word_limit}',
                         placeholder = self.ui_language.UPLOAD.Input_txt[1],
                         on_change = self._check_source_text) \
-                        .classes('w-full h-full flex-grow') \
                         .style('font-size:12pt') \
+                        .classes('w-full h-full flex-grow') \
                         .bind_value(self.state, 'source_text')
                     self._language_selector()
         except Exception:
@@ -137,19 +127,19 @@ class Upload(Page):
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.source,
                     options = ['auto'] + languages) \
-                    .props('dense options-dense') \
+                    .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'source_language')
                 ui.space()
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.target,
                     options = languages) \
-                    .props('dense options-dense') \
+                    .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'target_language')
                 ui.space().style('width:50px')
                 with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
-                               on_click = lambda: self.goto(URLS.DECODING, call = self._split_text)):
+                               on_click = lambda: self.goto(URLS.DECODING, call = self._decode)):
                     if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
                 with ui.button(icon = 'delete', on_click = self._clear_text) \
                         .classes('absolute-bottom-right'):

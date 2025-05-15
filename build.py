@@ -31,8 +31,8 @@ import traceback
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub('(\d+\.\d+\.\d+\.\d+)', '0.10.4.0', version)
-        version = re.sub('(\d+, \d+, \d+, \d+)', '0, 10, 4, 0', version)
+        version = re.sub(r'(\d+\.\d+\.\d+\.\d+)', '0.11.3.0', version)
+        version = re.sub(r'(\d+, \d+, \d+, \d+)', '0, 11, 3, 0', version)
         file.seek(0)
         file.write(version)
 
@@ -55,6 +55,7 @@ def get_password() -> str:
             return file.read()
     except Exception:
         print(f'Could not load password from: "{pw_path}"\n{traceback.format_exc()}')
+        return ''
 
 
 def zip_directory(zip_file_path: str, source_directory: str) -> None:

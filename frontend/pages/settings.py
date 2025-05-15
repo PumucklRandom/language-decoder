@@ -189,29 +189,29 @@ class Settings(Page):
     def _center(self) -> None:
         try:
             self.dicts.load(user_uuid = self.state.user_uuid)
-            with ui.column().classes('w-full items-center').style('font-size:12pt'):
+            with ui.column().style('font-size:12pt').classes('w-full items-center'):
                 with ui.tabs() as tabs:
                     panel0 = ui.tab(self.ui_language.SETTINGS.Panel[0])
                     panel1 = ui.tab(self.ui_language.SETTINGS.Panel[1])
                     panel2 = ui.tab(self.ui_language.SETTINGS.Panel[2])
                     panel3 = ui.tab(self.ui_language.SETTINGS.Panel[3])
                 with ui.tab_panels(tabs, value = panel0, animated = True):
-                    with ui.tab_panel(panel0).classes('items-center').style('min-width:650px'):
+                    with ui.tab_panel(panel0).style('min-width:650px').classes('items-center'):
                         with ui.button(icon = 'help', on_click = self._dialog_interface().open) \
                                 .classes('absolute-top-right'):
                             if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.interface.help)
                         self._interface()
-                    with ui.tab_panel(panel1).classes('items-center').style('min-width:650px'):
+                    with ui.tab_panel(panel1).style('min-width:650px').classes('items-center'):
                         with ui.button(icon = 'help', on_click = self._dialog_replacements().open) \
                                 .classes('absolute-top-right'):
                             if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.replace.help)
                         self._replacements()
-                    with ui.tab_panel(panel2).classes('items-center').style('min-width:650px'):
+                    with ui.tab_panel(panel2).style('min-width:650px').classes('items-center'):
                         with ui.button(icon = 'help', on_click = self._dialog_pdf_settings().open) \
                                 .classes('absolute-top-right'):
                             if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.pdf.help)
                         self._pdf_settings()
-                    with ui.tab_panel(panel3).classes('items-center').style('min-width:650px'):
+                    with ui.tab_panel(panel3).style('min-width:650px').classes('items-center'):
                         with ui.button(icon = 'help', on_click = self._dialog_adv_settings().open) \
                                 .classes('absolute-top-right'):
                             if self.state.show_tips: ui.tooltip(self.ui_language.SETTINGS.Tips.advanced.help)
@@ -232,7 +232,7 @@ class Settings(Page):
                     label = self.ui_language.SETTINGS.Interface.text[4],
                     options = get_languages(),
                     on_change = self._on_select) \
-                    .props('dense options-dense') \
+                    .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'language')
                 ui.separator()
@@ -257,7 +257,7 @@ class Settings(Page):
             REPLACE_COLS[0].update({'label': self.ui_language.SETTINGS.Table.key})
             REPLACE_COLS[1].update({'label': self.ui_language.SETTINGS.Table.val})
             self.ui_table = UITable(columns = REPLACE_COLS, dark_mode = self.state.dark_mode) \
-                .classes('sticky-header').style('min-width:450px; max-height:80vh')
+                .style('min-width:450px; max-height:80vh').classes('sticky-header')
             ui.separator()
             with ui.row():
                 with ui.button(icon = 'save', on_click = self._save_replacements):

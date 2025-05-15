@@ -5,8 +5,6 @@ import httpx
 import base64
 import traceback
 import openai
-from openai import OpenAI, OpenAIError
-from typing import List
 from backend.config.config import CONFIG
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
@@ -19,31 +17,35 @@ class LanguageTranslator(object):
     """
 
     def __init__(self,
-                 source: str = 'auto',
-                 target: str = 'english',
+                 api_url: str = CONFIG.api_url,
+                 api_key: str = CONFIG.api_key,
                  model: str = CONFIG.model,
                  model_temp: float = CONFIG.model_temp,
                  model_seed: int = CONFIG.model_seed,
-                 proxies: dict = None) -> None:
+                 proxies: dict = None,
+                 source: str = 'auto',
+                 target: str = 'english') -> None:
 
         """
-        :param source: the translation source language
-        :param target: the translation target language
+        :param api_url: api url to model site
+        :param api_key: api key to get access
         :param model: LLM/GPT model type
         :param model_temp: model temperature to adapt model 'creativity' and 'determinism'
         :param model_seed: model seed to adapt 'determinism'
         :param proxies: set proxies for translator
+        :param source: the translation source language
+        :param target: the translation target language
         """
 
-        self.source = source
-        self.target = target
         self.model = model
         self.model_temp = model_temp
         self.model_seed = model_seed
+        self.source = source
+        self.target = target
         self.prompt = self.load_prompt()
-        self.client = OpenAI(
-            base_url = CONFIG.api_url,
-            api_key = self.decode_key(CONFIG.api_key),
+        self.client = openai.OpenAI(
+            base_url = api_url,
+            api_key = self.decode_key(api_key),
         )
         self.set_proxy(proxies = proxies)
 
@@ -62,7 +64,7 @@ class LanguageTranslator(object):
             proxies.pop('https', None)
         self.client._client = httpx.Client(mounts = proxies)
 
-    def translate(self, source_words: List[str]) -> List[str]:
+    def translate(self, source_words: list[str]) -> list[str]:
         try:
             csv_string = self.to_csv(source_words)
             response = self.client.chat.completions.create(
@@ -74,33 +76,40 @@ class LanguageTranslator(object):
                 model = self.model,
                 temperature = self.model_temp,
                 seed = self.model_seed,
+                extra_headers = {
+                    "X-Title": "LanguageDecoder",
+                    # "HTTP-Referer": "LanguageDecoder",
+                },
             )
-            return self.check_response(
-                content = response.choices[0].message.content,
-                csv_len = len(csv_string.split('\n')) - 1  # -1 because of last \n
-            )
-        except openai.RateLimitError:
-            message = 'Rate Limit is reached! Try again on another day!'
-            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-            raise OpenAIError(message)
-        except openai.BadRequestError:
-            message = 'Bad Request Error! Check your request and try again!'
-            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-            raise OpenAIError(message)
-        except openai.APIConnectionError:
-            message = 'Connection Error! Check your internet connection or your proxy settings!'
-            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-            raise OpenAIError(message)
-        except openai.AuthenticationError:
-            message = 'Authentication Error! Check your API key and your permissions!'
-            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-            raise OpenAIError(message)
+            if not hasattr(response, 'error'):
+                return self.check_content(
+                    content = response.choices[0].message.content,
+                    csv_len = len(source_words) + 1
+                )
+            elif response.error.get('code') == openai.BadRequestError.status_code:
+                message = 'Bad Request Error! Check your request and try again!'
+                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
+                raise openai.OpenAIError(message)
+            elif response.error.get('code') == openai.AuthenticationError.status_code:
+                message = 'Authentication Error! Check your API key and your permissions!'
+                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
+                raise openai.OpenAIError(message)
+            elif response.error.get('code') == openai.RateLimitError.status_code:
+                message = 'Rate Limit is reached! Try again on another day!'
+                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
+                raise openai.OpenAIError(message)
+            else:
+                message = f'Unexpected API Error! Code: {response.error.get("code")}'
+                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
+                raise openai.OpenAIError(message)
+        except openai.OpenAIError as exception:
+            raise exception
         except Exception:
             message = 'Unexpected Error!'
             logger.error(f'{message} with exception:\n{traceback.format_exc()}')
             raise Exception(message)
 
-    def check_response(self, content: str, csv_len: int) -> List[str]:
+    def check_content(self, content: str, csv_len: int) -> list[str]:
         rows = content.split('\n')
         invalid_rows = list()
         for row in rows:
@@ -125,14 +134,14 @@ class LanguageTranslator(object):
         return base64.b64decode(api_key.encode()).decode()
 
     @staticmethod
-    def to_csv(source_words: List[str]) -> str:
+    def to_csv(source_words: list[str]) -> str:
         with io.StringIO() as io_string:
             csv_writer = csv.writer(io_string, delimiter = '\t', lineterminator = '\n')
             csv_writer.writerows([('Source', 'Target')] + list(zip(source_words)))
             return io_string.getvalue()
 
     @staticmethod
-    def from_csv(csv_string: str) -> List[str]:
+    def from_csv(csv_string: str) -> list[str]:
         with io.StringIO(csv_string) as io_string:
             return list(list(zip(*list(csv.reader(io_string, delimiter = '\t'))[1:]))[-1])
 

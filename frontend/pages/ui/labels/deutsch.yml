@@ -93,8 +93,8 @@ DECODING:
         'Die dritte Option "WÖRTERBUCH ANWENDEN" wird verwendet, 
             um das aktuell ausgewählte Wörterbuch auf die dekodierten Wörter anzuwenden.',
         '/n',
-        'Um Ihre letzten Änderungen zu speichern, verwenden Sie die Schaltfläche "SPEICHERN"
-            in der Mitte der Fußzeile.',
+        'Für den Fall, dass das aktuelle Layout nicht zur Größe der Wörter passt,
+            können Sie das Layout mit der Schaltfläche "AKTUALISIEREN" in der Mitte der Fußzeile neu anordnen.',
         '/n',
         'Wenn Sie die Dekodierung abgeschlossen haben, können Sie mit der Schaltfläche "PDF ERSTELLEN",
             eine PDF-Datei der Dekodierung ansehen und herunterladen.',
@@ -127,7 +127,7 @@ DECODING:
         help: 'Hilfe'
         replace: 'Austauschen'
         import_: 'Wörter importieren'
-        save: 'Dekodierung speichern'
+        refresh: 'Layout neu anordnen'
         export: 'Wörter exportieren'
         view: 'Satzansicht'
     Footer:
@@ -161,7 +161,7 @@ DICTIONARY:
         '/n',
         'Um das aktuell ausgewählte Wörterbuch zu löschen, drücken Sie die untere Taste "Mülleimer".',
         '/n', '/N', '/n',
-        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
+        'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte dauerhaft zu speichern und zu übernehmen.',
         '/n',
         'Mit den Optionen "IMPORTIEREN" und "EXPORTIEREN" können Sie ein Wörterbuch importieren und exportieren.'
     ]
@@ -284,12 +284,13 @@ SETTINGS:
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
     Advanced: [
+        'Satzende-Markierungen',
         'Zeichensetzung',
         'Startzeichen',
-        'Abschlusszeichen',
+        'Schlusszeichen',
         'Zahlenmarkierungen',
         'Eröffnungszeichen',
-        'Abschlusszeichen',
+        'Schließungsszeichen',
         'Zitatmarkierungen'
     ]
     Messages:

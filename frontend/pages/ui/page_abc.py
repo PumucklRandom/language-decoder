@@ -59,7 +59,6 @@ class Page(ABC):
         self.decoder.user_uuid = self.state.user_uuid
         self.decoder.source_language = self.state.source_language
         self.decoder.target_language = self.state.target_language
-        self.decoder.dict_name = self.state.dict_name
         self.decoder.reformatting = self.state.reformatting
         self.decoder.alt_trans = self.state.alt_trans
         self.decoder.proxies = self.state.proxies

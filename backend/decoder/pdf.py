@@ -1,6 +1,6 @@
 import os
 import traceback
-from typing import List, Union
+from typing import Union
 from fpdf import FPDF
 from backend.error.error import PDFFormatterError
 from backend.logger.logger import logger
@@ -62,7 +62,7 @@ class PDF(object):
         self._fpdf.set_margins(left = -0.8, top = 2, right = -1)
         return self._fpdf
 
-    def _format_lines(self, source_words: List[str], target_words: List[str]) -> List[str]:
+    def _format_lines(self, source_words: list[str], target_words: list[str]) -> list[str]:
         try:
             line_len = 0
             source_line = ''
@@ -96,7 +96,7 @@ class PDF(object):
             logger.error(message)
             raise PDFFormatterError(message)
 
-    def _format_pages(self, pdf_lines: List[str]) -> List[str]:
+    def _format_pages(self, pdf_lines: list[str]) -> list[str]:
         try:
             lines_len = len(pdf_lines)
             pages, completed_lines = list(), 0
@@ -115,7 +115,7 @@ class PDF(object):
             logger.error(message)
             raise PDFFormatterError(message)
 
-    def _format_pdf(self, title: str, pdf_pages: List[str]) -> None:
+    def _format_pdf(self, title: str, pdf_pages: list[str]) -> None:
         try:
             first_page = True
             self.__init_fpdf__()
@@ -147,8 +147,8 @@ class PDF(object):
             logger.error(message)
             raise PDFFormatterError(message)
 
-    def convert2pdf(self, title: str = '', source_words: List[str] = None,
-                    target_words: List[str] = None) -> Union[None, bytes, str]:
+    def convert2pdf(self, title: str = '', source_words: list[str] = None,
+                    target_words: list[str] = None) -> Union[None, bytes, str]:
         try:
             pdf_lines = self._format_lines(source_words = source_words, target_words = target_words)
             pdf_pages = self._format_pages(pdf_lines = pdf_lines)

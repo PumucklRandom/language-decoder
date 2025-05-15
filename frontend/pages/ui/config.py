@@ -1,6 +1,5 @@
 import os
 import yaml
-from typing import List
 from copy import deepcopy
 from nicegui import ui, app
 from backend.config.config import CONFIG, dict_as_object
@@ -26,23 +25,22 @@ class HTML:
         </style>
     '''
     STICKY_HEADER = '''
-    <style>
-        .sticky-header q-table__top,
-        .sticky-header thead tr th {
-            position: sticky;
-            z-index: 1;
-        }
-        .sticky-header thead tr:first-child th {
-            top: 0;
-        }
-    </style>
+        <style>
+            .sticky-header q-table__top,
+            .sticky-header thead tr th {
+                position: sticky;
+                z-index: 1;
+            }
+            .sticky-header thead tr:first-child th {
+                top: 0;
+            }
+        </style>
     '''
 
 
 ui.add_head_html(code = HTML.FLEX_GROW, shared = True)
 ui.add_head_html(code = HTML.ROBOTO_MONO, shared = True)
 ui.add_head_html(code = HTML.STICKY_HEADER, shared = True)
-ui.select.default_props('outlined')
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
 
@@ -152,7 +150,7 @@ class Language(object):
         return self.__dict__.__str__()
 
 
-def get_languages() -> List[str]:
+def get_languages() -> list[str]:
     label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
     languages = list()
     for language_file in os.listdir(label_folder):
