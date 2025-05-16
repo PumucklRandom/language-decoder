@@ -142,7 +142,6 @@ class UITable(Table):
             self.btn_color = COLORS.CYAN1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
-        # TODO: 'virtual-scroll' improves performance, but somehow disables event trigger!?
         self.props('flat bordered separator=cell')
         self.props['rows-per-page-options'] = CONFIG.table_options
         self.props['rows-per-page'] = CONFIG.table_options[2]
@@ -220,7 +219,6 @@ class UIGrid(Table):
             if self.item_size > CONFIG.size_max: self.item_size = CONFIG.size_max
 
     def _item(self) -> str:
-        # TODO: custom size/width for each input element pair
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">

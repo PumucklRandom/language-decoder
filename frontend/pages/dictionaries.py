@@ -3,7 +3,7 @@ import traceback
 from nicegui import ui, events, Client
 from backend.error.error import DictionaryError
 from backend.logger.logger import logger
-from backend.dicts.dictionaries import Dicts
+from backend.dictionaries.dictionaries import Dicts
 from frontend.pages.ui.config import URLS, DICT_COLS
 from frontend.pages.ui.custom import ui_dialog, UITable
 from frontend.pages.ui.page_abc import Page
@@ -142,7 +142,7 @@ class Dictionaries(Page):
 
     def _on_upload_reject(self) -> None:
         try:
-            ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_json_size / 10 ** 3} KB',
+            ui.notify(f'{self.ui_language.DICTIONARY.Messages.reject} {self.max_file_size / 10 ** 3} KB',
                       type = 'warning', position = 'top')
         except Exception:
             logger.error(f'Error in "_on_upload_reject" with exception:\n{traceback.format_exc()}')
@@ -177,7 +177,7 @@ class Dictionaries(Page):
                         label = self.ui_language.DICTIONARY.Dialogs_import[1],
                         on_upload = self._upload_handler,
                         on_rejected = self._on_upload_reject,
-                        max_file_size = self.max_json_size,
+                        max_file_size = self.max_file_size,
                         auto_upload = self.auto_upload,
                         max_files = self.max_files) \
                         .props('accept=.json flat dense')

@@ -12,18 +12,12 @@ REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '
 
 
 class Config(object):
-    on_prem: bool
-    stream_handler: bool
-    session_time: int
-    debounce: int
-    size_fct: int
-    size_min: int
-    size_max: int
     host: str
     port: int
     title: str
     favicon: str
     dark: bool
+    debounce: int
     reconnect_timeout: int
     native: bool
     window_size: tuple[int, int]
@@ -31,19 +25,28 @@ class Config(object):
     frameless: bool
     reload: bool
     storage_secret: str
-    api_url: str
-    api_key: str
-    model: str
-    model_temp: float
-    model_seed: int
-    char_limit: int
-    max_json_size: int
+
+    session_time: int
+    on_prem: bool
+    stream_handler: bool
+    del_time: int
+
+    size_fct: int
+    size_min: int
+    size_max: int
     table_options: list
     grid_options: list
 
+    api_url: str
+    api_key: str
+    model: str
+    model_seed: int
+    model_temp: float
+
+    char_limit: int
+    word_limit: int
+
     class Upload:
-        word_limit: int
-        max_file_size: int
         auto_upload: bool
         max_files: int
 

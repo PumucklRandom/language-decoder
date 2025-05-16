@@ -151,9 +151,9 @@ class Language(object):
 
 
 def get_languages() -> list[str]:
-    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
+    labels_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
     languages = list()
-    for language_file in os.listdir(label_folder):
+    for language_file in os.listdir(labels_path):
         if language_file.endswith('.yml'):
             languages.append(os.path.splitext(language_file)[0])
     return languages
