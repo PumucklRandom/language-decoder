@@ -32,8 +32,8 @@ def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px',
     :param center: using center of ui
     """
     if not center:
-        return f'absolute left-[{left}{u_left}] top-[{top}{u_top}]'
-    return f'absolute left-[{left}{u_left}] top-[{top}{u_top}] translate-x-[-50%] translate-y-[-50%]'
+        return f'absolute top-[{top}{u_top}] left-[{left}{u_left}]'
+    return f'absolute top-[{top}{u_top}] left-[{left}{u_left}] translate-y-[-50%] translate-x-[-50%]'
 
 
 def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = True) -> str:
@@ -45,8 +45,8 @@ def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'p
     :param center: using center of ui
     """
     if not center:
-        return f'absolute right-[{right}{u_right}] top-[{top}{u_top}]'
-    return f'absolute right-[{right}{u_right}] top-[{top}{u_top}] translate-x-[+50%] translate-y-[-50%]'
+        return f'absolute top-[{top}{u_top}] right-[{right}{u_right}]'
+    return f'absolute top-[{top}{u_top}] right-[{right}{u_right}] translate-y-[-50%] translate-x-[+50%]'
 
 
 def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = True) -> str:
@@ -58,8 +58,8 @@ def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px',
     :param center: using center of ui
     """
     if not center:
-        return f'absolute left-[{left}{u_left}] bottom-[{bot}{u_bot}]'
-    return f'absolute left-[{left}{u_left}] bottom-[{bot}{u_bot}] translate-x-[-50%] translate-y-[-50%]'
+        return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}]'
+    return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}] translate-y-[+50%] translate-x-[-50%]'
 
 
 def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = True) -> str:
@@ -71,8 +71,8 @@ def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'p
     :param center: using center of ui
     """
     if not center:
-        return f'absolute right-[{right}{u_right}] bottom-[{bot}{u_bot}]'
-    return f'absolute right-[{right}{u_right}] bottom-[{bot}{u_bot}] translate-x-[+50%] translate-y-[+50%]'
+        return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}]'
+    return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
 
 
 class Table(ui.table):
@@ -281,15 +281,15 @@ class UIGridPages(object):
     def __call__(self, preload: bool = False, *args, **kwargs) -> None:
         with ui.card().style('min-width:1000px; min-height:562px'):
             self._table(preload = preload, *args, **kwargs)  # noqa
-            ui.space().style('height:15px')
+            ui.space().style('height:20px')
             with ui.row().classes('absolute-bottom-right').bind_visibility_from(self, 'visible'):
-                ui.label('Max words per page:').classes(bot_left(10, -540, center = False))
+                ui.label('Max words per page:').classes(bot_left(15, -540, center = False))
                 ui.select(options = CONFIG.grid_options,
                           value = CONFIG.grid_options[2],
                           on_change = self.repage) \
                     .props('dense options-dense borderless') \
                     .style('width:50px') \
-                    .classes(bot_right(0, 350, center = False)) \
+                    .classes(bot_right(5, 350, center = False)) \
                     .bind_value(self, 'page_size')
                 self.ui_page = ui.pagination(
                     min = 1, max = 1,
@@ -298,7 +298,7 @@ class UIGridPages(object):
                     on_change = self.scroll) \
                     .props('max-pages="8"') \
                     .style('width:350px') \
-                    .classes(bot_right(5, 0, center = False)) \
+                    .classes(bot_right(10, 0, center = False)) \
                     .bind_value(self, 'page_number')
 
     @ui.refreshable

@@ -32,7 +32,8 @@ class Page(ABC):
         self.ui_language: Language
         self.decoder: LanguageDecoder = LanguageDecoder()
         self.word_limit: int = CONFIG.word_limit
-        self.max_file_size: int = CONFIG.word_limit * 60
+        self.max_file_size: int = self.word_limit * 50
+        self.max_decode_size: int = self.max_file_size * 2
         self.auto_upload: bool = CONFIG.Upload.auto_upload
         self.max_files: int = CONFIG.Upload.max_files
 

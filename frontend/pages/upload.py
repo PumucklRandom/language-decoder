@@ -1,10 +1,11 @@
 import re
+import math
 import pathlib
 import traceback
 from nicegui import ui, events, Client
 from backend.logger.logger import logger
 from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import ui_dialog, top_left
+from frontend.pages.ui.custom import ui_dialog, top_left, bot_left, bot_right
 from frontend.pages.ui.page_abc import Page
 
 
@@ -25,7 +26,9 @@ class Upload(Page):
 
     def _check_source_text(self) -> None:
         word_space_split = re.findall(self.pattern, self.state.source_text)
-        if len(word_space_split) > 2 * self.word_limit:
+        n_split = len(word_space_split)
+        self._label.refresh(math.ceil(n_split / 2))
+        if n_split > 2 * self.word_limit:
             self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
             ui.notify(f'{self.ui_language.UPLOAD.Messages.limit} {self.word_limit} words',
                       type = 'warning', position = 'top')
@@ -49,7 +52,6 @@ class Upload(Page):
         try:
             self.state.title = pathlib.Path(event.name).stem
             self.state.source_text = text
-            self._check_source_text()
             event.sender.reset()  # noqa upload reset
             ui.notify(self.ui_language.UPLOAD.Messages.success, type = 'positive', position = 'top')
         except Exception:
@@ -115,7 +117,9 @@ class Upload(Page):
                         .style('font-size:12pt') \
                         .classes('w-full h-full flex-grow') \
                         .bind_value(self.state, 'source_text')
+                    ui.space().style('height:35px')
                     self._language_selector()
+                    self._check_source_text()
         except Exception:
             logger.error(f'Error in "_center" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
@@ -123,31 +127,35 @@ class Upload(Page):
     def _language_selector(self) -> None:
         try:
             languages = self.decoder.get_supported_languages()
-            with ui.row():
+            with ui.row().classes(bot_left(30, 30, 'px', '%')):
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.source,
                     options = ['auto'] + languages) \
                     .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'source_language')
-                ui.space()
+                ui.space().style('width:0px')
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.target,
                     options = languages) \
                     .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'target_language')
-                ui.space().style('width:50px')
-                with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
-                               on_click = lambda: self.goto(URLS.DECODING, call = self._decode)):
-                    if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
-                with ui.button(icon = 'delete', on_click = self._clear_text) \
-                        .classes('absolute-bottom-right'):
-                    if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.delete)
-                ui.space().style('width:100px')
+            with ui.button(
+                    text = self.ui_language.UPLOAD.Footer.decode,
+                    on_click = lambda: self.goto(URLS.DECODING, call = self._decode)
+            ).classes(bot_right(30, 25, 'px', '%')):
+                if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
+            self._label()
+            with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
+                if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.delete)
         except Exception:
             logger.error(f'Error in "_language_selector" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+
+    @ui.refreshable
+    def _label(self, n_words: int = 0):
+        ui.label(f'{n_words}/{self.word_limit}').classes(bot_right(40, 13, 'px', '%'))
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)
