@@ -31,8 +31,8 @@ import traceback
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub(r'(\d+\.\d+\.\d+\.\d+)', '0.11.6.0', version)
-        version = re.sub(r'(\d+, \d+, \d+, \d+)', '0, 11, 6, 0', version)
+        version = re.sub(r'(\d+\.\d+\.\d+\.\d+)', '0.11.6.1', version)
+        version = re.sub(r'(\d+, \d+, \d+, \d+)', '0, 11, 6, 1', version)
         file.seek(0)
         file.write(version)
 
@@ -83,7 +83,7 @@ try:
         '--add-data', f'./backend/fonts/{os.pathsep}./backend/fonts/',
         '--add-data', f'./frontend/pages/ui/labels/{os.pathsep}./frontend/pages/ui/labels/',
         '--add-data', f'./frontend/pages/ui/icon/{os.pathsep}./frontend/pages/ui/icon/',
-        '--clean', '-y'
+        '--clean', '-y',
     ]
     subprocess.run(cmd_build, shell = False, check = True)
     password = get_password()

@@ -6,6 +6,7 @@ from backend.config.config import CONFIG, dict_as_object
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
 
+app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
     local_file = os.path.join(os.path.dirname(os.path.relpath(__file__)),
