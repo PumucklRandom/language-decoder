@@ -41,7 +41,7 @@ file. (language_decoder/backend/config/config.yml)
 
 ### Known issues
 
-Windows Security may block desktop applications. (Workaround: Run application as admin)\
+Windows Security may block desktop applications. (Workaround: Run application as admin)
 
 ### Credits
 
