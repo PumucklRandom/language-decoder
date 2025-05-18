@@ -6,6 +6,7 @@ from backend.config.config import CONFIG, dict_as_object
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
 
+app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
     local_file = os.path.join(os.path.dirname(os.path.relpath(__file__)),
@@ -151,9 +152,9 @@ class Language(object):
 
 
 def get_languages() -> list[str]:
-    label_folder = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
+    labels_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
     languages = list()
-    for language_file in os.listdir(label_folder):
+    for language_file in os.listdir(labels_path):
         if language_file.endswith('.yml'):
             languages.append(os.path.splitext(language_file)[0])
     return languages

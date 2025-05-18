@@ -23,7 +23,7 @@ def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
     return dialog
 
 
-def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = True) -> str:
+def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = False) -> str:
     """
     :param top: distance from top
     :param left: distance from left
@@ -32,11 +32,11 @@ def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px',
     :param center: using center of ui
     """
     if not center:
-        return f'absolute left-[{left}{u_left}] top-[{top}{u_top}]'
-    return f'absolute left-[{left}{u_left}] top-[{top}{u_top}] translate-x-[-50%] translate-y-[-50%]'
+        return f'absolute top-[{top}{u_top}] left-[{left}{u_left}]'
+    return f'absolute top-[{top}{u_top}] left-[{left}{u_left}] translate-y-[-50%] translate-x-[-50%]'
 
 
-def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = True) -> str:
+def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = False) -> str:
     """
     :param top: distance from top
     :param right: distance from right
@@ -45,11 +45,11 @@ def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'p
     :param center: using center of ui
     """
     if not center:
-        return f'absolute right-[{right}{u_right}] top-[{top}{u_top}]'
-    return f'absolute right-[{right}{u_right}] top-[{top}{u_top}] translate-x-[+50%] translate-y-[-50%]'
+        return f'absolute top-[{top}{u_top}] right-[{right}{u_right}]'
+    return f'absolute top-[{top}{u_top}] right-[{right}{u_right}] translate-y-[-50%] translate-x-[+50%]'
 
 
-def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = True) -> str:
+def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = False) -> str:
     """
     :param bot: distance from bottom
     :param left: distance from left
@@ -58,11 +58,11 @@ def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px',
     :param center: using center of ui
     """
     if not center:
-        return f'absolute left-[{left}{u_left}] bottom-[{bot}{u_bot}]'
-    return f'absolute left-[{left}{u_left}] bottom-[{bot}{u_bot}] translate-x-[-50%] translate-y-[-50%]'
+        return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}]'
+    return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}] translate-y-[+50%] translate-x-[-50%]'
 
 
-def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = True) -> str:
+def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = False) -> str:
     """
     :param bot: distance from bottom
     :param right: distance from right
@@ -71,8 +71,8 @@ def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'p
     :param center: using center of ui
     """
     if not center:
-        return f'absolute right-[{right}{u_right}] bottom-[{bot}{u_bot}]'
-    return f'absolute right-[{right}{u_right}] bottom-[{bot}{u_bot}] translate-x-[+50%] translate-y-[+50%]'
+        return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}]'
+    return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
 
 
 class Table(ui.table):
@@ -142,7 +142,6 @@ class UITable(Table):
             self.btn_color = COLORS.CYAN1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
-        # TODO: 'virtual-scroll' improves performance, but somehow disables event trigger!?
         self.props('flat bordered separator=cell')
         self.props['rows-per-page-options'] = CONFIG.table_options
         self.props['rows-per-page'] = CONFIG.table_options[2]
@@ -220,7 +219,6 @@ class UIGrid(Table):
             if self.item_size > CONFIG.size_max: self.item_size = CONFIG.size_max
 
     def _item(self) -> str:
-        # TODO: custom size/width for each input element pair
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
@@ -265,13 +263,12 @@ class UIList(Table):
 
 
 class UIGridPages(object):
-    def __init__(self, grid_page: dict = None, endofs: str = '.!?\'"', dark_mode: bool = True) -> None:
+    def __init__(self, grid_page: dict = None, endofs: str = '.!?\'"') -> None:
         self.page_number: int = 1
         self.page_size: int = CONFIG.grid_options[2]
         self.prev_page: int = 1
         self.set_grid_page(grid_page)
         self.endofs = endofs
-        self.dark_mode = dark_mode
         self.source_words: list = []
         self.target_words: list = []
         self.eos_indices = []
@@ -280,18 +277,18 @@ class UIGridPages(object):
         self.ui_page: ui.pagination
         self.visible: bool = False
 
-    def __call__(self, preload: bool = False, *args, **kwargs) -> None:
+    def __call__(self, *args, **kwargs) -> None:
         with ui.card().style('min-width:1000px; min-height:562px'):
-            self._table(preload = preload, *args, **kwargs)  # noqa
-            ui.space().style('height:15px')
-            with ui.row().classes('absolute-bottom-right').bind_visibility_from(self, 'visible'):
-                ui.label('Max words per page:').classes(bot_left(10, -540, center = False))
+            self._table(*args, **kwargs)
+            ui.space().style('height:5px')
+            with ui.element().bind_visibility_from(self, 'visible'):
+                ui.label('Max words per page:').classes(bot_right(15, 410))
                 ui.select(options = CONFIG.grid_options,
                           value = CONFIG.grid_options[2],
                           on_change = self.repage) \
                     .props('dense options-dense borderless') \
                     .style('width:50px') \
-                    .classes(bot_right(0, 350, center = False)) \
+                    .classes(bot_right(5, 350)) \
                     .bind_value(self, 'page_size')
                 self.ui_page = ui.pagination(
                     min = 1, max = 1,
@@ -300,11 +297,11 @@ class UIGridPages(object):
                     on_change = self.scroll) \
                     .props('max-pages="8"') \
                     .style('width:350px') \
-                    .classes(bot_right(5, 0, center = False)) \
+                    .classes(bot_right(10, 0)) \
                     .bind_value(self, 'page_number')
 
     @ui.refreshable
-    def _table(self, preload: bool = False, *args, **kwargs) -> None:
+    def _table(self, *args, **kwargs) -> None:
         if not self.source_words or not self.indices:
             self.visible = False
             with ui.element().style('height:500px'):
@@ -315,8 +312,6 @@ class UIGridPages(object):
         self.ui_grid = UIGrid(
             source_words = self.source_words[self.indices[p]:self.indices[p + 1]],
             target_words = self.target_words[self.indices[p]:self.indices[p + 1]],
-            preload = preload,
-            dark_mode = self.dark_mode,
             *args, **kwargs
         )
 

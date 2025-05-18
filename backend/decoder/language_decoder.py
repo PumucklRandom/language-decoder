@@ -12,7 +12,7 @@ from backend.decoder.language_translator import LanguageTranslator
 from backend.config.config import CONFIG, Config
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
-from backend.dicts.dictionaries import Dicts
+from backend.dictionaries.dictionaries import Dicts
 from backend.utils import utilities as utils
 
 
