@@ -14,6 +14,7 @@ class Upload(Page):
 
     def __init__(self) -> None:
         super().__init__()
+        self.n_word_text: int = 0
         self.pattern = re.compile(r'\S+|\s+')
 
     def _clear_text(self) -> None:
@@ -27,7 +28,7 @@ class Upload(Page):
     def _check_source_text(self) -> None:
         word_space_split = re.findall(self.pattern, self.state.source_text)
         n_split = len(word_space_split)
-        self._label.refresh(math.ceil(n_split / 2))
+        self.n_word_text = f'{math.ceil(n_split / 2)}/{self.word_limit}'
         if n_split > 2 * self.word_limit:
             self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
             ui.notify(f'{self.ui_language.UPLOAD.Messages.limit} {self.word_limit} words',
@@ -106,8 +107,7 @@ class Upload(Page):
                         auto_upload = self.auto_upload,
                         max_files = self.max_files) \
                         .props('accept=.txt flat dense')
-                    with ui.input(label = self.ui_language.UPLOAD.Title) \
-                            .classes(top_left(150, 160)) \
+                    with ui.input(label = self.ui_language.UPLOAD.Title).classes(top_left(130, 70)) \
                             .bind_value(self.state, 'title'):
                         if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.title)
                     ui.textarea(
@@ -127,7 +127,7 @@ class Upload(Page):
     def _language_selector(self) -> None:
         try:
             languages = self.decoder.get_supported_languages()
-            with ui.row().classes(bot_left(30, 30, 'px', '%')):
+            with ui.row().classes(bot_left(10, 10, 'px', '%')):
                 ui.select(
                     label = self.ui_language.UPLOAD.Footer.source,
                     options = ['auto'] + languages) \
@@ -141,21 +141,16 @@ class Upload(Page):
                     .props('dense options-dense outlined') \
                     .style('min-width:200px; font-size:12pt') \
                     .bind_value(self.state, 'target_language')
-            with ui.button(
-                    text = self.ui_language.UPLOAD.Footer.decode,
-                    on_click = lambda: self.goto(URLS.DECODING, call = self._decode)
-            ).classes(bot_right(30, 25, 'px', '%')):
+            with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
+                           on_click = lambda: self.goto(URLS.DECODING, call = self._decode)) \
+                    .classes(bot_right(12, 20, 'px', '%')):
                 if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
-            self._label()
+            ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, 'n_word_text')
             with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
                 if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.delete)
         except Exception:
             logger.error(f'Error in "_language_selector" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    @ui.refreshable
-    def _label(self, n_words: int = 0):
-        ui.label(f'{n_words}/{self.word_limit}').classes(bot_right(40, 13, 'px', '%'))
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)

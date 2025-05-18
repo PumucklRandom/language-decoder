@@ -6,7 +6,7 @@ from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.decoder.pdf import PDF
 from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import UIGridPages, ui_dialog
+from frontend.pages.ui.custom import UIGridPages, ui_dialog, top_right
 from frontend.pages.ui.page_abc import Page
 
 
@@ -322,17 +322,13 @@ class Decoding(Page):
             with ui.element().classes('w-full items-center'):
                 self.ui_grid = UIGridPages(
                     grid_page = self.state.grid_page,
-                    endofs = self.decoder.regex.endofs + self.decoder.regex.quotes,
-                    dark_mode = self.state.dark_mode,
+                    endofs = self.decoder.regex.endofs + self.decoder.regex.quotes
                 )
-                self.ui_grid()
+                self.ui_grid(dark_mode = self.state.dark_mode)
             await self._decode_words()
-            with ui.row().style('gap:0.0rem').classes('absolute-top-right'):
-                with ui.column().style('gap:0.0rem'):
-                    ui.space().style('height:5px')
-                    with ui.button(icon = 'help', on_click = self._dialog().open).props('dense'):
-                        if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.help).style('width:70px')
-                ui.space().style('width:5px')
+            with ui.button(icon = 'help', on_click = self._dialog().open) \
+                    .classes(top_right(5, 5)).props('dense'):
+                if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.help).style('width:70px')
         except Exception:
             logger.error(f'Error in "_center" with exception:\n{traceback.format_exc()}')
             ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')

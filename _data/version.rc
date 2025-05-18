@@ -1,7 +1,7 @@
 VSVersionInfo(
     ffi=FixedFileInfo(
-        filevers=(0, 11, 5, 0),
-        prodvers=(0, 11, 5, 0),
+        filevers=(0, 11, 6, 0),
+        prodvers=(0, 11, 6, 0),
         mask=0x3f,
         flags=0x0,
         OS=0x40004,
@@ -19,8 +19,8 @@ VSVersionInfo(
                     StringStruct(u'InternalName', u'LanguageDecoder'),
                     StringStruct(u'OriginalFilename', u'LanguageDecoder'),
                     StringStruct(u'FileDescription', u'Decode a source text to a target language'),
-                    StringStruct(u'FileVersion', u'0.11.5.0'),
-                    StringStruct(u'ProductVersion', u'0.11.5.0'),
+                    StringStruct(u'FileVersion', u'0.11.6.0'),
+                    StringStruct(u'ProductVersion', u'0.11.6.0'),
                     StringStruct(u'LegalCopyright', u'MIT License. Copyright (c) 2023 Pumuckl Random'),
                     StringStruct(u'Language', u'Language Neutral'),
                 ]
