@@ -48,7 +48,7 @@ class Page(ABC):
                   info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
 
     def __init_state__(self, uuid: str) -> None:
-        self.state = State(store = app.storage.tab)
+        self.state = State(storage = app.storage.tab)
         self.state.add('uuid', uuid)
         self.state.add('user_uuid', app.storage.browser.get('id'))
         self.state.add('ui_language', load_language())

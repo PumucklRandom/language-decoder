@@ -5,24 +5,6 @@ from backend.utils.utilities import lonlen
 from frontend.pages.ui.config import COLORS, DEFAULT_COLS
 
 
-def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
-              style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
-    with ui.dialog() as dialog:
-        with ui.card().style(f'{style}; min-height:112px; font-size:11pt; gap:0.0rem').classes(f'{classes}'):
-            ui.button(icon = 'close', on_click = dialog.close) \
-                .props('dense round size=12px') \
-                .classes('absolute-top-right')
-            ui.space().style(f'height:{space}px')
-            for label in label_list:
-                if label == '/n':
-                    ui.space().style(f'height:{space}px')
-                elif label == '/N':
-                    ui.separator().style(f'height:{2}px')
-                else:
-                    ui.label(label)
-    return dialog
-
-
 def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = False) -> str:
     """
     :param top: distance from top
@@ -73,6 +55,24 @@ def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'p
     if not center:
         return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}]'
     return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
+
+
+def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
+              style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
+    with ui.dialog() as dialog:
+        with ui.card().style(f'{style}; min-height:112px; font-size:11pt; gap:0.0rem').classes(f'{classes}'):
+            ui.button(icon = 'close', on_click = dialog.close) \
+                .props('dense round size=12px') \
+                .classes('absolute-top-right')
+            ui.space().style(f'height:{space}px')
+            for label in label_list:
+                if label == '/n':
+                    ui.space().style(f'height:{space}px')
+                elif label == '/N':
+                    ui.separator().style(f'height:{2}px')
+                else:
+                    ui.label(label)
+    return dialog
 
 
 class Table(ui.table):
@@ -126,6 +126,33 @@ class Table(ui.table):
         if as_dict:
             return dict(zip(sources, targets))
         return sources, targets
+
+
+class UIList(Table):
+    def __init__(self, columns: list[dict] = None, rows: list[dict] = None,
+                 row_key: str = 'id', val_type: str = 'text', *args, **kwargs) -> None:
+        super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
+        self.val_type = val_type
+        self.add_slot('body', self._body())
+        self.props('hide-header separator=none')
+        self.style('min-width:400px')
+
+    def _set_type(self, values) -> list[float]:
+        if self.val_type == 'number':
+            return list(map(float, values))
+        return values
+
+    def _body(self) -> str:
+        return f'''
+            <q-tr :props="props">
+                <q-td key="source" :props="props">
+                    {{{{ props.row.source }}}}
+                    <q-input style="font-family:RobotoMono" v-model="props.row.target" type="{self.val_type}"
+                    dense outlined debounce="{CONFIG.debounce}"
+                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                </q-td>
+            </q-tr>
+        '''
 
 
 class UITable(Table):
@@ -232,33 +259,6 @@ class UIGrid(Table):
                     dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>
-        '''
-
-
-class UIList(Table):
-    def __init__(self, columns: list[dict] = None, rows: list[dict] = None,
-                 row_key: str = 'id', val_type: str = 'text', *args, **kwargs) -> None:
-        super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
-        self.val_type = val_type
-        self.add_slot('body', self._body())
-        self.props('hide-header separator=none')
-        self.style('min-width:400px')
-
-    def _set_type(self, values) -> list[float]:
-        if self.val_type == 'number':
-            return list(map(float, values))
-        return values
-
-    def _body(self) -> str:
-        return f'''
-            <q-tr :props="props">
-                <q-td key="source" :props="props">
-                    {{{{ props.row.source }}}}
-                    <q-input style="font-family:RobotoMono" v-model="props.row.target" type="{self.val_type}"
-                    dense outlined debounce="{CONFIG.debounce}"
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
-                </q-td>
-            </q-tr>
         '''
 
 
