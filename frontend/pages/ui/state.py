@@ -6,36 +6,36 @@ from frontend.pages.ui.config import Language
 
 class State(object):
 
-    def __init__(self, store: dict):
-        self.store = store
+    def __init__(self, storage: dict):
+        self.storage = storage
 
     def get(self, key: str, default: any = None) -> any:
-        return self.store.get(key, default)
+        return self.storage.get(key, default)
 
     def update(self, key: str, value: any) -> None:
-        self.store.update({key: value})
+        self.storage.update({key: value})
 
     def add(self, key: str, value: any) -> None:
-        if key not in self.store: self.update(key, value)
+        if key not in self.storage: self.update(key, value)
 
     def keys(self):
-        return self.store.keys()
+        return self.storage.keys()
 
     def values(self):
-        return self.store.values()
+        return self.storage.values()
 
     def items(self):
-        return self.store.items()
+        return self.storage.items()
 
     def clear(self):
-        self.store.clear()
+        self.storage.clear()
 
     def pop(self, key: str):
-        self.store.pop(key)
+        self.storage.pop(key)
 
-    def copy(self, store: bool = False) -> Union[dict, object]:
-        if store:
-            return self.store.copy()
+    def copy(self, storage: bool = False) -> Union[dict, object]:
+        if storage:
+            return self.storage.copy()
         return copy(self)
 
     @property

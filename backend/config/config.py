@@ -11,7 +11,7 @@ from backend.logger.logger import logger, stream_handler
 REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '-', '–': '-'}
 
 
-class Config(object):
+class Config:
     host: str
     port: int
     title: str

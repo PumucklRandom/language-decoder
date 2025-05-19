@@ -59,7 +59,7 @@ REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
 REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
 
 
-class URLS(object):
+class URLS:
     START = '/'
     UPLOAD = '/upload/'
     DECODING = '/decoding/'
@@ -110,7 +110,7 @@ class COLORS:
         VAL = '#FAFAFA'
 
     class GREY4:
-        KEY = 'grey-1'
+        KEY = 'grey-4'
         VAL = '#E0E0E0'
 
     class GREY10:
@@ -134,7 +134,7 @@ class COLORS:
         VAL = '#006064'
 
 
-class Language(object):
+class Language:
     def __init__(self, dictionary):
         self.GENERAL = None
         self.START = None
