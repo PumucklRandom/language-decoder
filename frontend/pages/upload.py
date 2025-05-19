@@ -143,7 +143,7 @@ class Upload(Page):
                     .bind_value(self.state, 'target_language')
             with ui.button(text = self.ui_language.UPLOAD.Footer.decode,
                            on_click = lambda: self.goto(URLS.DECODING, call = self._decode)) \
-                    .classes(bot_right(12, 20, 'px', '%')):
+                    .classes(bot_right(12, 23, 'px', '%')):
                 if self.state.show_tips: ui.tooltip(self.ui_language.UPLOAD.Tips.decode)
             ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, 'n_word_text')
             with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
