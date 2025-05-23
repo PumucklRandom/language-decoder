@@ -1,21 +1,35 @@
+#!/usr/bin/env python3
 """
-How to create certificate for the application:
+Build script for the LanguageDecoder application.
 
-# Create certificate
-New-SelfSignedCertificate -Type Custom -Subject "CN=PumucklRandom" -KeyUsage DigitalSignature
-    -FriendlyName "LanguageDecoder" -CertStoreLocation "Cert:/CurrentUser/My"
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
-    -NotAfter (Get-Date).AddYears(10)
+This script handles:
+1. Updating version information
+2. Cleaning previous builds
+3. Building the application with PyInstaller
+4. Signing the executable (if certificate is available)
+5. Creating a zip distribution
 
-# Get certificate
-Get-childitem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Subject
-# Set password for certificate
-$password = ConvertTo-SecureString -String "password" -Force -AsPlainText
-# Export certificate with Thumbprint
-Export-PfxCertificate -cert "Cert:/CurrentUser/My/Thumbprint" -FilePath certificate.pfx -Password $password
+Usage:
+    python build.py
 
-# In case a certificate have to be removed
-Remove-Item Cert:\CurrentUser\My\Thumbprint
+Certificate Creation Instructions:
+    # Create certificate
+    New-SelfSignedCertificate -Type Custom -Subject "CN=PumucklRandom" -KeyUsage DigitalSignature
+        -FriendlyName "LanguageDecoder" -CertStoreLocation "Cert:/CurrentUser/My"
+        -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+        -NotAfter (Get-Date).AddYears(10)
+
+    # Get certificate
+    Get-childitem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Subject
+
+    # Set password for certificate
+    $password = ConvertTo-SecureString -String "password" -Force -AsPlainText
+
+    # Export certificate with Thumbprint
+    Export-PfxCertificate -cert "Cert:/CurrentUser/My/Thumbprint" -FilePath certificate.pfx -Password $password
+
+    # In case a certificate has to be removed
+    Remove-Item Cert:\CurrentUser\My\Thumbprint
 """
 
 import os
@@ -26,59 +40,113 @@ import pathlib
 import zipfile
 import nicegui
 import traceback
+import logging
 
-VERSION = '0.11.7.0'
+# Configure logging
+logging.basicConfig(
+    level = logging.INFO,
+    format = '%(asctime)s - %(levelname)s - %(message)s',
+    datefmt = '%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('build')
+
+# Default configuration
+VERSION = '0.11.7.1'
+APP_NAME = 'LanguageDecoder'
+VERSION_RC_PATH = './_data/version.rc'
+PW_PATH = './_data/password.txt'
+CERTIFICATE_PATH = './_data/certificate.pfx'
+OUT_ZIP_PATH = f'./{APP_NAME}.zip'
 
 
-def update_version() -> None:
-    with open('./_data/version.rc', 'r+') as file:
-        version = file.read()
-        version = re.sub(r'(\d+\.\d+\.\d+\.\d+)', VERSION, version)
-        version = re.sub(r'(\d+, \d+, \d+, \d+)', VERSION.replace('.', ', '), version)
-        file.seek(0)
-        file.write(version)
+def update_version(version: str) -> None:
+    """
+    Update version information in the version.rc file.
+
+    Args:
+        version: Version string in format 'x.y.z.w'
+
+    Raises:
+        FileNotFoundError: If version.rc file is not found
+        ValueError: If version format is invalid
+    """
+    if not re.match(r'^\d+\.\d+\.\d+\.\d+$', version):
+        raise ValueError(f"Invalid version format: {version}. Expected format: x.y.z.w")
+
+    try:
+        with open(VERSION_RC_PATH, 'r+') as file:
+            content = file.read()
+            content = re.sub(r'(\d+\.\d+\.\d+\.\d+)', version, content)
+            content = re.sub(r'(\d+, \d+, \d+, \d+)', version.replace('.', ', '), content)
+            file.seek(0)
+            file.write(content)
+            file.truncate()
+        logger.info(f"Updated version to {version}")
+    except FileNotFoundError:
+        logger.error(f"Version file not found: {VERSION_RC_PATH}")
+        raise
 
 
-def del_previous_build() -> None:
-    if os.path.isdir('./build'):
-        shutil.rmtree('./build')
-    if os.path.isdir('./dist'):
-        shutil.rmtree('./dist')
-    if os.path.isfile('./LanguageDecoder.spec'):
-        os.remove('./LanguageDecoder.spec')
+def del_old_build() -> None:
+    """
+    Remove previous build artifacts.
+
+    Removes:
+    - ./build directory
+    - ./dist directory
+    - app_name.spec file
+    """
+    paths_to_remove = [
+        './build',
+        './dist',
+        f'./{APP_NAME}.spec'
+    ]
+
+    for path in paths_to_remove:
+        try:
+            if os.path.isdir(path):
+                logger.info(f"Removing directory: {path}")
+                shutil.rmtree(path)
+            elif os.path.isfile(path):
+                logger.info(f"Removing file: {path}")
+                os.remove(path)
+        except Exception:
+            logger.warning(f"Failed to remove {path}:\n{traceback.format_exc()}")
 
 
 def get_password() -> str:
-    pw_path = './_data/password.txt'
+    """
+    Get certificate password from file.
+
+    Returns:
+        Password string or empty string if file not found or error occurs
+    """
     try:
-        if not os.path.isfile(pw_path):
+        if not os.path.isfile(PW_PATH):
+            logger.warning(f"Password file not found: {PW_PATH}")
             return ''
-        with open(file = './_data/password.txt', mode = 'r', encoding = 'utf-8') as file:
-            return file.read()
+
+        with open(file = PW_PATH, mode = 'r', encoding = 'utf-8') as file:
+            password = file.read().strip()
+            return password
     except Exception:
-        print(f'Could not load password from: "{pw_path}"\n{traceback.format_exc()}')
+        logger.error(f"Could not load password from: {PW_PATH}\n{traceback.format_exc()}")
         return ''
 
 
-def zip_directory(zip_file_path: str, source_directory: str) -> None:
-    if os.path.isfile(zip_file_path):
-        os.remove(zip_file_path)
-    source_path = pathlib.Path(source_directory).expanduser()  # .resolve(strict = True)
-    with zipfile.ZipFile(file = zip_file_path, mode = 'w', compression = zipfile.ZIP_DEFLATED) as zf:
-        print(f'Zip {source_directory} to {zip_file_path}')
-        for file_path in source_path.rglob('*'):
-            zf.write(file_path, file_path.relative_to(source_path.parent))
+def build_app() -> bool:
+    """
+    Build the application using PyInstaller.
 
-
-try:
-    update_version()
-    del_previous_build()
+    Returns:
+        True if build succeeded, False otherwise
+    """
     cmd_build = [
         'pyinstaller', '__main__.py',
-        '--name', 'LanguageDecoder',
+        '--name', APP_NAME,
         '--windowed',  # set ui.run(native=True)!!!
         '--icon', './frontend/pages/ui/icon/LD-icon.png',
-        '--version-file', '_data/version.rc',
+        '--version-file', VERSION_RC_PATH,
         '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
         '--add-data', f'./_data/config.yml{os.pathsep}./backend/config/',
         '--add-data', f'./backend/decoder/prompt.txt{os.pathsep}./backend/decoder/',
@@ -87,20 +155,135 @@ try:
         '--add-data', f'./frontend/pages/ui/icon/{os.pathsep}./frontend/pages/ui/icon/',
         '--clean', '-y',
     ]
-    subprocess.run(cmd_build, shell = False, check = True)
-    password = get_password()
-    if password and os.path.isfile('./_data/certificate.pfx'):
-        cmd_sign = [
-            'signtool', 'sign', '/debug',
-            '/f', './_data/certificate.pfx',
-            '/fd', 'SHA256',
-            '/td', 'SHA256',
-            '/tr', 'http://timestamp.digicert.com',
-            '/p', f'{password}',
-            './dist/LanguageDecoder/LanguageDecoder.exe'
-        ]
+
+    try:
+        logger.info("Building application with PyInstaller...")
+        subprocess.run(cmd_build, shell = False, check = True)
+        logger.info("Build completed successfully")
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Build failed with exit code {e.returncode}\n{traceback.format_exc()}")
+        return False
+    except Exception:
+        logger.error(f"Build failed with exception:\n{traceback.format_exc()}")
+        return False
+
+
+def sign_app(password: str) -> bool:
+    """
+    Sign the executable with the certificate.
+
+    Args:
+        password: Certificate password
+
+    Returns:
+        True if signing succeeded, False otherwise
+    """
+    if not password:
+        logger.warning("No password provided, skipping signing")
+        return False
+
+    if not os.path.isfile(CERTIFICATE_PATH):
+        logger.warning(f"Certificate not found: {CERTIFICATE_PATH}")
+        return False
+
+    exe_path = f'./dist/{APP_NAME}/{APP_NAME}.exe'
+    if not os.path.isfile(exe_path):
+        logger.error(f"Executable not found: {exe_path}")
+        return False
+
+    cmd_sign = [
+        'signtool', 'sign', '/debug',
+        '/f', CERTIFICATE_PATH,
+        '/fd', 'SHA256',
+        '/td', 'SHA256',
+        '/tr', 'http://timestamp.digicert.com',
+        '/p', password,
+        exe_path
+    ]
+
+    try:
+        logger.info("Signing executable...")
         subprocess.run(cmd_sign, shell = False, check = True)
-    zip_directory(zip_file_path = './LanguageDecoder.zip', source_directory = './dist/LanguageDecoder/')
-    print('Successfully build application')
-except Exception:
-    print(f'Building application failed with exception:\n{traceback.format_exc()}')
+        logger.info("Signing completed successfully")
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Signing failed with exit code {e.returncode}\n{traceback.format_exc()}")
+        return False
+    except Exception:
+        logger.error(f"Signing failed with exception:\n{traceback.format_exc()}")
+        return False
+
+
+def zip_directory(zip_file_path: str, source_directory: str) -> bool:
+    """
+    Create a zip archive of the directory.
+
+    Args:
+        zip_file_path: Path to the output zip file
+        source_directory: Directory to zip
+
+    Returns:
+        True if zipping succeeded, False otherwise
+    """
+    if not os.path.isdir(source_directory):
+        logger.error(f"Source directory not found: {source_directory}")
+        return False
+
+    try:
+        if os.path.isfile(zip_file_path):
+            logger.info(f"Removing existing zip file: {zip_file_path}")
+            os.remove(zip_file_path)
+
+        source_path = pathlib.Path(source_directory).expanduser()  # .resolve(strict = True)
+
+        logger.info(f"Creating zip archive: {zip_file_path}")
+        with zipfile.ZipFile(file = zip_file_path, mode = 'w', compression = zipfile.ZIP_DEFLATED) as zf:
+            file_count = 0
+            for file_path in source_path.rglob('*'):
+                zf.write(file_path, file_path.relative_to(source_path.parent))
+                file_count += 1
+
+        logger.info(f"Zip archive created with {file_count} files")
+        return True
+    except Exception:
+        logger.error(f"Failed to create zip archive:\n{traceback.format_exc()}")
+        return False
+
+
+def main() -> int:
+    """
+    Main build process.
+
+    Returns:
+        Exit code (0 for success, non-zero for error)
+    """
+    try:
+        # Step 1: Update version
+        update_version(VERSION)
+
+        # Step 2: Clean previous build
+        del_old_build()
+
+        # Step 3: Build application
+        if not build_app():
+            return 1
+
+        # Step 4: Sign executable
+        password = get_password()
+        sign_app(password)
+
+        # Step 5: Create zip archive
+        if not zip_directory(OUT_ZIP_PATH, f'./dist/{APP_NAME}/'):
+            return 1
+
+        logger.info("Build process completed successfully")
+        return 0
+    except Exception:
+        logger.error(f"Build process failed with exception:\n{traceback.format_exc()}")
+        return 1
+
+
+if __name__ == '__main__':
+    exit_code = main()
+    exit(exit_code)
