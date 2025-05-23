@@ -14,37 +14,6 @@ app.add_static_file(
     url_path = '/fonts/RobotoMono/RobotoMono.ttf'
 )
 
-
-class HTML:
-    FLEX_GROW = '<style>.q-textarea.flex-grow .q-field__control{height: 100%}</style>'
-    ROBOTO_MONO = '''
-        <style>
-            @font-face{
-                font-family: "RobotoMono";
-                src: url('/fonts/RobotoMono/RobotoMono.ttf');
-            }
-        </style>
-    '''
-    STICKY_HEADER = '''
-        <style>
-            .sticky-header q-table__top,
-            .sticky-header thead tr th {
-                position: sticky;
-                z-index: 1;
-            }
-            .sticky-header thead tr:first-child th {
-                top: 0;
-            }
-        </style>
-    '''
-
-
-ui.add_head_html(code = HTML.FLEX_GROW, shared = True)
-ui.add_head_html(code = HTML.ROBOTO_MONO, shared = True)
-ui.add_head_html(code = HTML.STICKY_HEADER, shared = True)
-ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
-ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
-
 DEFAULT_COLS = [
     {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
     {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
@@ -105,6 +74,10 @@ class COLORS:
         KEY = 'warning'
         VAL = '#FFFF40'
 
+    class ORANGE:
+        KEY = 'red-orange'
+        VAL = '#FF6000'
+
     class GREY1:
         KEY = 'grey-1'
         VAL = '#FAFAFA'
@@ -132,6 +105,148 @@ class COLORS:
     class CYAN10:
         KEY = 'cyan-10'
         VAL = '#006064'
+
+
+class JS:
+    FOCUS_INPUT = '''
+        setTimeout(function() {
+            const findInput = document.querySelector('.q-menu input[aria-label="find"]');
+            if (findInput) {
+                findInput.focus();
+                findInput.select();
+            }
+        }, 0);
+    '''
+
+    DEL_OBSERVER = '''
+        if (window.cellObserver) {
+            window.cellObserver.disconnect();
+            window.cellObserver = null;
+        }
+    '''
+
+    CLEAR_CELLS = f'''
+        function clearCells() {{
+            const inputs = document.querySelectorAll(".q-table__grid-content input");
+            for (const input of inputs) {{
+                input.style.color = "";
+            }}
+        }}
+        clearCells();
+        {DEL_OBSERVER}
+    '''
+
+    @classmethod
+    def mark_cells(cls, find_str: str) -> str:
+        return f'''
+            // Function to mark cells
+            function markCells(find_str) {{
+                const inputs = document.querySelectorAll(".q-table__grid-content input");
+                for (const input of inputs) {{
+                    if (input.value && input.value.includes(find_str)) {{
+                        input.style.color = "{COLORS.ORANGE.VAL}";
+                    }} else {{
+                        input.style.color = "";
+                    }}
+                }}
+            }}
+            markCells("{find_str}");
+            {cls.DEL_OBSERVER}
+            // Observer to detect changes in cells
+            window.cellObserver = new MutationObserver(function(mutations) {{
+                for (const mutation of mutations) {{
+                    if (mutation.type === "childList") {{
+                        markCells("{find_str}");
+                        break;
+                    }}
+                }}
+            }});
+            // const gridTable = document.querySelector(".q-table__grid-content");
+            window.cellObserver.observe(document.body, {{ childList: true, subtree: true }});
+        '''
+
+
+ui.add_head_html(code = '''
+                     <style>
+                         .q-textarea.flex-grow .q-field__control{
+                             height: 100%;
+                         }
+                     </style>
+                 ''', shared = True)
+ui.add_head_html(code = '''
+                     <style>
+                         @font-face{
+                             font-family: "RobotoMono";
+                             src: url('/fonts/RobotoMono/RobotoMono.ttf');
+                         }
+                     </style>
+                 ''', shared = True)
+ui.add_head_html(code = '''
+                     <style>
+                         .sticky-header q-table__top,
+                         .sticky-header thead tr th {
+                             position: sticky;
+                             z-index: 1;
+                         }
+                         .sticky-header thead tr:first-child th {
+                             top: 0;
+                         }
+                     </style>
+                 ''', shared = True)
+ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
+ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
+
+
+def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = False) -> str:
+    """
+    :param top: distance from top
+    :param left: distance from left
+    :param u_top: unit for top in px or %
+    :param u_left: unit for left in px or %
+    :param center: using center of ui
+    """
+    if not center:
+        return f'absolute top-[{top}{u_top}] left-[{left}{u_left}]'
+    return f'absolute top-[{top}{u_top}] left-[{left}{u_left}] translate-y-[-50%] translate-x-[-50%]'
+
+
+def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = False) -> str:
+    """
+    :param top: distance from top
+    :param right: distance from right
+    :param u_top: unit for top in px or %
+    :param u_right: unit for right in px or %
+    :param center: using center of ui
+    """
+    if not center:
+        return f'absolute top-[{top}{u_top}] right-[{right}{u_right}]'
+    return f'absolute top-[{top}{u_top}] right-[{right}{u_right}] translate-y-[-50%] translate-x-[+50%]'
+
+
+def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = False) -> str:
+    """
+    :param bot: distance from bottom
+    :param left: distance from left
+    :param u_bot: unit for bottom in px or %
+    :param u_left: unit for left in px or %
+    :param center: using center of ui
+    """
+    if not center:
+        return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}]'
+    return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}] translate-y-[+50%] translate-x-[-50%]'
+
+
+def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = False) -> str:
+    """
+    :param bot: distance from bottom
+    :param right: distance from right
+    :param u_bot: unit for bottom in px or %
+    :param u_right: unit for right in px or %
+    :param center: using center of ui
+    """
+    if not center:
+        return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}]'
+    return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
 
 
 class Language:
