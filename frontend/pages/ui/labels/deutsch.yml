@@ -83,9 +83,10 @@ DECODING:
         'Wenn ein Fehler häufig auftritt, wird empfohlen dafür ein Wörterbuch auf der Seite Wörterbücher
             anzulegen, um die Korrekturen automatisch vorzunehmen.',
         '/n', '/N', '/n',
-        'In der Fußzeile finden Sie verschiedene Aktionen, die Sie auswählen können:',
+        'In der Fußzeile finden Sie verschiedene Aktionen, von denen Sie auswählen können:',
         '/n',
-        'Die erste Option auf der linken Seite ist eine einfache Such- und Ersetzungsfunktion.',
+        'Die erste Option auf der linken Seite ist eine einfache Such- und Ersetzungsfunktion,
+            welche alle betroffenen Zellen durch ein Hervorheben in orange markiert.',
         '/n',
         'Mit der zweiten Option "IMPORTIEREN" auf der linken Seite können Sie eine zuvor exportierte
             Dekodierung wieder importieren.',

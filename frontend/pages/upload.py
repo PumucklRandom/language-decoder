@@ -4,8 +4,8 @@ import pathlib
 import traceback
 from nicegui import ui, events, Client
 from backend.logger.logger import logger
-from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import ui_dialog, top_left, bot_left, bot_right
+from frontend.pages.ui.config import URLS, top_left, bot_left, bot_right
+from frontend.pages.ui.custom import ui_dialog
 from frontend.pages.ui.page_abc import Page
 
 

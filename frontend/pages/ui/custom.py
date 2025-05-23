@@ -2,59 +2,7 @@ from typing import Union, Iterable
 from nicegui import ui, events
 from backend.config.config import CONFIG
 from backend.utils.utilities import lonlen
-from frontend.pages.ui.config import COLORS, DEFAULT_COLS
-
-
-def top_left(top: int = 0, left: int = 0, u_top: str = 'px', u_left: str = 'px', center: bool = False) -> str:
-    """
-    :param top: distance from top
-    :param left: distance from left
-    :param u_top: unit for top in px or %
-    :param u_left: unit for left in px or %
-    :param center: using center of ui
-    """
-    if not center:
-        return f'absolute top-[{top}{u_top}] left-[{left}{u_left}]'
-    return f'absolute top-[{top}{u_top}] left-[{left}{u_left}] translate-y-[-50%] translate-x-[-50%]'
-
-
-def top_right(top: int = 0, right: int = 0, u_top: str = 'px', u_right: str = 'px', center: bool = False) -> str:
-    """
-    :param top: distance from top
-    :param right: distance from right
-    :param u_top: unit for top in px or %
-    :param u_right: unit for right in px or %
-    :param center: using center of ui
-    """
-    if not center:
-        return f'absolute top-[{top}{u_top}] right-[{right}{u_right}]'
-    return f'absolute top-[{top}{u_top}] right-[{right}{u_right}] translate-y-[-50%] translate-x-[+50%]'
-
-
-def bot_left(bot: int = 0, left: int = 0, u_bot: str = 'px', u_left: str = 'px', center: bool = False) -> str:
-    """
-    :param bot: distance from bottom
-    :param left: distance from left
-    :param u_bot: unit for bottom in px or %
-    :param u_left: unit for left in px or %
-    :param center: using center of ui
-    """
-    if not center:
-        return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}]'
-    return f'absolute bottom-[{bot}{u_bot}] left-[{left}{u_left}] translate-y-[+50%] translate-x-[-50%]'
-
-
-def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'px', center: bool = False) -> str:
-    """
-    :param bot: distance from bottom
-    :param right: distance from right
-    :param u_bot: unit for bottom in px or %
-    :param u_right: unit for right in px or %
-    :param center: using center of ui
-    """
-    if not center:
-        return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}]'
-    return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
+from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, bot_right
 
 
 def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
@@ -261,14 +209,22 @@ class UIGrid(Table):
             </div>
         '''
 
+    @staticmethod
+    def mark_cells(find_str: str = '') -> None:
+        if not find_str:
+            ui.run_javascript(JS.CLEAR_CELLS)
+            return
+        ui.run_javascript(JS.mark_cells(find_str))
+
 
 class UIGridPages(object):
-    def __init__(self, grid_page: dict = None, endofs: str = '.!?\'"') -> None:
+    def __init__(self, grid_page: dict = None, endofs: str = '.!?\'"', find_str: str = '') -> None:
         self.page_number: int = 1
         self.page_size: int = CONFIG.grid_options[2]
         self.prev_page: int = 1
         self.set_grid_page(grid_page)
         self.endofs = endofs
+        self.find_str: str = find_str
         self.source_words: list = []
         self.target_words: list = []
         self.eos_indices = []
@@ -314,6 +270,7 @@ class UIGridPages(object):
             target_words = self.target_words[self.indices[p]:self.indices[p + 1]],
             *args, **kwargs
         )
+        self.ui_grid.mark_cells(self.find_str)
 
     def get_indices(self, source_words: list[str]) -> None:
         self.eos_indices = [i + 1 for i, word in enumerate(source_words)
@@ -378,3 +335,7 @@ class UIGridPages(object):
         self.page_number = grid_page.get('page', 1)
         self.page_size = grid_page.get('rowsPerPage', CONFIG.grid_options[2])
         self.prev_page = self.page_number
+
+    def highlight_text(self, find_str: str = '') -> None:
+        self.find_str = find_str
+        self.ui_grid.mark_cells(self.find_str)

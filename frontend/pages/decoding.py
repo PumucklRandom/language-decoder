@@ -5,8 +5,8 @@ from nicegui import ui, events, Client
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.decoder.pdf import PDF
-from frontend.pages.ui.config import URLS
-from frontend.pages.ui.custom import UIGridPages, ui_dialog, top_right
+from frontend.pages.ui.config import URLS, JS, top_right
+from frontend.pages.ui.custom import UIGridPages, ui_dialog
 from frontend.pages.ui.page_abc import Page
 
 
@@ -287,10 +287,12 @@ class Decoding(Page):
         try:
             with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
                 if self.state.show_tips: ui.tooltip(self.ui_language.DECODING.Tips.replace)
-                with ui.menu():
+                with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)):
                     with ui.menu_item(auto_close = False):
-                        # TODO: add highlighting of matches while typing
-                        self.ui_find_input = ui.input(label = 'find').bind_value(self.state, 'find')
+                        self.ui_find_input = ui.input(
+                            label = 'find',
+                            on_change = lambda: self.ui_grid.highlight_text(self.state.find)
+                        ).bind_value(self.state, 'find')
                     with ui.menu_item(auto_close = False):
                         self.ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')
                     with ui.menu_item(auto_close = False).style('justify-content:center'):
@@ -322,7 +324,8 @@ class Decoding(Page):
             with ui.element().classes('w-full items-center'):
                 self.ui_grid = UIGridPages(
                     grid_page = self.state.grid_page,
-                    endofs = self.decoder.regex.endofs + self.decoder.regex.quotes
+                    endofs = self.decoder.regex.endofs + self.decoder.regex.quotes,
+                    find_str = self.state.find
                 )
                 self.ui_grid(dark_mode = self.state.dark_mode)
             await self._decode_words()

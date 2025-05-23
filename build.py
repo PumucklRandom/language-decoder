@@ -27,12 +27,14 @@ import zipfile
 import nicegui
 import traceback
 
+VERSION = '0.11.7.0'
+
 
 def update_version() -> None:
     with open('./_data/version.rc', 'r+') as file:
         version = file.read()
-        version = re.sub(r'(\d+\.\d+\.\d+\.\d+)', '0.11.6.1', version)
-        version = re.sub(r'(\d+, \d+, \d+, \d+)', '0, 11, 6, 1', version)
+        version = re.sub(r'(\d+\.\d+\.\d+\.\d+)', VERSION, version)
+        version = re.sub(r'(\d+, \d+, \d+, \d+)', VERSION.replace('.', ', '), version)
         file.seek(0)
         file.write(version)
 
