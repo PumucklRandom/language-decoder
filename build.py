@@ -54,7 +54,7 @@ logger = logging.getLogger('build')
 VERSION = '0.11.7.1'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
-PASSWORD_PATH = './_data/password.txt'
+PW_PATH = './_data/password.txt'
 CERTIFICATE_PATH = './_data/certificate.pfx'
 OUT_ZIP_PATH = f'./{APP_NAME}.zip'
 
@@ -122,15 +122,15 @@ def get_password() -> str:
         Password string or empty string if file not found or error occurs
     """
     try:
-        if not os.path.isfile(PASSWORD_PATH):
-            logger.warning(f"Password file not found: {PASSWORD_PATH}")
+        if not os.path.isfile(PW_PATH):
+            logger.warning(f"Password file not found: {PW_PATH}")
             return ''
 
-        with open(file = PASSWORD_PATH, mode = 'r', encoding = 'utf-8') as file:
+        with open(file = PW_PATH, mode = 'r', encoding = 'utf-8') as file:
             password = file.read().strip()
             return password
     except Exception:
-        logger.error(f"Could not load password from: {PASSWORD_PATH}\n{traceback.format_exc()}")
+        logger.error(f"Could not load password from: {PW_PATH}\n{traceback.format_exc()}")
         return ''
 
 
