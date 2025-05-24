@@ -19,6 +19,8 @@ def build() -> None:
 
 
 def run() -> None:
+    os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
+
     ui.run(
         host = CONFIG.host,
         port = CONFIG.port,
