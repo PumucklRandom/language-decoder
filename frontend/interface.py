@@ -1,6 +1,7 @@
 import os
-from nicegui import ui
+from nicegui import ui, app
 from backend.config.config import CONFIG
+from frontend.pages.ui.config import COLORS
 from frontend.pages.ui.page_abc import UIPage
 from frontend.pages.start import Start
 from frontend.pages.upload import Upload
@@ -19,6 +20,8 @@ def build() -> None:
 
 
 def run() -> None:
+    os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
+
     ui.run(
         host = CONFIG.host,
         port = CONFIG.port,

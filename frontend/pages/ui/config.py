@@ -6,7 +6,11 @@ from backend.config.config import CONFIG, dict_as_object
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
 
+# app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
+# app.native.start_args['private_mode'] = True
+# app.native.start_args['storage_path'] = '.\\_internal\\pywebview'
 app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
+# app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
     local_file = os.path.join(os.path.dirname(os.path.relpath(__file__)),

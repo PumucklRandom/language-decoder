@@ -44,8 +44,8 @@ class Page(ABC):
         self.ui_language = self.state.ui_language
         # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
-                  dark = COLORS.DARK.VAL, positive = COLORS.POSITIVE.VAL, negative = COLORS.NEGATIVE.VAL,
-                  info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
+                  dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
+                  negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
 
     def __init_state__(self, uuid: str) -> None:
         self.state = State(storage = app.storage.tab)
