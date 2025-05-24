@@ -1,7 +1,6 @@
 import os
-from nicegui import ui, app
+from nicegui import ui
 from backend.config.config import CONFIG
-from frontend.pages.ui.config import COLORS
 from frontend.pages.ui.page_abc import UIPage
 from frontend.pages.start import Start
 from frontend.pages.upload import Upload
