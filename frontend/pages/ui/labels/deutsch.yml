@@ -1,6 +1,6 @@
 GENERAL:
     Error:
-        internal: '500 Internal Error'
+        internal: 'Interner Serverfehler'
 START:
     Explanations:
         title: 'Beschreibung:'
@@ -124,6 +124,8 @@ DECODING:
         cancel: 'ABBRECHEN'
         reject: 'Hochladen einer json-Datei mit maximal:'
         invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
+        rate_limit: 'Rate limit erreicht. 
+                        Bitte versuchen Sie es später erneut oder verwenden Sie den normellen Translator.'
     Tips:
         help: 'Hilfe'
         replace: 'Austauschen'
@@ -190,7 +192,7 @@ DICTIONARY:
         export: 'EXPORTIEREN'
 SETTINGS:
     Header:
-        dictionaries: 'EINSTELLUNGEN'
+        settings: 'EINSTELLUNGEN'
     Panel: [
         'PROGRAMM EINSTELLUNGEN',
         'ERSETZUNGEN',
@@ -295,9 +297,7 @@ SETTINGS:
         'Zitatmarkierungen'
     ]
     Messages:
-        connect_check:
-            - 'Verbindung erfolgreich'
-            - '500 Internal server error'
+        connect_check: 'Verbindung erfolgreich'
     Tips:
         back: 'Zurück'
         interface:

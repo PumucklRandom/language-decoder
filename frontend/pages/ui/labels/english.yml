@@ -1,6 +1,6 @@
 GENERAL:
     Error:
-        internal: '500 Internal Error'
+        internal: 'Internal server error'
 START:
     Explanations:
         title: 'Explanation:'
@@ -117,6 +117,7 @@ DECODING:
         cancel: 'CANCEL'
         reject: 'Upload a json file with max:'
         invalid: 'Invalid json file. Upload a previously exported json file.'
+        rate_limit: 'Rate limit reached. Please try again later or use the default translator.'
     Tips:
         help: 'Help'
         replace: 'Replace'
@@ -182,7 +183,7 @@ DICTIONARY:
         export: 'EXPORT'
 SETTINGS:
     Header:
-        dictionaries: 'SETTINGS'
+        settings: 'SETTINGS'
     Panel: [
         'INTERFACE SETTINGS',
         'REPLACEMENTS',
@@ -279,9 +280,7 @@ SETTINGS:
         'Quotation marks'
     ]
     Messages:
-        connect_check:
-            - 'Connection successful'
-            - '500 Internal server error'
+        connect_check: 'Connection successful'
     Tips:
         back: 'Go back'
         interface:

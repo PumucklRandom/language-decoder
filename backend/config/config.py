@@ -7,9 +7,13 @@ from copy import copy
 from backend.error.error import ConfigError
 from backend.logger.logger import logger, stream_handler
 
+file_dir = os.path.dirname(os.path.relpath(__file__))
+
 # A mapping dict to replace language independent characters for the source text
 REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '-', '–': '-'}
 
+
+# TODO: Check if Config class can be replaced by namedtuple (or __slots__)
 
 class Config:
     host: str
@@ -29,7 +33,8 @@ class Config:
     session_time: int
     on_prem: bool
     stream_handler: bool
-    del_time: int
+    route_timeout: int
+    dicts_timeout: int
 
     size_fct: int
     size_min: int
@@ -90,8 +95,7 @@ def dict_as_object(dictionary: dict, object_type: type) -> type(object):
 
 
 def load_config(config_path: str = 'config.yml') -> Config:
-    logger.info('load config')
-    config_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), config_path)
+    config_path = os.path.join(file_dir, config_path)
     if not os.path.isfile(config_path):
         message = f'Config file not found at "{config_path}"'
         logger.critical(message)
@@ -99,10 +103,10 @@ def load_config(config_path: str = 'config.yml') -> Config:
     try:
         with open(file = config_path, mode = 'r', encoding = 'utf-8') as file:
             config = dict_as_object(dictionary = yaml.safe_load(file), object_type = Config)
-            logger.info('parsed config')
+            logger.info('Config loaded')
             return config
-    except Exception:
-        message = f'Could not parse config file with exception:\n{traceback.format_exc()}'
+    except Exception as exception:
+        message = f'Could not parse config file with exception: {exception}\n{traceback.format_exc()}'
         logger.critical(message)
         raise ConfigError(message)
 

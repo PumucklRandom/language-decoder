@@ -1,65 +1,66 @@
+import traceback
+import functools
+from typing import Type
+from backend.logger.logger import logger
+
+
 class LanguageDecoderError(Exception):
-    def __init__(self, message: str = '', code: str = ''):
+    def __init__(self, message: str = '', code: int = 500):
         super().__init__(message, code)
         self.message = message
         self.code = code
 
 
 class BackendError(LanguageDecoderError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
-
-
-class FrontendError(LanguageDecoderError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+    """Base exception class for backend errors."""
+    pass
 
 
 class ConfigError(BackendError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+    """Exception raised for configuration errors."""
+    pass
 
 
 class DictionaryError(BackendError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+    """Exception raised for dictionary-related errors."""
+    pass
 
 
 class DecoderError(BackendError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+    """Exception raised for decoder-related errors."""
+    pass
+
+
+class AITranslatorError(DecoderError):
+    """Exception raised for decoder-related errors."""
+    pass
 
 
 class PDFFormatterError(BackendError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+    """Exception raised for PDF formatter-related errors."""
+    pass
 
 
-class UIPageError(FrontendError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+class FrontendError(LanguageDecoderError):
+    pass
 
 
-class StartPageError(UIPageError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+class UIConfigError(FrontendError):
+    pass
 
 
-class UploadPageError(UIPageError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+def catch(error: Type[LanguageDecoderError]) -> callable:
+    def decorator(func: callable) -> callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> any:
+            try:
+                return func(*args, **kwargs)
+            except Exception as exception:
+                message = f'Error in "{func.__name__}" with exception: {exception}\n{traceback.format_exc()}'
+                logger.error(message)
+                code = exception.code if hasattr(exception, 'code') else 500
+                raise error(message, code = code)
 
+        return wrapper
 
-class DecodingPageError(UIPageError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
-
-
-class DictionaryPageError(UIPageError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
-
-
-class SettingsPageError(UIPageError):
-    def __init__(self, message: str = '', code: str = ''):
-        super().__init__(message = message, code = code)
+    return decorator

@@ -1,10 +1,15 @@
 import os
 import yaml
+import traceback
 from copy import deepcopy
 from nicegui import ui, app
+from backend.error.error import UIConfigError
 from backend.config.config import CONFIG, dict_as_object
-from backend.error.error import ConfigError
 from backend.logger.logger import logger
+
+ui_labels_cache = {}
+language_cache = []
+file_dir = os.path.dirname(os.path.relpath(__file__))
 
 # app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
 # app.native.start_args['private_mode'] = True
@@ -13,8 +18,7 @@ app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 # app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
-    local_file = os.path.join(os.path.dirname(os.path.relpath(__file__)),
-                              '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
+    local_file = os.path.join(file_dir, '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
     url_path = '/fonts/RobotoMono/RobotoMono.ttf'
 )
 
@@ -253,7 +257,9 @@ def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'p
     return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
 
 
-class Language:
+# Todo: check if Labels class can be replaces by namedtuple (or __slots__)
+
+class UILabels:
     def __init__(self, dictionary):
         self.GENERAL = None
         self.START = None
@@ -271,27 +277,35 @@ class Language:
 
 
 def get_languages() -> list[str]:
-    labels_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
-    languages = list()
-    for language_file in os.listdir(labels_path):
-        if language_file.endswith('.yml'):
-            languages.append(os.path.splitext(language_file)[0])
-    return languages
+    if not language_cache:
+        labels_path = os.path.join(file_dir, 'labels/')
+        for language_file in os.listdir(labels_path):
+            if language_file.endswith('.yml'):
+                language_cache.append(os.path.splitext(language_file)[0])
+    return language_cache
 
 
-def load_language(language: str = 'english') -> Language:
-    logger.info('load language')
-    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.yml')
+def load_labels(language: str = 'english') -> UILabels:
+    language_path = os.path.join(file_dir, f'labels/{language}.yml')
     if not os.path.isfile(language_path):
-        message = f'Language file not found at "{language_path}"'
+        message = f'UI Labels file not found at "{language_path}"'
         logger.critical(message)
-        raise ConfigError(message)
+        raise UIConfigError(message)
     try:
         with open(file = language_path, mode = 'r', encoding = 'utf-8') as file:
-            language = dict_as_object(dictionary = yaml.safe_load(file), object_type = Language)
-            logger.info('parsed language')
+            language = dict_as_object(dictionary = yaml.safe_load(file), object_type = UILabels)
+            logger.info('UI labels loaded')
             return language
-    except Exception as e:
-        message = f'Could not parse language file with exception:\n{e}'
+    except Exception as exception:
+        message = f'Could not parse UI labels file with exception: {exception}\n{traceback.format_exc()}'
         logger.critical(message)
-        raise ConfigError(message)
+        raise UIConfigError(message)
+
+
+def get_ui_labels(language: str = 'english') -> UILabels:
+    if language not in ui_labels_cache:
+        ui_labels_cache[language] = load_labels(language)
+    return ui_labels_cache.get(language, ui_labels_cache.get('english'))
+
+
+UI_LABELS: UILabels = get_ui_labels()

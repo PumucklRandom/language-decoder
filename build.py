@@ -41,6 +41,7 @@ import zipfile
 import nicegui
 import traceback
 import logging
+from backend.config.config import load_config
 
 # Configure logging
 logging.basicConfig(
@@ -51,12 +52,13 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.11.7.1'
+VERSION = '0.11.8.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 PW_PATH = './_data/password.txt'
 CERTIFICATE_PATH = './_data/certificate.pfx'
 OUT_ZIP_PATH = f'./{APP_NAME}.zip'
+CONFIG = load_config('../../_data/config.yml')
 
 
 def update_version(version: str) -> None:
@@ -144,7 +146,6 @@ def build_app() -> bool:
     cmd_build = [
         'pyinstaller', '__main__.py',
         '--name', APP_NAME,
-        '--windowed',  # set ui.run(native=True)!!!
         '--icon', './frontend/pages/ui/icon/LD-icon.png',
         '--version-file', VERSION_RC_PATH,
         '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
@@ -155,6 +156,9 @@ def build_app() -> bool:
         '--add-data', f'./frontend/pages/ui/icon/{os.pathsep}./frontend/pages/ui/icon/',
         '--clean', '-y',
     ]
+
+    if CONFIG.native:
+        cmd_build.append('--windowed')
 
     try:
         logger.info("Building application with PyInstaller...")
@@ -169,16 +173,14 @@ def build_app() -> bool:
         return False
 
 
-def sign_app(password: str) -> bool:
+def sign_app() -> bool:
     """
     Sign the executable with the certificate.
-
-    Args:
-        password: Certificate password
 
     Returns:
         True if signing succeeded, False otherwise
     """
+    password = get_password()
     if not password:
         logger.warning("No password provided, skipping signing")
         return False
@@ -270,8 +272,7 @@ def main() -> int:
             return 1
 
         # Step 4: Sign executable
-        password = get_password()
-        sign_app(password)
+        sign_app()
 
         # Step 5: Create zip archive
         if not zip_directory(OUT_ZIP_PATH, f'./dist/{APP_NAME}/'):

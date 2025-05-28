@@ -12,10 +12,11 @@ frameless: false  # set to false
 reload: true  # set to false for desktop app!!! true for dev
 storage_secret: 'STORAGE_SECRET'
 
-session_time: 10000
+session_time: 10_000
 on_prem: false
 stream_handler: true
-del_time: 30
+route_timeout: 30
+dicts_timeout: 30
 
 size_fct: 8.5
 size_min: 50
