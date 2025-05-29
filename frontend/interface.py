@@ -8,6 +8,9 @@ from frontend.pages.decoding import Decoding
 from frontend.pages.dictionaries import Dictionaries
 from frontend.pages.settings import Settings
 
+os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
+dir_path = os.path.dirname(os.path.relpath(__file__))
+
 
 def build() -> None:
     # Every page is build here
@@ -19,13 +22,11 @@ def build() -> None:
 
 
 def run() -> None:
-    os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
-
     ui.run(
         host = CONFIG.host,
         port = CONFIG.port,
         title = CONFIG.title,
-        favicon = os.path.join(os.path.dirname(os.path.relpath(__file__)), CONFIG.favicon),
+        favicon = os.path.join(dir_path, CONFIG.favicon),
         dark = CONFIG.dark,
         binding_refresh_interval = CONFIG.debounce / 1000,
         reconnect_timeout = CONFIG.reconnect_timeout,

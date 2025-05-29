@@ -1,11 +1,10 @@
 import os
 import logging
 import logging.handlers
-from typing import Tuple
 
 
 def get_logger(log_dir: str = './logs/', log_level: int = logging.DEBUG,
-               max_bytes: int = 10_240_000) -> Tuple[logging.Logger, logging.StreamHandler]:
+               max_bytes: int = 10_240_000) -> tuple[logging.Logger, logging.StreamHandler]:
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
 

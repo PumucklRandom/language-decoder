@@ -1,97 +1,91 @@
 from __future__ import annotations
 import os
-import json
 import yaml
 import traceback
-from copy import copy
+from collections import namedtuple
 from backend.error.error import ConfigError
 from backend.logger.logger import logger, stream_handler
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
 # A mapping dict to replace language independent characters for the source text
-REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '“': '"', '—': '-', '–': '-'}
+REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-', '–': '-'}
+
+# Definition of the static Config
+Config = namedtuple('Config', (
+    'host',
+    'port',
+    'title',
+    'favicon',
+    'dark',
+    'debounce',
+    'reconnect_timeout',
+    'native',
+    'window_size',
+    'fullscreen',
+    'frameless',
+    'reload',
+    'storage_secret',
+    'session_time',
+    'on_prem',
+    'stream_handler',
+    'route_timeout',
+    'dicts_timeout',
+    'size_fct',
+    'size_min',
+    'size_max',
+    'table_options',
+    'grid_options',
+    'api_url',
+    'api_key',
+    'model',
+    'model_seed',
+    'model_temp',
+    'char_limit',
+    'word_limit',
+    'Upload',
+    'Pdf',
+    'Regex'
+))
+# Definition of nested Upload
+Upload = namedtuple('Upload', [
+    'auto_upload',
+    'max_files'
+])
+# Definition of nested Pdf
+Pdf = namedtuple('Pdf', (
+    'pages_per_sheet',
+    'page_sep',
+    'tab_size',
+    'char_lim',
+    'line_lim',
+    'top_margin',
+    'left_margin',
+    'title_size',
+    'font_size',
+    'title_height',
+    'line_height'
+))
+# Definition of nested Regex
+Regex = namedtuple('Regex', (
+    'endofs',
+    'puncts',
+    'begins',
+    'ending',
+    'digits',
+    'opens',
+    'close',
+    'quotes'
+))
 
 
-# TODO: Check if Config class can be replaced by namedtuple (or __slots__)
-
-class Config:
-    host: str
-    port: int
-    title: str
-    favicon: str
-    dark: bool
-    debounce: int
-    reconnect_timeout: int
-    native: bool
-    window_size: tuple[int, int]
-    fullscreen: bool
-    frameless: bool
-    reload: bool
-    storage_secret: str
-
-    session_time: int
-    on_prem: bool
-    stream_handler: bool
-    route_timeout: int
-    dicts_timeout: int
-
-    size_fct: int
-    size_min: int
-    size_max: int
-    table_options: list
-    grid_options: list
-
-    api_url: str
-    api_key: str
-    model: str
-    model_seed: int
-    model_temp: float
-
-    char_limit: int
-    word_limit: int
-
-    class Upload:
-        auto_upload: bool
-        max_files: int
-
-    class Pdf:
-        page_sep: int
-        tab_size: int
-        char_lim: int
-        line_lim: int
-        title_size: float
-        font_size: float
-        width: float
-        title_height: float
-        header_height: float
-        line_height: float
-
-    class Regex:
-        endofs: str
-        puncts: str
-        begins: str
-        ending: str
-        digits: str
-        opens: str
-        close: str
-        quotes: str
-
-    def __init__(self, dictionary) -> None:
-        self.__dict__.update(dictionary)
-
-    def __repr__(self) -> str:
-        return self.__str__()
-
-    def __str__(self) -> str:
-        return self.__dict__.__str__()
-
-    def copy(self) -> Config:
-        return copy(self)
-
-
-def dict_as_object(dictionary: dict, object_type: type) -> type(object):
-    return json.loads(json.dumps(dictionary), object_hook = object_type)
+def dict_to_config(config_dict: dict) -> Config:
+    # Extract data and create nested sub configurations
+    config_dict['Upload'] = Upload(**config_dict.pop('Upload'))
+    config_dict['Pdf'] = Pdf(**config_dict.pop('Pdf'))
+    config_dict['Regex'] = Regex(**config_dict.pop('Regex'))
+    # Create the static configuration
+    return Config(**config_dict)
 
 
 def load_config(config_path: str = 'config.yml') -> Config:
@@ -102,7 +96,7 @@ def load_config(config_path: str = 'config.yml') -> Config:
         raise ConfigError(message)
     try:
         with open(file = config_path, mode = 'r', encoding = 'utf-8') as file:
-            config = dict_as_object(dictionary = yaml.safe_load(file), object_type = Config)
+            config = dict_to_config(yaml.safe_load(file))
             logger.info('Config loaded')
             return config
     except Exception as exception:
@@ -111,6 +105,7 @@ def load_config(config_path: str = 'config.yml') -> Config:
         raise ConfigError(message)
 
 
-CONFIG = load_config()
+# Load the configuration
+CONFIG: Config = load_config()
 if not CONFIG.stream_handler:
     logger.removeHandler(stream_handler)

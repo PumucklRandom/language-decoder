@@ -54,7 +54,7 @@ class LanguageDecoder(object):
         self.new_line = new_line
         self.char_limit = char_limit
         self.proxies = proxies
-        self._dicts = Dicts(user_uuid = self.user_uuid)
+        self.dicts = Dicts(user_uuid = self.user_uuid)
         self._translator = GoogleTranslator(
             source = self.source_language,
             target = self.target_language,
@@ -124,10 +124,10 @@ class LanguageDecoder(object):
     def _reformat_text(self, text: str) -> str:
         # remove new lines. for regex add whitespace at the end of text
         text = ' '.join(text.split()) + ' '
-        self._dicts.load()
+        self.dicts.load()
         # replace special characters with common ones
-        for chars in self._dicts.replacements.keys():
-            text = text.replace(chars, self._dicts.replacements.get(chars))
+        for chars in self.dicts.replacements.keys():
+            text = text.replace(chars, self.dicts.replacements.get(chars))
         # swap quotes/brackets with EndOfSentence marks if quotes/brackets are followed by EndOfSentence marks
         text = re.sub(rf'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.endofs}])', r'\2\1', text)
         # remove any white whitespaces after "begin marks" and add one whitespace before "begin marks"
@@ -229,8 +229,8 @@ class LanguageDecoder(object):
     @catch(DecoderError)
     def apply_dict(self, source_words: list[str], target_words: list[str], dict_name: str = '') -> list[str]:
         if not dict_name: return target_words
-        self._dicts.load()
-        dictionary = self._dicts.dictionaries.get(dict_name, {})
+        self.dicts.load()
+        dictionary = self.dicts.dictionaries.get(dict_name, {})
         target_words_copy = target_words.copy()
         target_words.clear()
         for source_word, target_word in zip(source_words, target_words_copy):

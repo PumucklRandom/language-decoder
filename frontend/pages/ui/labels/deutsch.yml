@@ -195,11 +195,11 @@ SETTINGS:
         settings: 'EINSTELLUNGEN'
     Panel: [
         'PROGRAMM EINSTELLUNGEN',
-        'ERSETZUNGEN',
+        'Zeichenwörterbuch',
         'PDF EINSTELLUNGEN',
         'ERWEITERTE EINSTELLUNGEN'
     ]
-    Dialogs_interface: [
+    Dialogs_app: [
         'Auf dieser Registerkarte können Sie grundlegende Programmeinstellungen ändern.',
         '/n', '/N', '/n',
         'Der erste Abschnitt enthält Schalter zum Aktivieren oder Deaktivieren verschiedener Einstellungen, wie z. B.:
@@ -220,7 +220,7 @@ SETTINGS:
         'Um die "Programmeinstellungen" zurückzusetzen, 
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
-    Interface:
+    App_settings:
         text: [
             'Dunkler Modus',
             'Zeige Hinweise',
@@ -233,7 +233,7 @@ SETTINGS:
         reload: 'NEU-LADEN'
     Dialogs_replace: [
         'Auf dieser Registerkarte können Sie ein sprachunabhängiges 
-            "Ersetzungswörterbuch" für den Eingabetext definieren.',
+            "Zeichenwörterbuch" für den Eingabetext definieren.',
         'Unter "Sonderzeichen" können Sie Sonderzeichen eingeben, die ersetzt werden sollen.',
         'Unter "Alternative" können Sie die Zeichen eingeben, die stattdessen verwendet werden sollen.',
         'Mit den Schaltflächen "+" und "-" können Sie Einträge im Wörterbuch hinzufügen oder entfernen.',
@@ -262,23 +262,24 @@ SETTINGS:
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
     Pdf: [
+        'Seiten pro Blatt',
         'Seitentrennzeichen verwenden [0, 1]',
         'Tabulatorgröße zwischen Wörtern',
         'Zeichen pro Zeile',
         'Zeilen pro Seite',
+        'Oberer Seitenrand',
+        'Linker Seitenrand',
         'Titel Schriftgröße',
         'Text Schriftgröße',
-        'Seitenbreite',
         'Titlehöhe',
-        'Kopfzeilehöhe',
         'Zeilenhöhe'
     ]
     Dialogs_adv: [
         'Auf dieser Registerkarte können Sie die Einstellungen für die 
-            "regular expression" für den Eingabetext ändern.',
+            "Regular Expression" für den Eingabetext ändern.',
         'Es wird nicht empfohlen, diese Einstellungen zu ändern, wenn Sie nicht wissen, was Sie tun.',
         '/n',
-        'Wenn Sie mehr über die Verwendung der Einstellungen für "reguläre Ausdrücke" erfahren möchten,
+        'Wenn Sie mehr über die Verwendung der Einstellungen für die "Regular Expression" erfahren möchten,
             sollten Sie einen Blick auf den Backend-Code werfen unter: "backend/decoder/language_decoder.py".',
         '/n', '/N', '/n',
         'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
@@ -300,7 +301,7 @@ SETTINGS:
         connect_check: 'Verbindung erfolgreich'
     Tips:
         back: 'Zurück'
-        interface:
+        app:
             help: 'Hilfe'
             reload: 'Seite neu laden'
             reset: 'Einstellungen zurücksetzen'

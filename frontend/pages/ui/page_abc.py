@@ -54,7 +54,7 @@ class Page(ABC):
         if self.state.uuid == '': self.state.uuid = app.storage.tab.get('uuid')
         if self.state.user_uuid == '': self.state.user_uuid = app.storage.browser.get('id')
         if self.decoder is None: self.state.decoder = LanguageDecoder(user_uuid = self.state.user_uuid)
-        if self.dicts is None: self.state.dicts = Dicts(user_uuid = self.state.user_uuid)
+        if self.dicts is None: self.state.dicts = self.decoder.dicts
         ui.dark_mode().set_value(self.state.dark_mode)
         # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,

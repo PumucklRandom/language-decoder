@@ -9,7 +9,7 @@ native: false   # native = true (window mode)
 window_size: null  # [1600, 1000]
 fullscreen: false  # set to false
 frameless: false  # set to false
-reload: true  # set to false for desktop app!!! true for dev
+reload: false  # set to false for desktop app!!! true for dev
 storage_secret: 'STORAGE_SECRET'
 
 session_time: 10_000
@@ -40,16 +40,18 @@ Upload:
     max_files: 1
 
 Pdf:
+    pages_per_sheet: 2
     page_sep: false
     tab_size: 4
     char_lim: 75
     line_lim: 54
+    top_margin: 0.3
+    left_margin: -0.8
     title_size: 24
-    font_size: 13.2
-    width: 215
-    title_height: 6.2
-    header_height: 14.2
+    font_size: 13.25
+    title_height: 9.6
     line_height: 5.3
+
 
 Regex:
     endofs: '.!?'

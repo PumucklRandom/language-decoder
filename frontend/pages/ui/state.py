@@ -1,4 +1,4 @@
-from typing import Dict
+from copy import copy
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
 from backend.dictionaries.dictionaries import Dicts
@@ -8,7 +8,7 @@ from frontend.pages.ui.config import UILabels, UI_LABELS
 class State(object):
     __slots__ = ('_storage',)
 
-    def __init__(self, storage: Dict[str, any]) -> None:
+    def __init__(self, storage: dict) -> None:
         super().__setattr__('_storage', storage)
 
     def __setattr__(self, name: str, value: any):
@@ -170,7 +170,7 @@ class State(object):
 
     @property
     def pdf_params(self) -> dict:
-        return self.get('pdf_params', CONFIG.Pdf.__dict__.copy())
+        return self.get('pdf_params', CONFIG.Pdf._asdict())
 
     @pdf_params.setter
     def pdf_params(self, value: dict) -> None:
@@ -258,7 +258,7 @@ class State(object):
 
     @property
     def regex(self) -> CONFIG.Regex:
-        return self.get('regex', CONFIG.Regex.copy())
+        return self.get('regex', copy(CONFIG.Regex))
 
     @regex.setter
     def regex(self, value: CONFIG.Regex) -> None:

@@ -42,10 +42,12 @@ class PDFFormatterError(BackendError):
 
 
 class FrontendError(LanguageDecoderError):
+    """Base exception class for frontend errors."""
     pass
 
 
 class UIConfigError(FrontendError):
+    """Exception raised for ui configuration errors."""
     pass
 
 
