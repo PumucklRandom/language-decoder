@@ -65,12 +65,12 @@ GREY4 = Color('grey-4', '#E0E0E0')
 GREY10 = Color('grey-10', '#212121')
 BLUE_GREY1 = Color('blue-grey-1', '#ECEFF1')
 BLUE_GREY10 = Color('blue-grey-10', '#263238')
-CYAN1 = Color('cyan-1', '#E0F7FA')
-CYAN10 = Color('cyan-10', '#006064')
+PRIME_DARK = Color('prime-dark', '#204848')
+PRIME_LIGHT = Color('prime-light', '#60DEDE')
 
 Colors = namedtuple(
     'Colors', ('PRIMARY', 'SECONDARY', 'ACCENT', 'DARK', 'DARK_PAGE', 'POSITIVE', 'NEGATIVE', 'INFO', 'WARNING',
-               'ORANGE', 'GREY1', 'GREY4', 'GREY10', 'BLUE_GREY1', 'BLUE_GREY10', 'CYAN1', 'CYAN10')
+               'ORANGE', 'GREY1', 'GREY4', 'GREY10', 'BLUE_GREY1', 'BLUE_GREY10', 'PRIME_DARK', 'PRIME_LIGHT')
 )
 
 COLORS = Colors(
@@ -89,8 +89,8 @@ COLORS = Colors(
     GREY10 = GREY10,
     BLUE_GREY1 = BLUE_GREY1,
     BLUE_GREY10 = BLUE_GREY10,
-    CYAN1 = CYAN1,
-    CYAN10 = CYAN10
+    PRIME_DARK = PRIME_DARK,
+    PRIME_LIGHT = PRIME_LIGHT
 )
 
 
