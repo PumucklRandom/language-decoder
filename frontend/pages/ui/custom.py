@@ -113,13 +113,13 @@ class UITable(Table):
                  dark_mode: bool = True, *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         if dark_mode:
+            self.btn_color = COLORS.PRIME_DARK.VAL
             self.scr_color = COLORS.GREY10.VAL
             self.tar_color = COLORS.BLUE_GREY10.VAL
-            self.btn_color = COLORS.CYAN10.VAL
         else:
+            self.btn_color = COLORS.PRIME_LIGHT.VAL
             self.scr_color = COLORS.GREY1.VAL
             self.tar_color = COLORS.BLUE_GREY1.VAL
-            self.btn_color = COLORS.CYAN1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
         self.props('flat bordered separator=cell')
@@ -128,14 +128,14 @@ class UITable(Table):
 
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
-            <q-th v-for="col in props.cols" :key="col.field" :props="props"
-                style="font-size:16px; text-align:center">
-                {{{{ col.label }}}}
-            </q-th>
             <q-th auto-width>
                 <q-btn icon="add" size="12px" dense round color="{COLORS.PRIMARY.KEY}" :props="props"
                 @click="() => $parent.$emit('_add_row')"/>
                 <!-- <q-tooltip> add row below </q-tooltip> -->
+            </q-th>
+            <q-th v-for="col in props.cols" :key="col.field" :props="props"
+                style="font-size:16px; text-align:center">
+                {{{{ col.label }}}}
             </q-th>
         </q-tr>
     '''
@@ -143,15 +143,7 @@ class UITable(Table):
     def _body(self) -> str:
         return f'''
             <q-tr :props="props">
-                <q-td key="source" style="background-color:{self.scr_color}" :props="props">
-                    <q-input v-model="props.row.source" dense borderless debounce="{CONFIG.debounce}"
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
-                </q-td>
-                <q-td key="target" style="background-color:{self.tar_color}" :props="props">
-                    <q-input v-model="props.row.target" dense borderless debounce="{CONFIG.debounce}"
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
-                </q-td>
-                <q-td auto-width style="background-color:{self.btn_color}">
+                <q-td auto-width style="background-color:{self.btn_color}; text-align:center">
                     <div class="col">
                         <q-btn icon="remove" size="8px" dense round color="{COLORS.PRIMARY.KEY}"
                         @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>
@@ -162,6 +154,14 @@ class UITable(Table):
                         @click="() => $parent.$emit('_add_row', props.row)" :props="props"/>
                         <!-- <q-tooltip> add row below </q-tooltip> -->
                     </div>
+                </q-td>
+                <q-td key="source" style="background-color:{self.scr_color}" :props="props">
+                    <q-input v-model="props.row.source" dense borderless debounce="{CONFIG.debounce}"
+                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                </q-td>
+                <q-td key="target" style="background-color:{self.tar_color}" :props="props">
+                    <q-input v-model="props.row.target" dense borderless debounce="{CONFIG.debounce}"
+                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
             </q-tr>
         '''
@@ -178,15 +178,11 @@ class UIGrid(Table):
         if preload:
             target_words = [''] * len(source_words)
         if dark_mode:
-            self.scr_color = COLORS.GREY4.VAL
-            self.scr_bg_color = COLORS.GREY10.KEY
-            self.tar_color = COLORS.GREY1.VAL
-            self.tar_bg_color = COLORS.BLUE_GREY10.KEY
+            self.scr_color = COLORS.GREY10.KEY
+            self.tar_color = COLORS.BLUE_GREY10.KEY
         else:
-            self.scr_color = COLORS.GREY10.VAL
-            self.scr_bg_color = COLORS.GREY1.KEY
-            self.tar_color = COLORS.DARK_PAGE.VAL
-            self.tar_bg_color = COLORS.BLUE_GREY1.KEY
+            self.scr_color = COLORS.GREY1.KEY
+            self.tar_color = COLORS.BLUE_GREY1.KEY
         self._set_item_size(words = source_words + target_words)
         self.add_slot('item', self._item())
         self.props('hide-header grid')
@@ -202,13 +198,13 @@ class UIGrid(Table):
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
-                    <q-input style="font-family:RobotoMono" input-style="color:{self.scr_color}"
-                    v-model="props.row.source" debounce="{CONFIG.debounce}" bg-color={self.scr_bg_color}
+                    <q-input style="font-family:RobotoMono"
+                    v-model="props.row.source" debounce="{CONFIG.debounce}" bg-color={self.scr_color}
                     dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input style="font-family:RobotoMono" input-style="color:{self.tar_color}"
-                    v-model="props.row.target"  debounce="{CONFIG.debounce}" bg-color={self.tar_bg_color}
+                    <q-input style="font-family:RobotoMono"
+                    v-model="props.row.target"  debounce="{CONFIG.debounce}" bg-color={self.tar_color}
                     dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>
