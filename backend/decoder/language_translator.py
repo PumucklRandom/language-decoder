@@ -1,13 +1,17 @@
 import os
 import io
 import csv
+import time
 import httpx
 import base64
-import traceback
 import openai
+import traceback
 from backend.config.config import CONFIG
+from backend.error.error import AITranslatorError
 from backend.error.error import ConfigError
 from backend.logger.logger import logger
+
+file_dir = os.path.dirname(os.path.relpath(__file__))
 
 
 class LanguageTranslator(object):
@@ -15,11 +19,12 @@ class LanguageTranslator(object):
     The LanguageTranslator uses NLP to literal translate source words to the desired target words.
     Therefor open and free available LLMs/GPTs are used to perform the translation.
     """
+    PROMPT: str = ''
 
     def __init__(self,
                  api_url: str = CONFIG.api_url,
                  api_key: str = CONFIG.api_key,
-                 model: str = CONFIG.model,
+                 model_name: str = CONFIG.model_name,
                  model_temp: float = CONFIG.model_temp,
                  model_seed: int = CONFIG.model_seed,
                  proxies: dict = None,
@@ -29,7 +34,7 @@ class LanguageTranslator(object):
         """
         :param api_url: api url to model site
         :param api_key: api key to get access
-        :param model: LLM/GPT model type
+        :param model_name: LLM/GPT model name
         :param model_temp: model temperature to adapt model 'creativity' and 'determinism'
         :param model_seed: model seed to adapt 'determinism'
         :param proxies: set proxies for translator
@@ -37,24 +42,30 @@ class LanguageTranslator(object):
         :param target: the translation target language
         """
 
-        self.model = model
+        self.model_name = model_name
         self.model_temp = model_temp
         self.model_seed = model_seed
         self.source = source
         self.target = target
-        self.prompt = self.load_prompt()
+        if not LanguageTranslator.PROMPT:
+            LanguageTranslator.PROMPT = self._load_prompt()
         self.client = openai.OpenAI(
             base_url = api_url,
-            api_key = self.decode_key(api_key),
+            api_key = self._decode_key(api_key),
         )
-        self.set_proxy(proxies = proxies)
+        self._set_proxy(proxies = proxies)
+        self.models = self.get_available_models()
 
-    def __config__(self, source: str, target: str, proxies: dict = None) -> None:
+    def __config__(self, source: str, target: str, model_name: str, proxies: dict = None) -> None:
         self.source = source
         self.target = target
-        self.set_proxy(proxies = proxies)
+        if self.model_name in self.models.keys():
+            self.model_name = model_name
+        else:
+            self.model_name = CONFIG.model_name
+        self._set_proxy(proxies = proxies)
 
-    def set_proxy(self, proxies: dict = None) -> None:
+    def _set_proxy(self, proxies: dict = None) -> None:
         if isinstance(proxies, dict):
             if proxies.get('http', None):
                 proxies.update({'http://': httpx.HTTPTransport(proxy = f'http://{proxies.get("http")}')})
@@ -64,16 +75,28 @@ class LanguageTranslator(object):
             proxies.pop('https', None)
         self.client._client = httpx.Client(mounts = proxies)
 
+    def get_available_models(self) -> dict[str, str]:
+        time_date = time.time() - CONFIG.model_age * 2592000  # 30d * 24h * 3600s per months
+        models = tuple(
+            model for model in self.client.models.list().data if ':free' in model.id
+            and model.context_length >= CONFIG.model_context and model.created >= time_date
+            and model.architecture.get('modality') in ('text->text', 'text+image->text')
+            and {'temperature'}.issubset(model.supported_parameters)
+            and {'reasoning', 'include_reasoning'}.isdisjoint(model.supported_parameters)
+        )
+        return {model.name.removesuffix(' (free)'): model.id for model in models}
+
     def translate(self, source_words: list[str]) -> list[str]:
         try:
-            csv_string = self.to_csv(source_words)
+            logger.info(f'Translate words with: {self.model_name}')
+            csv_string = self._to_csv(source_words)
             response = self.client.chat.completions.create(
                 messages = [
-                    {'role': 'system', 'content': self.get_prompt()},
+                    {'role': 'system', 'content': self._get_prompt()},
                     {'role': 'user', 'content': csv_string},
                     # {'role': 'assistant', 'content': 'Source\tTarget\n'}
                 ],
-                model = self.model,
+                model = self.models.get(self.model_name),
                 temperature = self.model_temp,
                 seed = self.model_seed,
                 extra_headers = {
@@ -81,73 +104,61 @@ class LanguageTranslator(object):
                     # "HTTP-Referer": "LanguageDecoder",
                 },
             )
-            if not hasattr(response, 'error'):
-                return self.check_content(
-                    content = response.choices[0].message.content,
-                    csv_len = len(source_words) + 1
-                )
-            elif response.error.get('code') == openai.BadRequestError.status_code:
-                message = 'Bad Request Error! Check your request and try again!'
-                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-                raise openai.OpenAIError(message)
-            elif response.error.get('code') == openai.AuthenticationError.status_code:
-                message = 'Authentication Error! Check your API key and your permissions!'
-                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-                raise openai.OpenAIError(message)
-            elif response.error.get('code') == openai.RateLimitError.status_code:
-                message = 'Rate Limit is reached! Try again on another day!'
-                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-                raise openai.OpenAIError(message)
-            else:
-                message = f'Unexpected API Error! Code: {response.error.get("code")}'
-                logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-                raise openai.OpenAIError(message)
-        except openai.OpenAIError as exception:
-            raise exception
-        except Exception:
-            message = 'Unexpected Error!'
-            logger.error(f'{message} with exception:\n{traceback.format_exc()}')
-            raise Exception(message)
+            return self._check_content(
+                content = response.choices[0].message.content,
+                csv_len = len(source_words) + 1
+            )
+        except openai.BadRequestError as exception:
+            message = 'Bad Request Error! Check your request and try again!'
+            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
+            raise AITranslatorError(message, code = exception.status_code)
+        except openai.AuthenticationError as exception:
+            message = 'Authentication Error! Check your API key and your permissions!'
+            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
+            raise AITranslatorError(message, code = exception.status_code)
+        except openai.RateLimitError as exception:
+            message = 'Rate Limit is reached! Try again on another day!'
+            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
+            raise AITranslatorError(message, code = exception.status_code)
+        except openai.APIStatusError as exception:
+            message = 'Unexpected API Error!'
+            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
+            raise AITranslatorError(message, code = exception.status_code)
 
-    def check_content(self, content: str, csv_len: int) -> list[str]:
-        rows = content.split('\n')
-        invalid_rows = list()
-        for row in rows:
-            if '\t' not in row:
-                invalid_rows.append(row)
-        # remove rows without "\t"
-        for row in invalid_rows: rows.remove(row)
+    def _check_content(self, content: str, csv_len: int) -> list[str]:
+        # get only valid rows
+        valid_rows = [row for row in content.split('\n') if '\t' in row]
         # ensure, that the list is as long as the input
-        rows = rows + [rows[-1]] * (csv_len - len(rows))
+        valid_rows.extend([valid_rows[-1]] * (csv_len - len(valid_rows)))
         # ensure, that the list is max length of the input
-        return self.from_csv('\n'.join(rows[:csv_len]))
+        return self._from_csv('\n'.join(valid_rows[:csv_len]))
 
-    def get_prompt(self) -> str:
-        return self.prompt.replace('<SOURCE>', f'{self.source}').replace('<TARGET>', f'{self.target}')
+    def _get_prompt(self) -> str:
+        return self.PROMPT.replace('<SOURCE>', f'{self.source}').replace('<TARGET>', f'{self.target}')
 
     @staticmethod
-    def encode_key(api_key: str) -> str:
+    def _encode_key(api_key: str) -> str:
         return base64.b64encode(api_key.encode()).decode()
 
     @staticmethod
-    def decode_key(api_key: str) -> str:
+    def _decode_key(api_key: str) -> str:
         return base64.b64decode(api_key.encode()).decode()
 
     @staticmethod
-    def to_csv(source_words: list[str]) -> str:
+    def _to_csv(source_words: list[str]) -> str:
         with io.StringIO() as io_string:
             csv_writer = csv.writer(io_string, delimiter = '\t', lineterminator = '\n')
             csv_writer.writerows([('Source', 'Target')] + list(zip(source_words)))
             return io_string.getvalue()
 
     @staticmethod
-    def from_csv(csv_string: str) -> list[str]:
+    def _from_csv(csv_string: str) -> list[str]:
         with io.StringIO(csv_string) as io_string:
-            return list(list(zip(*list(csv.reader(io_string, delimiter = '\t'))[1:]))[-1])
+            return [row[-1] for row in csv.reader(io_string, delimiter = '\t')][1:]
 
-    @staticmethod
-    def load_prompt(prompt_path: str = 'prompt.txt') -> str:
-        prompt_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), prompt_path)
+    @classmethod
+    def _load_prompt(cls, prompt_path: str = 'prompt.txt') -> str:
+        prompt_path = os.path.join(file_dir, prompt_path)
         if not os.path.isfile(prompt_path):
             message = f'Prompt file not found at "{prompt_path}"'
             logger.critical(message)

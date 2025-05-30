@@ -1,20 +1,23 @@
 import os
 import yaml
+import traceback
 from copy import deepcopy
 from nicegui import ui, app
-from backend.config.config import CONFIG, dict_as_object
-from backend.error.error import ConfigError
+from collections import namedtuple
+from backend.error.error import UIConfigError
+from backend.config.config import CONFIG
 from backend.logger.logger import logger
+
+file_dir = os.path.dirname(os.path.relpath(__file__))
 
 # app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
 # app.native.start_args['private_mode'] = True
 # app.native.start_args['storage_path'] = '.\\_internal\\pywebview'
-app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 # app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True
+app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
-    local_file = os.path.join(os.path.dirname(os.path.relpath(__file__)),
-                              '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
+    local_file = os.path.join(file_dir, '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
     url_path = '/fonts/RobotoMono/RobotoMono.ttf'
 )
 
@@ -31,84 +34,64 @@ REPLACE_COLS = deepcopy(DEFAULT_COLS)
 REPLACE_COLS[0].update({'label': 'Character', 'sortable': True})
 REPLACE_COLS[1].update({'label': 'Substitute', 'sortable': True})
 
-
-class URLS:
-    START = '/'
-    UPLOAD = '/upload/'
-    DECODING = '/decoding/'
-    DICTIONARIES = '/dictionaries/'
-    SETTINGS = '/settings/'
+# Static URLS for each page
+Urls = namedtuple(
+    'Urls', ('START', 'UPLOAD', 'DECODING', 'DICTIONARIES', 'SETTINGS', 'DOWNLOAD')
+)
+URLS = Urls(
+    START = '/',
+    UPLOAD = '/upload/',
+    DECODING = '/decoding/',
+    DICTIONARIES = '/dictionaries/',
+    SETTINGS = '/settings/',
     DOWNLOAD = '/download/'
+)
 
+# List of all static colors
 
-class COLORS:
-    class PRIMARY:
-        KEY = 'primary'
-        VAL = '#409696'
+Color = namedtuple('Color', ('KEY', 'VAL'))
+PRIMARY = Color('primary', '#409696')
+SECONDARY = Color('secondary', '#5A96E0')
+ACCENT = Color('accent', '#9632C0')
+DARK = Color('dark', '#1D1D1D')
+DARK_PAGE = Color('dark-page', '#121212')
+POSITIVE = Color('positive', '#20C040')
+NEGATIVE = Color('negative', '#C00020')
+INFO = Color('info', '#32C0E0')
+WARNING = Color('warning', '#FFFF40')
+ORANGE = Color('orange', '#FF6000')
+GREY1 = Color('grey-1', '#FAFAFA')
+GREY4 = Color('grey-4', '#E0E0E0')
+GREY10 = Color('grey-10', '#212121')
+BLUE_GREY1 = Color('blue-grey-1', '#ECEFF1')
+BLUE_GREY10 = Color('blue-grey-10', '#263238')
+CYAN1 = Color('cyan-1', '#E0F7FA')
+CYAN10 = Color('cyan-10', '#006064')
 
-    class SECONDARY:
-        KEY = 'secondary'
-        VAL = '#5A96E0'
+Colors = namedtuple(
+    'Colors', ('PRIMARY', 'SECONDARY', 'ACCENT', 'DARK', 'DARK_PAGE', 'POSITIVE', 'NEGATIVE', 'INFO', 'WARNING',
+               'ORANGE', 'GREY1', 'GREY4', 'GREY10', 'BLUE_GREY1', 'BLUE_GREY10', 'CYAN1', 'CYAN10')
+)
 
-    class ACCENT:
-        KEY = 'accent'
-        VAL = '#9632C0'
-
-    class DARK:
-        KEY = 'dark'
-        VAL = '#1D1D1D'
-
-    class DARK_PAGE:
-        KEY = 'dark-page'
-        VAL = '#121212'
-
-    class POSITIVE:
-        KEY = 'positive'
-        VAL = '#20C040'
-
-    class NEGATIVE:
-        KEY = 'negative'
-        VAL = '#C00020'
-
-    class INFO:
-        KEY = 'info'
-        VAL = '#32C0E0'
-
-    class WARNING:
-        KEY = 'warning'
-        VAL = '#FFFF40'
-
-    class ORANGE:
-        KEY = 'red-orange'
-        VAL = '#FF6000'
-
-    class GREY1:
-        KEY = 'grey-1'
-        VAL = '#FAFAFA'
-
-    class GREY4:
-        KEY = 'grey-4'
-        VAL = '#E0E0E0'
-
-    class GREY10:
-        KEY = 'grey-10'
-        VAL = '#212121'
-
-    class BLUE_GREY1:
-        KEY = 'blue-grey-1'
-        VAL = '#ECEFF1'
-
-    class BLUE_GREY10:
-        KEY = 'blue-grey-10'
-        VAL = '#263238'
-
-    class CYAN1:
-        KEY = 'cyan-1'
-        VAL = '#E0F7FA'
-
-    class CYAN10:
-        KEY = 'cyan-10'
-        VAL = '#006064'
+COLORS = Colors(
+    PRIMARY = PRIMARY,
+    SECONDARY = SECONDARY,
+    ACCENT = ACCENT,
+    DARK = DARK,
+    DARK_PAGE = DARK_PAGE,
+    POSITIVE = POSITIVE,
+    NEGATIVE = NEGATIVE,
+    INFO = INFO,
+    WARNING = WARNING,
+    ORANGE = ORANGE,
+    GREY1 = GREY1,
+    GREY4 = GREY4,
+    GREY10 = GREY10,
+    BLUE_GREY1 = BLUE_GREY1,
+    BLUE_GREY10 = BLUE_GREY10,
+    CYAN1 = CYAN1,
+    CYAN10 = CYAN10
+)
 
 
 class JS:
@@ -253,45 +236,70 @@ def bot_right(bot: int = 0, right: int = 0, u_bot: str = 'px', u_right: str = 'p
     return f'absolute bottom-[{bot}{u_bot}] right-[{right}{u_right}] translate-y-[+50%] translate-x-[+50%]'
 
 
-class Language:
-    def __init__(self, dictionary):
-        self.GENERAL = None
-        self.START = None
-        self.UPLOAD = None
-        self.DECODING = None
-        self.DICTIONARY = None
-        self.SETTINGS = None
-        self.__dict__.update(dictionary)
+# Definition of the page labels
+UILabels = namedtuple(
+    'UILabels', ('GENERAL', 'START', 'UPLOAD', 'DECODING', 'DICTIONARY', 'SETTINGS'),
+)
 
-    def __repr__(self) -> str:
-        return self.__str__()
 
-    def __str__(self) -> str:
-        return self.__dict__.__str__()
+def dict_to_labels(labels_dict: dict) -> UILabels:
+    return UILabels(
+        GENERAL = to_labels("GENERAL", labels_dict.pop("GENERAL")),
+        START = to_labels("START", labels_dict.pop("START")),
+        UPLOAD = to_labels("UPLOAD", labels_dict.pop("UPLOAD")),
+        DECODING = to_labels("DECODING", labels_dict.pop("DECODING")),
+        DICTIONARY = to_labels("DICTIONARY", labels_dict.pop("DICTIONARY")),
+        SETTINGS = to_labels("SETTINGS", labels_dict.pop("SETTINGS"))
+    )
+
+
+def to_labels(name: str, sub_tree: any):
+    if isinstance(sub_tree, dict):
+        return namedtuple(name, sub_tree.keys())(
+            **{_name: to_labels(_name, _sub_tree) for _name, _sub_tree in sub_tree.items()}
+        )
+    elif isinstance(sub_tree, list):
+        return tuple(sub_tree)
+    return sub_tree
+
+
+def load_labels(language: str = 'english') -> UILabels:
+    language_path = os.path.join(file_dir, f'labels/{language}.yml')
+    if not os.path.isfile(language_path):
+        message = f'UI Labels file not found at "{language_path}"'
+        logger.critical(message)
+        raise UIConfigError(message)
+    try:
+        with open(file = language_path, mode = 'r', encoding = 'utf-8') as file:
+            labels = dict_to_labels(yaml.safe_load(file))
+            logger.info('UI labels loaded')
+            return labels
+    except Exception as exception:
+        message = f'Could not parse UI labels file with exception: {exception}\n{traceback.format_exc()}'
+        logger.critical(message)
+        raise UIConfigError(message)
 
 
 def get_languages() -> list[str]:
-    labels_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), 'labels/')
     languages = list()
+    labels_path = os.path.join(file_dir, 'labels/')
     for language_file in os.listdir(labels_path):
-        if language_file.endswith('.yml'):
+        if os.path.isfile(os.path.join(labels_path, language_file)) and language_file.endswith('.yml'):
             languages.append(os.path.splitext(language_file)[0])
     return languages
 
 
-def load_language(language: str = 'english') -> Language:
-    logger.info('load language')
-    language_path = os.path.join(os.path.dirname(os.path.relpath(__file__)), f'labels/{language}.yml')
-    if not os.path.isfile(language_path):
-        message = f'Language file not found at "{language_path}"'
-        logger.critical(message)
-        raise ConfigError(message)
+ui_labels_cache: dict[str, UILabels] = dict()
+
+
+def get_ui_labels(language: str = 'english') -> UILabels:
+    if language in ui_labels_cache:
+        return ui_labels_cache.get(language)
     try:
-        with open(file = language_path, mode = 'r', encoding = 'utf-8') as file:
-            language = dict_as_object(dictionary = yaml.safe_load(file), object_type = Language)
-            logger.info('parsed language')
-            return language
-    except Exception as e:
-        message = f'Could not parse language file with exception:\n{e}'
-        logger.critical(message)
-        raise ConfigError(message)
+        ui_labels_cache[language] = load_labels(language)
+        return ui_labels_cache.get(language)
+    except UIConfigError:
+        return ui_labels_cache.get('english')
+
+
+UI_LABELS: UILabels = get_ui_labels()

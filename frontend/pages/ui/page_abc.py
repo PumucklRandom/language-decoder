@@ -1,12 +1,13 @@
-import traceback
+import asyncio
 from urllib import parse
 from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
-from backend.logger.logger import logger
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import URLS, COLORS, Language, load_language
+from backend.dictionaries.dictionaries import Dicts
+from frontend.pages.ui.config import URLS, COLORS, UILabels
+from frontend.pages.ui.error import catch
 from frontend.pages.ui.state import State
 
 
@@ -29,56 +30,49 @@ class Page(ABC):
 
     def __init__(self) -> None:
         self.state: State
-        self.ui_language: Language
-        self.decoder: LanguageDecoder = LanguageDecoder()
         self.word_limit: int = CONFIG.word_limit
         self.max_file_size: int = self.word_limit * 50
         self.max_decode_size: int = self.max_file_size * 2
         self.auto_upload: bool = CONFIG.Upload.auto_upload
         self.max_files: int = CONFIG.Upload.max_files
 
+    @property
+    def decoder(self) -> LanguageDecoder:
+        return self.state.decoder
+
+    @property
+    def dicts(self) -> Dicts:
+        return self.decoder.dicts
+
+    @property
+    def UI_LABELS(self) -> UILabels:
+        return self.state.ui_labels
+
     async def __init_ui__(self, client: Client) -> None:
         await client.connected()
-        self.__init_state__(uuid = client.tab_id)
+        self.state = State(storage = app.storage.tab)
+        if self.state.uuid == '': self.state.uuid = app.storage.tab.get('uuid')
+        if self.state.user_uuid == '': self.state.user_uuid = app.storage.browser.get('id')
+        if self.decoder is None: self.state.decoder = LanguageDecoder(user_uuid = self.state.user_uuid)
         ui.dark_mode().set_value(self.state.dark_mode)
-        self.ui_language = self.state.ui_language
         # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
                   dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
                   negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
 
-    def __init_state__(self, uuid: str) -> None:
-        self.state = State(storage = app.storage.tab)
-        self.state.add('uuid', uuid)
-        self.state.add('user_uuid', app.storage.browser.get('id'))
-        self.state.add('ui_language', load_language())
-        self.state.add('pdf_params', CONFIG.Pdf.__dict__.copy())
-        self.state.add('regex', CONFIG.Regex.copy())
-
-    def set_decoder_state(self) -> None:
-        self.decoder.user_uuid = self.state.user_uuid
-        self.decoder.source_language = self.state.source_language
-        self.decoder.target_language = self.state.target_language
-        self.decoder.reformatting = self.state.reformatting
-        self.decoder.alt_trans = self.state.alt_trans
-        self.decoder.proxies = self.state.proxies
-        self.decoder.regex = self.state.regex
-
     @Classproperty
     def URL(cls) -> str:
         return cls._URL
 
-    def goto(self, url: str, call: callable = None) -> None:
-        try:
-            if call:
-                call()
-            if url == 'back':
-                ui.navigate.back()
-            else:
-                ui.navigate.to(url)
-        except Exception:
-            logger.error(f'Error in "goto" with exception:\n{traceback.format_exc()}')
-            ui.notify(self.ui_language.GENERAL.Error.internal, type = 'negative', position = 'top')
+    @staticmethod
+    @catch
+    def goto(url: str, call: callable = None) -> None:
+        if call:
+            call()
+        if url == 'back':
+            ui.navigate.back()
+        else:
+            ui.navigate.to(url)
 
     @staticmethod
     def _add_app_route(route: str, content: any, file_type: str, disposition: str, filename: str) -> None:
@@ -94,9 +88,7 @@ class Page(ABC):
 
     @staticmethod
     def _del_app_routes(route: str) -> None:
-        for app_route in app.routes:
-            if app_route.path.startswith(route):
-                app.routes.remove(app_route)
+        app.routes[:] = [app_route for app_route in app.routes if not app_route.path.startswith(route)]
 
     def _upd_app_route(self, url: str, content: any, file_type: str,
                        filename: str, disposition: str = 'attachment') -> str:
@@ -128,8 +120,10 @@ class Page(ABC):
             ui.download(route)
         else:
             ui.navigate.to(f'{route}', new_tab = True)
-        await ui.context.client.disconnected()
-        self._del_app_routes(route = route)
+        try:
+            await asyncio.wait_for(ui.context.client.disconnected(), timeout = CONFIG.route_timeout)
+        except asyncio.TimeoutError:
+            self._del_app_routes(route = route)
 
     @abstractmethod
     async def page(self, client: Client) -> None:

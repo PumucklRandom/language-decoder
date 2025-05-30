@@ -1,7 +1,7 @@
 from typing import Union, Iterable
 from nicegui import ui, events
 from backend.config.config import CONFIG
-from backend.utils.utilities import lonlen
+from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, bot_right
 
 
@@ -35,24 +35,29 @@ class Table(ui.table):
         self.on('_add_row', self._add_row)
 
     def _add_row(self, event: events.GenericEventArguments) -> None:
-        _id = max([row.get('id') for row in self.rows] + [-1]) + 1
+        _id = max((row.get('id', -1) for row in self.rows), default = -1) + 1
         if not event.args:
             self.rows.insert(0, {'id': _id, 'source': '', 'target': ''})
             self.update()
             return
+        row_id = event.args.get('id')
         for i, row in enumerate(self.rows):
-            if row.get('id') == event.args.get('id'):
+            if row.get('id') == row_id:
                 self.rows.insert(i + 1, {'id': _id, 'source': '', 'target': ''})
+                break
         self.update()
 
     def _del_row(self, event: events.GenericEventArguments) -> None:
-        self.rows[:] = [row for row in self.rows if row.get('id') != event.args.get('id')]
+        row_id = event.args.get('id')
+        self.rows.pop(next(i for i, row in enumerate(self.rows) if row.get('id') == row_id))
         self.update()
 
     def _upd_row(self, event: events.GenericEventArguments) -> None:
+        row_id = event.args.get('id')
         for row in self.rows:
-            if row.get('id') == event.args.get('id'):
+            if row.get('id') == row_id:
                 row.update(event.args)
+                break
 
     def _set_type(self, values) -> list[Union[str, float]]:
         return values
@@ -69,8 +74,8 @@ class Table(ui.table):
         self.update()
 
     def get_values(self, as_dict: bool = False) -> Union[dict, tuple[list, list]]:
-        sources = [f"{row.get('source')}".strip() for row in self.rows]
-        targets = self._set_type([f"{row.get('target')}".strip() for row in self.rows])
+        sources = [f'{row.get("source")}'.strip() for row in self.rows]
+        targets = self._set_type([f'{row.get("target")}'.strip() for row in self.rows])
         if as_dict:
             return dict(zip(sources, targets))
         return sources, targets
@@ -83,7 +88,7 @@ class UIList(Table):
         self.val_type = val_type
         self.add_slot('body', self._body())
         self.props('hide-header separator=none')
-        self.style('min-width:400px')
+        self.style('min-width:420px')
 
     def _set_type(self, values) -> list[float]:
         if self.val_type == 'number':
@@ -93,8 +98,8 @@ class UIList(Table):
     def _body(self) -> str:
         return f'''
             <q-tr :props="props">
-                <q-td key="source" :props="props">
-                    {{{{ props.row.source }}}}
+                <q-td key="source" :props="props" style="font-size:14px; font-weight:bold">
+                    <div style="padding-left:5px">{{{{ props.row.source }}}}</div>
                     <q-input style="font-family:RobotoMono" v-model="props.row.target" type="{self.val_type}"
                     dense outlined debounce="{CONFIG.debounce}"
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
@@ -123,7 +128,8 @@ class UITable(Table):
 
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
-            <q-th v-for="col in props.cols" :key="col.field" :props="props">
+            <q-th v-for="col in props.cols" :key="col.field" :props="props"
+                style="font-size:16px; text-align:center">
                 {{{{ col.label }}}}
             </q-th>
             <q-th auto-width>
@@ -188,10 +194,9 @@ class UIGrid(Table):
 
     def _set_item_size(self, words: list[str] = None) -> None:
         if words and isinstance(words, list):
-            chars = lonlen(words)
+            chars = maxlen(words)
             self.item_size = int(chars * CONFIG.size_fct + 3 * CONFIG.size_fct)
-            if self.item_size < CONFIG.size_min: self.item_size = CONFIG.size_min
-            if self.item_size > CONFIG.size_max: self.item_size = CONFIG.size_max
+            self.item_size = max(min(self.item_size, CONFIG.size_max), CONFIG.size_min)
 
     def _item(self) -> str:
         return f'''
@@ -223,7 +228,7 @@ class UIGridPages(object):
         self.page_size: int = CONFIG.grid_options[2]
         self.prev_page: int = 1
         self.set_grid_page(grid_page)
-        self.endofs = endofs
+        self.endofs = tuple(endofs)
         self.find_str: str = find_str
         self.source_words: list = []
         self.target_words: list = []
@@ -273,8 +278,7 @@ class UIGridPages(object):
         self.ui_grid.mark_cells(self.find_str)
 
     def get_indices(self, source_words: list[str]) -> None:
-        self.eos_indices = [i + 1 for i, word in enumerate(source_words)
-                            if word.endswith(tuple(self.endofs))]
+        self.eos_indices = [i + 1 for i, word in enumerate(source_words) if word.endswith(self.endofs)]
 
     def set_indices(self) -> None:
         if not self.eos_indices: return

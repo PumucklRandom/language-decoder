@@ -1,6 +1,6 @@
 GENERAL:
     Error:
-        internal: '500 Internal Error'
+        internal: 'Interner Serverfehler'
 START:
     Explanations:
         title: 'Beschreibung:'
@@ -124,6 +124,8 @@ DECODING:
         cancel: 'ABBRECHEN'
         reject: 'Hochladen einer json-Datei mit maximal:'
         invalid: 'Ungültige json-Datei. Laden Sie eine zuvor exportierte json-Datei hoch.'
+        rate_limit: 'Rate limit erreicht. 
+                        Bitte versuchen Sie es später erneut oder verwenden Sie den normellen Translator.'
     Tips:
         help: 'Hilfe'
         replace: 'Austauschen'
@@ -142,12 +144,14 @@ DICTIONARY:
         dictionaries: 'WÖRTERBÜCHER'
     Dialogs_select: [
         'Hier können Sie zwischen bereits erstellten Wörterbüchern wählen oder ein neues erstellen.',
+        'Um ein neues Wörterbuch zu erstellen, geben Sie einen Namen ein und drücken Sie die Eingabetaste.',
         '/n',
         'Wenn Sie bereits ein Wörterbuch ausgewählt haben,
             können Sie die Auswahl abwählen, indem Sie auf die Schaltfläche "X" im Textfeld klicken.',
         '/n',
         'Um ein vorhandenes Wörterbuch umzubenennen, wählen Sie das Wörterbuch aus, das Sie umbenennen möchten.',
         'Aktivieren Sie die Option "Wörterbuch umbenennen" und geben Sie einen neuen Wörterbuchnamen ein.',
+        'Stellen Sie sicher, dass das Eingabefeld im Fokus ist und drücken Sie die Eingabetaste.',
         '/n',
         'Um ein Wörterbuch zu entfernen,
             wählen Sie das zu löschende Wörterbuch aus und drücken Sie die obere Schaltfläche "Mülleimer".'
@@ -190,48 +194,52 @@ DICTIONARY:
         export: 'EXPORTIEREN'
 SETTINGS:
     Header:
-        dictionaries: 'EINSTELLUNGEN'
+        settings: 'EINSTELLUNGEN'
     Panel: [
         'PROGRAMM EINSTELLUNGEN',
-        'ERSETZUNGEN',
+        'Zeichenwörterbuch',
         'PDF EINSTELLUNGEN',
         'ERWEITERTE EINSTELLUNGEN'
     ]
-    Dialogs_interface: [
+    Dialogs_app: [
         'Auf dieser Registerkarte können Sie grundlegende Programmeinstellungen ändern.',
         '/n', '/N', '/n',
-        'Der erste Abschnitt enthält Schalter zum Aktivieren oder Deaktivieren verschiedener Einstellungen, wie z. B.:
-            "Dunkler Modus", "Hinweise", "Textumformung bei der Eingabe" und "Experimenteller AI-Übersetzer."',
-        'Mit dem Umschalter "Umformatieren" wird der Eingabetext mit einem "regular expression" umformatiert,
-            um die Wörter bei der Dekodierung voneinander unterscheiden zu können.',
-        'Der alternative experimentelle KI-Übersetzer verwendet LLMs/GPTs auf Basis von gängigen neuronalen Netzen
-            für die Dekodierung. Im Allgemeinen wird damit ein besseres Ergebnis erzielt. Allerdings ist die
-            Übersetzung nicht deterministisch und kann in manchen Fällen zu Ausführungsfehlern führen.',
+        'Der erste Abschnitt enthält Optionen für die Benutzeroberfläche, wie z. B.: Das Umschalten vom "dunklen Modus"
+            und das Anzeigen von "Hinweisen", sowie eine Auswahl zum Ändern der aktuellen "Anzeigesprache".',
         '/n', '/N', '/n',
-        'Im zweiten Abschnitt finden Sie eine Auswahl, mit der Sie die aktuelle Anzeigesprache ändern können.',
+        'Der zweite Abschnitt enthält einen Schalter zur "Umformatierung",
+            mit dem der Eingabetext mit einer "regular expression" umformatiert wird.
+            Dies hilft bei der Unterscheidung der Wörter voneinander als Vorbereitung für den Dekodierungsprozess.',
+        '/n',
+        'Als nächstes folgt die "Übersetzerauswahl" mit dem Google-Übersetzer als Standard.
+            Die Ergebnisse des Google-Übersetzers sind ziemlich schlecht, aber die Ausführung ist zuverlässig.',
+        'Die anderen Übersetzer sind frei verfügbare, aber limitierte KI-Übersetzer.
+            Die potenzielle Übersetzungsqualität ist viel höher, allerdings ist die Übersetzung nicht deterministisch
+            und kann in einigen Fällen zu Ausführungsfehlern führen. In diesem Fall
+            können Sie zwischen den anderen Übersetzern wählen oder zurück zum Google-Übersetzer wechseln.',
         '/n', '/N', '/n',
         'Der dritte Abschnitt bietet eine Proxy-Konfigurationsoption
             und eine Schaltfläche zur Überprüfung der Internetverbindung.',
         '/n', '/N', '/n',
         'Klicken Sie auf die Schaltfläche "NEU-LADEN", um die Seite neu zu laden und die Änderungen zu sehen.',
         '/n', '/N', '/n',
-        'Um die "Programmeinstellungen" zurückzusetzen, 
+        'Um die Programmeinstellungen zurückzusetzen, 
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
-    Interface:
+    App_settings:
         text: [
             'Dunkler Modus',
             'Zeige Hinweise',
-            'Eingabetext umformatieren',
-            'Experimentelle AI Übersetzung',
             'Sprache auswählen',
+            'Eingabetext umformatieren',
+            'Übersetzer auswählen',
             'Proxy-Konfiguration:'
         ]
         check: 'VERBINDUNG PRÜFEN'
         reload: 'NEU-LADEN'
     Dialogs_replace: [
         'Auf dieser Registerkarte können Sie ein sprachunabhängiges 
-            "Ersetzungswörterbuch" für den Eingabetext definieren.',
+            "Zeichenwörterbuch" für den Eingabetext definieren.',
         'Unter "Sonderzeichen" können Sie Sonderzeichen eingeben, die ersetzt werden sollen.',
         'Unter "Alternative" können Sie die Zeichen eingeben, die stattdessen verwendet werden sollen.',
         'Mit den Schaltflächen "+" und "-" können Sie Einträge im Wörterbuch hinzufügen oder entfernen.',
@@ -260,23 +268,24 @@ SETTINGS:
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
     Pdf: [
+        'Seiten pro Blatt',
         'Seitentrennzeichen verwenden [0, 1]',
         'Tabulatorgröße zwischen Wörtern',
         'Zeichen pro Zeile',
         'Zeilen pro Seite',
+        'Oberer Seitenrand',
+        'Linker Seitenrand',
         'Titel Schriftgröße',
         'Text Schriftgröße',
-        'Seitenbreite',
         'Titlehöhe',
-        'Kopfzeilehöhe',
         'Zeilenhöhe'
     ]
     Dialogs_adv: [
         'Auf dieser Registerkarte können Sie die Einstellungen für die 
-            "regular expression" für den Eingabetext ändern.',
+            "Regular Expression" für den Eingabetext ändern.',
         'Es wird nicht empfohlen, diese Einstellungen zu ändern, wenn Sie nicht wissen, was Sie tun.',
         '/n',
-        'Wenn Sie mehr über die Verwendung der Einstellungen für "reguläre Ausdrücke" erfahren möchten,
+        'Wenn Sie mehr über die Verwendung der Einstellungen für die "Regular Expression" erfahren möchten,
             sollten Sie einen Blick auf den Backend-Code werfen unter: "backend/decoder/language_decoder.py".',
         '/n', '/N', '/n',
         'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
@@ -295,12 +304,10 @@ SETTINGS:
         'Zitatmarkierungen'
     ]
     Messages:
-        connect_check:
-            - 'Verbindung erfolgreich'
-            - '500 Internal server error'
+        connect_check: 'Verbindung erfolgreich'
     Tips:
         back: 'Zurück'
-        interface:
+        app:
             help: 'Hilfe'
             reload: 'Seite neu laden'
             reset: 'Einstellungen zurücksetzen'
