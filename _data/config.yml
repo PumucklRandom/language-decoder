@@ -5,7 +5,7 @@ favicon: 'pages/ui/icon/LD-icon.png'
 dark: true
 debounce: 200
 reconnect_timeout: 3
-native: true   # native = true (window mode)
+native: true  # native = true (window mode)
 window_size: [1600, 900]
 fullscreen: false  # set to false
 frameless: false  # set to false
@@ -26,11 +26,11 @@ grid_options: [100, 150, 200, 250, 300, 'All']
 
 api_url: 'https://openrouter.ai/api/v1'
 api_key: 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNzRlZGJhYmQyNzUxNjRmNWMyYzI3Mw=='
-model: 'google/gemini-2.0-flash-exp:free'
-#model: 'google/learnlm-1.5-pro-experimental:free'
-#model: 'deepseek/deepseek-chat:free'
+model_name: 'Google: Gemini 2.0 Flash Experimental'
 model_seed: 0
 model_temp: 0.0
+model_context: 64_000
+model_age: 12  # in months
 
 char_limit: 2850
 word_limit: 1000
@@ -61,3 +61,6 @@ Regex:
     opens: '<(\[{'
     close: '>)\]}'
     quotes: "\"'´`"
+
+# A mapping dict to replace language independent characters for the source text
+Replacements: {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-', '–': '-'}

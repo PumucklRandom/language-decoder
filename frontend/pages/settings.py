@@ -1,6 +1,6 @@
 from copy import copy
 from nicegui import ui, Client
-from backend.config.config import CONFIG, REPLACEMENTS
+from backend.config.config import CONFIG
 from backend.error.error import DecoderError
 from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages, get_ui_labels
 from frontend.pages.ui.error import catch
@@ -26,14 +26,14 @@ class Settings(Page):
 
     @catch
     def _get_proxies(self):
-        self.state.proxies = {'http': self.state.http, 'https': self.state.https}
+        self.decoder.proxies = {'http': self.state.http, 'https': self.state.https}
 
     def _reset_app_settings(self) -> None:
         self.state.dark_mode = True
         self.state.show_tips = True
-        self.state.reformatting = True
-        self.state.alt_trans = False
         self.state.language = 'english'
+        self.decoder.reformatting = True
+        self.decoder.model_name = 'Google Translator'
         self.state.http = ''
         self.state.https = ''
 
@@ -41,12 +41,7 @@ class Settings(Page):
     def _connection_check(self) -> None:
         try:
             self._get_proxies()
-            self.decoder.proxies = self.state.proxies
-            if self.state.alt_trans:
-                self.decoder.alt_trans = self.state.alt_trans
-                self.decoder.translate(source = 'test', alt_trans = True)
-            else:
-                self.decoder.translate(source = 'test')
+            self.decoder.translate(source = 'test')
             ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_check,
                       type = 'positive', position = 'top')
         except DecoderError as exception:
@@ -66,7 +61,7 @@ class Settings(Page):
 
     @catch
     def _reset_table(self) -> None:
-        self.dicts.replacements = REPLACEMENTS.copy()
+        self.dicts.replacements = CONFIG.Replacements.copy()
         self.ui_table.set_values(self.dicts.replacements)
         self._update_replacements()
 
@@ -105,33 +100,33 @@ class Settings(Page):
 
     @catch
     def _load_adv_list(self) -> None:
-        self.ui_adv_list.set_values(self.UI_LABELS.SETTINGS.Advanced, self.state.regex._asdict().values())
+        self.ui_adv_list.set_values(self.UI_LABELS.SETTINGS.Advanced, self.decoder.regex._asdict().values())
 
     @catch
     def _reset_adv_list(self) -> None:
-        self.state.regex = copy(CONFIG.Regex)
+        self.decoder.regex = copy(CONFIG.Regex)
         self._load_adv_list()
 
     @catch
     def _update_adv_params(self) -> None:
         _, values = self.ui_adv_list.get_values()
-        self.state.regex = CONFIG.Regex._make(values)
+        self.decoder.regex = CONFIG.Regex._make(values)
 
     @catch
-    def _dialog_app_settings(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_app)
+    def _dialog_app_settings(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_app).open()
 
     @catch
-    def _dialog_replacements(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_replace)
+    def _dialog_replacements(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_replace).open()
 
     @catch
-    def _dialog_pdf_settings(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_pdf)
+    def _dialog_pdf_settings(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_pdf).open()
 
     @catch
-    def _dialog_adv_settings(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_adv)
+    def _dialog_adv_settings(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.SETTINGS.Dialogs_adv).open()
 
     @catch
     def _header(self) -> None:
@@ -152,47 +147,56 @@ class Settings(Page):
                 panel3 = ui.tab(self.UI_LABELS.SETTINGS.Panel[3])
             with ui.tab_panels(tabs, value = panel0, animated = True):
                 with ui.tab_panel(panel0).style('min-width:650px').classes('items-center'):
-                    with ui.button(icon = 'help', on_click = self._dialog_app_settings().open) \
+                    with ui.button(icon = 'help', on_click = self._dialog_app_settings) \
                             .classes('absolute-top-right'):
                         if self.state.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.app.help)
                     self._app_settings()
                 with ui.tab_panel(panel1).style('min-width:650px').classes('items-center'):
-                    with ui.button(icon = 'help', on_click = self._dialog_replacements().open) \
+                    with ui.button(icon = 'help', on_click = self._dialog_replacements) \
                             .classes('absolute-top-right'):
                         if self.state.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.replace.help)
                     self._replacements()
                 with ui.tab_panel(panel2).style('min-width:650px').classes('items-center'):
-                    with ui.button(icon = 'help', on_click = self._dialog_pdf_settings().open) \
+                    with ui.button(icon = 'help', on_click = self._dialog_pdf_settings) \
                             .classes('absolute-top-right'):
                         if self.state.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.pdf.help)
                     self._pdf_settings()
                 with ui.tab_panel(panel3).style('min-width:650px').classes('items-center'):
-                    with ui.button(icon = 'help', on_click = self._dialog_adv_settings().open) \
+                    with ui.button(icon = 'help', on_click = self._dialog_adv_settings) \
                             .classes('absolute-top-right'):
                         if self.state.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.advanced.help)
                     self._adv_settings()
 
     @catch
     def _app_settings(self) -> None:
-        with ui.card().style('width:400px'):
-            ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[0]).bind_value(self.state, 'dark_mode')
-            ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[1]).bind_value(self.state, 'show_tips')
-            ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[2]).bind_value(self.state, 'reformatting')
-            ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[3]).bind_value(self.state, 'alt_trans')
+        with ui.card().classes('items-center').style('width:420px'):
+            with ui.column():
+                ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[0]) \
+                    .style('min-width:240px').bind_value(self.state, 'dark_mode')
+                ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[1]) \
+                    .style('min-width:240px').bind_value(self.state, 'show_tips')
+                ui.select(
+                    label = self.UI_LABELS.SETTINGS.App_settings.text[2],
+                    options = get_languages(),
+                    on_change = self._on_select) \
+                    .props('dense options-dense outlined') \
+                    .style('min-width:240px; font-size:12pt') \
+                    .bind_value(self.state, 'language')
             ui.separator()
-            ui.select(
-                label = self.UI_LABELS.SETTINGS.App_settings.text[4],
-                options = get_languages(),
-                on_change = self._on_select) \
-                .props('dense options-dense outlined') \
-                .style('min-width:200px; font-size:12pt') \
-                .bind_value(self.state, 'language')
+            with ui.element():
+                ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[3]) \
+                    .style('min-width:240px').bind_value(self.decoder, 'reformatting')
+            ui.select(label = self.UI_LABELS.SETTINGS.App_settings.text[4],
+                      options = self.decoder.models) \
+                .props('options-dense outlined') \
+                .style('min-width:380px; font-size:12pt') \
+                .bind_value(self.decoder, 'model_name')
             ui.separator()
             ui.label(text = self.UI_LABELS.SETTINGS.App_settings.text[5])
             ui.input(label = 'http proxy', placeholder = 'ip-address:port') \
-                .bind_value(self.state, 'http')
+                .style('min-width:240px').bind_value(self.state, 'http')
             ui.input(label = 'https proxy', placeholder = 'ip-address:port') \
-                .bind_value(self.state, 'https')
+                .style('min-width:240px').bind_value(self.state, 'https')
             ui.button(text = self.UI_LABELS.SETTINGS.App_settings.check, on_click = self._connection_check)
         ui.separator()
         with ui.button(text = self.UI_LABELS.SETTINGS.App_settings.reload, on_click = ui.navigate.reload):
@@ -206,7 +210,7 @@ class Settings(Page):
         REPLACE_COLS[0].update({'label': self.UI_LABELS.SETTINGS.Table.key})
         REPLACE_COLS[1].update({'label': self.UI_LABELS.SETTINGS.Table.val})
         self.ui_table = UITable(columns = REPLACE_COLS, dark_mode = self.state.dark_mode) \
-            .style('min-width:450px; max-height:80vh').classes('sticky-header')
+            .style('min-width:420px; max-height:80vh').classes('sticky-header')
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._save_replacements):

@@ -134,7 +134,6 @@ class Decoding(Page):
         self.state.target_words = self.decoder.apply_dict(
             source_words = self.state.source_words,
             target_words = self.state.target_words,
-            dict_name = self.state.dict_name
         )
         self._update_grid()
 
@@ -173,8 +172,8 @@ class Decoding(Page):
             event.sender.reset()  # noqa upload reset
 
     @catch
-    def _dialog(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.DECODING.Dialogs)
+    def _dialog(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.DECODING.Dialogs).open()
 
     @catch
     def _dialog_sentences(self) -> None:
@@ -273,7 +272,7 @@ class Decoding(Page):
             )
             self.ui_grid(dark_mode = self.state.dark_mode)
         await self._decode_words()
-        with ui.button(icon = 'help', on_click = self._dialog().open) \
+        with ui.button(icon = 'help', on_click = self._dialog) \
                 .classes(top_right(5, 5)).props('dense'):
             if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.help).style('width:70px')
 
@@ -300,7 +299,6 @@ class Decoding(Page):
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)
-        self.set_decoder_state()
         await self._center()
         self._header()
         self._footer()

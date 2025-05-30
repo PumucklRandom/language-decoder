@@ -1,10 +1,11 @@
 import os
 import io
 import csv
+import time
 import httpx
 import base64
-import traceback
 import openai
+import traceback
 from backend.config.config import CONFIG
 from backend.error.error import AITranslatorError
 from backend.error.error import ConfigError
@@ -23,7 +24,7 @@ class LanguageTranslator(object):
     def __init__(self,
                  api_url: str = CONFIG.api_url,
                  api_key: str = CONFIG.api_key,
-                 model: str = CONFIG.model,
+                 model_name: str = CONFIG.model_name,
                  model_temp: float = CONFIG.model_temp,
                  model_seed: int = CONFIG.model_seed,
                  proxies: dict = None,
@@ -33,7 +34,7 @@ class LanguageTranslator(object):
         """
         :param api_url: api url to model site
         :param api_key: api key to get access
-        :param model: LLM/GPT model type
+        :param model_name: LLM/GPT model name
         :param model_temp: model temperature to adapt model 'creativity' and 'determinism'
         :param model_seed: model seed to adapt 'determinism'
         :param proxies: set proxies for translator
@@ -41,7 +42,7 @@ class LanguageTranslator(object):
         :param target: the translation target language
         """
 
-        self.model = model
+        self.model_name = model_name
         self.model_temp = model_temp
         self.model_seed = model_seed
         self.source = source
@@ -53,10 +54,15 @@ class LanguageTranslator(object):
             api_key = self._decode_key(api_key),
         )
         self._set_proxy(proxies = proxies)
+        self.models = self.get_available_models()
 
-    def __config__(self, source: str, target: str, proxies: dict = None) -> None:
+    def __config__(self, source: str, target: str, model_name: str, proxies: dict = None) -> None:
         self.source = source
         self.target = target
+        if self.model_name in self.models.keys():
+            self.model_name = model_name
+        else:
+            self.model_name = CONFIG.model_name
         self._set_proxy(proxies = proxies)
 
     def _set_proxy(self, proxies: dict = None) -> None:
@@ -69,8 +75,20 @@ class LanguageTranslator(object):
             proxies.pop('https', None)
         self.client._client = httpx.Client(mounts = proxies)
 
+    def get_available_models(self) -> dict[str, str]:
+        time_date = time.time() - CONFIG.model_age * 2592000  # 30d * 24h * 3600s per months
+        models = tuple(
+            model for model in self.client.models.list().data if ':free' in model.id
+            and model.context_length >= CONFIG.model_context and model.created >= time_date
+            and model.architecture.get('modality') in ('text->text', 'text+image->text')
+            and {'temperature'}.issubset(model.supported_parameters)
+            and {'reasoning', 'include_reasoning'}.isdisjoint(model.supported_parameters)
+        )
+        return {model.name.removesuffix(' (free)'): model.id for model in models}
+
     def translate(self, source_words: list[str]) -> list[str]:
         try:
+            logger.info(f'Translate words with: {self.model_name}')
             csv_string = self._to_csv(source_words)
             response = self.client.chat.completions.create(
                 messages = [
@@ -78,7 +96,7 @@ class LanguageTranslator(object):
                     {'role': 'user', 'content': csv_string},
                     # {'role': 'assistant', 'content': 'Source\tTarget\n'}
                 ],
-                model = self.model,
+                model = self.models.get(self.model_name),
                 temperature = self.model_temp,
                 seed = self.model_seed,
                 extra_headers = {

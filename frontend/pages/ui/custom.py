@@ -5,7 +5,6 @@ from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, bot_right
 
 
-# TODO: Check if static dialogs may be reused at each page
 def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
               style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
     with ui.dialog() as dialog:
@@ -89,7 +88,7 @@ class UIList(Table):
         self.val_type = val_type
         self.add_slot('body', self._body())
         self.props('hide-header separator=none')
-        self.style('min-width:400px')
+        self.style('min-width:420px')
 
     def _set_type(self, values) -> list[float]:
         if self.val_type == 'number':
@@ -99,8 +98,8 @@ class UIList(Table):
     def _body(self) -> str:
         return f'''
             <q-tr :props="props">
-                <q-td key="source" :props="props">
-                    {{{{ props.row.source }}}}
+                <q-td key="source" :props="props" style="font-size:14px; font-weight:bold">
+                    <div style="padding-left:5px">{{{{ props.row.source }}}}</div>
                     <q-input style="font-family:RobotoMono" v-model="props.row.target" type="{self.val_type}"
                     dense outlined debounce="{CONFIG.debounce}"
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
@@ -129,7 +128,8 @@ class UITable(Table):
 
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
-            <q-th v-for="col in props.cols" :key="col.field" :props="props">
+            <q-th v-for="col in props.cols" :key="col.field" :props="props"
+                style="font-size:16px; text-align:center">
                 {{{{ col.label }}}}
             </q-th>
             <q-th auto-width>

@@ -144,12 +144,14 @@ DICTIONARY:
         dictionaries: 'WÖRTERBÜCHER'
     Dialogs_select: [
         'Hier können Sie zwischen bereits erstellten Wörterbüchern wählen oder ein neues erstellen.',
+        'Um ein neues Wörterbuch zu erstellen, geben Sie einen Namen ein und drücken Sie die Eingabetaste.',
         '/n',
         'Wenn Sie bereits ein Wörterbuch ausgewählt haben,
             können Sie die Auswahl abwählen, indem Sie auf die Schaltfläche "X" im Textfeld klicken.',
         '/n',
         'Um ein vorhandenes Wörterbuch umzubenennen, wählen Sie das Wörterbuch aus, das Sie umbenennen möchten.',
         'Aktivieren Sie die Option "Wörterbuch umbenennen" und geben Sie einen neuen Wörterbuchnamen ein.',
+        'Stellen Sie sicher, dass das Eingabefeld im Fokus ist und drücken Sie die Eingabetaste.',
         '/n',
         'Um ein Wörterbuch zu entfernen,
             wählen Sie das zu löschende Wörterbuch aus und drücken Sie die obere Schaltfläche "Mülleimer".'
@@ -202,31 +204,35 @@ SETTINGS:
     Dialogs_app: [
         'Auf dieser Registerkarte können Sie grundlegende Programmeinstellungen ändern.',
         '/n', '/N', '/n',
-        'Der erste Abschnitt enthält Schalter zum Aktivieren oder Deaktivieren verschiedener Einstellungen, wie z. B.:
-            "Dunkler Modus", "Hinweise", "Textumformung bei der Eingabe" und "Experimenteller AI-Übersetzer."',
-        'Mit dem Umschalter "Umformatieren" wird der Eingabetext mit einem "regular expression" umformatiert,
-            um die Wörter bei der Dekodierung voneinander unterscheiden zu können.',
-        'Der alternative experimentelle KI-Übersetzer verwendet LLMs/GPTs auf Basis von gängigen neuronalen Netzen
-            für die Dekodierung. Im Allgemeinen wird damit ein besseres Ergebnis erzielt. Allerdings ist die
-            Übersetzung nicht deterministisch und kann in manchen Fällen zu Ausführungsfehlern führen.',
+        'Der erste Abschnitt enthält Optionen für die Benutzeroberfläche, wie z. B.: Das Umschalten vom "dunklen Modus"
+            und das Anzeigen von "Hinweisen", sowie eine Auswahl zum Ändern der aktuellen "Anzeigesprache".',
         '/n', '/N', '/n',
-        'Im zweiten Abschnitt finden Sie eine Auswahl, mit der Sie die aktuelle Anzeigesprache ändern können.',
+        'Der zweite Abschnitt enthält einen Schalter zur "Umformatierung",
+            mit dem der Eingabetext mit einer "regular expression" umformatiert wird.
+            Dies hilft bei der Unterscheidung der Wörter voneinander als Vorbereitung für den Dekodierungsprozess.',
+        '/n',
+        'Als nächstes folgt die "Übersetzerauswahl" mit dem Google-Übersetzer als Standard.
+            Die Ergebnisse des Google-Übersetzers sind ziemlich schlecht, aber die Ausführung ist zuverlässig.',
+        'Die anderen Übersetzer sind frei verfügbare, aber limitierte KI-Übersetzer.
+            Die potenzielle Übersetzungsqualität ist viel höher, allerdings ist die Übersetzung nicht deterministisch
+            und kann in einigen Fällen zu Ausführungsfehlern führen. In diesem Fall
+            können Sie zwischen den anderen Übersetzern wählen oder zurück zum Google-Übersetzer wechseln.',
         '/n', '/N', '/n',
         'Der dritte Abschnitt bietet eine Proxy-Konfigurationsoption
             und eine Schaltfläche zur Überprüfung der Internetverbindung.',
         '/n', '/N', '/n',
         'Klicken Sie auf die Schaltfläche "NEU-LADEN", um die Seite neu zu laden und die Änderungen zu sehen.',
         '/n', '/N', '/n',
-        'Um die "Programmeinstellungen" zurückzusetzen, 
+        'Um die Programmeinstellungen zurückzusetzen, 
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
     App_settings:
         text: [
             'Dunkler Modus',
             'Zeige Hinweise',
-            'Eingabetext umformatieren',
-            'Experimentelle AI Übersetzung',
             'Sprache auswählen',
+            'Eingabetext umformatieren',
+            'Übersetzer auswählen',
             'Proxy-Konfiguration:'
         ]
         check: 'VERBINDUNG PRÜFEN'

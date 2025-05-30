@@ -26,7 +26,8 @@ class LanguageDecoder(object):
                  user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  source_language: str = 'auto',
                  target_language: str = 'english',
-                 alt_trans: bool = False,
+                 model_name: str = 'Google Translator',
+                 dict_name: str = None,
                  reformatting: bool = True,
                  regex: Config.Regex = CONFIG.Regex,
                  new_line: str = '\n',
@@ -37,7 +38,8 @@ class LanguageDecoder(object):
         :param user_uuid: user uuid to identify correspondent dictionaries
         :param source_language: the translation source language
         :param target_language: the translation target language
-        :param alt_trans: use alternative experimental AI translator
+        :param model_name: name of the translator model
+        :param dict_name: name of the dictionary to apply
         :param reformatting: use regex to reformat the source text
         :param regex: a set of character patterns for regex compilations
         :param new_line: new line string
@@ -48,7 +50,8 @@ class LanguageDecoder(object):
         self.user_uuid = user_uuid
         self.source_language = source_language
         self.target_language = target_language
-        self.alt_trans = alt_trans
+        self.model_name = model_name
+        self.dict_name = dict_name
         self.reformatting = reformatting
         self.regex = regex
         self.new_line = new_line
@@ -75,8 +78,13 @@ class LanguageDecoder(object):
         self._langslator.__config__(
             source = self.source_language,
             target = self.target_language,
+            model_name = self.model_name,
             proxies = self.proxies
         )
+
+    @property
+    def models(self) -> list[str]:
+        return ['Google Translator'] + list(self._langslator.models.keys())
 
     @catch(DecoderError)
     def get_supported_languages(self, show: bool = False) -> list[str]:
@@ -90,10 +98,10 @@ class LanguageDecoder(object):
             result.extend(self._translator.translate('\n'.join(batch)).split('\n'))
         return result
 
-    def translate(self, source: Union[list[str], str], alt_trans: bool = False) -> Union[list[str], str]:
+    def translate(self, source: Union[list[str], str]) -> Union[list[str], str]:
         try:
             if isinstance(source, list):
-                if self.alt_trans and alt_trans:
+                if self.model_name != 'Google Translator':
                     self._config_langslator()
                     return self._langslator.translate(source)
                 self._config_translator()
@@ -189,7 +197,7 @@ class LanguageDecoder(object):
         logger.info(f'Decode {len(source_words)} words.')
         # strip source words before translation
         # source_words_strip = list(map(self._strip_word, source_words))
-        _target_words = self.translate(source = source_words, alt_trans = True)
+        _target_words = self.translate(source = source_words)
         if len(_target_words) != len(source_words):
             message = (f'Length mismatch between source words ({len(source_words)}) '
                        f'and target words ({len(_target_words)})')
@@ -227,10 +235,10 @@ class LanguageDecoder(object):
         return sentences
 
     @catch(DecoderError)
-    def apply_dict(self, source_words: list[str], target_words: list[str], dict_name: str = '') -> list[str]:
-        if not dict_name: return target_words
+    def apply_dict(self, source_words: list[str], target_words: list[str]) -> list[str]:
+        if not self.dict_name: return target_words
         self.dicts.load()
-        dictionary = self.dicts.dictionaries.get(dict_name, {})
+        dictionary = self.dicts.dictionaries.get(self.dict_name, {})
         target_words_copy = target_words.copy()
         target_words.clear()
         for source_word, target_word in zip(source_words, target_words_copy):

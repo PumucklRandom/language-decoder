@@ -14,8 +14,8 @@ class Upload(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.n_word_text: int = 0
-        self.pattern = re.compile(r'\S+|\s+')
+        self._n_words_text: int = 0
+        self._pattern = re.compile(r'\S+|\s+')
 
     @catch
     def _clear_text(self) -> None:
@@ -24,10 +24,10 @@ class Upload(Page):
 
     @catch
     def _check_source_text(self) -> None:
-        word_space_split = re.findall(self.pattern, self.state.source_text)
-        n_split = len(word_space_split)
-        self.n_word_text = f'{math.ceil(n_split / 2)}/{self.word_limit}'
-        if n_split > 2 * self.word_limit:
+        word_space_split = re.findall(self._pattern, self.state.source_text)
+        n_splits = len(word_space_split)
+        self._n_words_text = f'{math.ceil(n_splits / 2)}/{self.word_limit}'
+        if n_splits > 2 * self.word_limit:
             self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
             ui.notify(f'{self.UI_LABELS.UPLOAD.Messages.limit} {self.word_limit} words',
                       type = 'warning', position = 'top')
@@ -55,8 +55,8 @@ class Upload(Page):
                   type = 'warning', position = 'top')
 
     @catch
-    def _dialog(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.UPLOAD.Dialogs)
+    def _dialog(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.UPLOAD.Dialogs).open()
 
     @catch
     def _header(self) -> None:
@@ -76,7 +76,7 @@ class Upload(Page):
         with ui.column().classes('w-full items-center'):
             with ui.card().style('min-width:1000px; min-height:562px; height:85vh') \
                     .classes('w-[50%] items-center'):
-                with ui.button(icon = 'help', on_click = self._dialog().open) \
+                with ui.button(icon = 'help', on_click = self._dialog) \
                         .classes('absolute-top-right'):
                     if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.help)
                 ui.label(self.UI_LABELS.UPLOAD.Uploads[0]).style('font-size:14pt')
@@ -111,19 +111,19 @@ class Upload(Page):
                 options = ['auto'] + languages) \
                 .props('dense options-dense outlined') \
                 .style('min-width:200px; font-size:12pt') \
-                .bind_value(self.state, 'source_language')
+                .bind_value(self.decoder, 'source_language')
             ui.space().style('width:0px')
             ui.select(
                 label = self.UI_LABELS.UPLOAD.Footer.target,
                 options = languages) \
                 .props('dense options-dense outlined') \
                 .style('min-width:200px; font-size:12pt') \
-                .bind_value(self.state, 'target_language')
+                .bind_value(self.decoder, 'target_language')
         with ui.button(text = self.UI_LABELS.UPLOAD.Footer.decode,
                        on_click = lambda: self.goto(URLS.DECODING, call = self._decode)) \
                 .classes(bot_right(12, 23, 'px', '%')):
             if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.decode)
-        ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, 'n_word_text')
+        ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, '_n_words_text')
         with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
             if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.delete)
 

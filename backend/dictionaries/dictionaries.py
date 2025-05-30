@@ -2,7 +2,7 @@ import os
 import json
 from uuid import UUID
 from typing import Union
-from backend.config.config import CONFIG, REPLACEMENTS
+from backend.config.config import CONFIG
 from backend.error.error import DictionaryError, catch
 from backend.logger.logger import logger
 
@@ -19,7 +19,7 @@ class Dicts(object):
         """
         self.user_uuid = '00000000-0000-0000-0000-000000000000' if CONFIG.on_prem else user_uuid
         self.dicts_path = os.path.join(file_dir, dicts_path)
-        self.replacements: dict[str, str] = REPLACEMENTS
+        self.replacements: dict[str, str] = CONFIG.Replacements.copy()
         self.dictionaries: dict[str, dict[str, str]] = {}
         self.json_date: float = 0.0
         self.json_hash: int = 0
@@ -40,7 +40,7 @@ class Dicts(object):
         with open(file = json_path, mode = 'r', encoding = 'utf-8') as file:
             data = json.load(file)
 
-        self.replacements = data.get('replacements', REPLACEMENTS)
+        self.replacements = data.get('replacements', {})
         self.dictionaries = data.get('dictionaries', {})
 
         self.json_date = os.path.getmtime(json_path)

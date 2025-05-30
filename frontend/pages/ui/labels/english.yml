@@ -136,12 +136,14 @@ DICTIONARY:
         dictionaries: 'DICTIONARIES'
     Dialogs_select: [
         'Here you can select between previously created dictionaries or create a new one.',
+        'To create a new dictionary, simply type in a name and press the Enter key.',
         '/n',
         'If you have already selected a dictionary,
             you can deselect it by clicking the "X" button inside the text field.',
         '/n',
         'To rename an existing dictionary, select the dictionary you want to rename.',
-        'Check the "Rename dictionary" option and enter a new dictionary name.',
+        'Check the "Rename dictionary" option and type in a new dictionary name.',
+        'Ensure that the input field is in focus and press the Enter key.',
         '/n',
         'To remove a dictionary, select the dictionary to be deleted and press the upper "trash bin" button.'
     ]
@@ -193,29 +195,33 @@ SETTINGS:
     Dialogs_app: [
         'On this tab, you can change basic application settings.',
         '/n', '/N', '/n',
-        'The first Section contains switches for enabling or disabling various settings such as:
-            "dark mode", "tooltips", "input text reformation" and "Experimental AI translator".',
-        'With the "reformation toggle", the input text will be reformatted with "regular expression",
-            to be able to distinguish the words from each other for the decoding process.',
-        'The alternative experimental AI translator uses LLMs/GPTs based on common neural networks for the decoding.
-            In general, a better result is achieved. However, the translation is not deterministic and may lead
-            in some cases to execution errors.',
+        'The first Section contains options for the interface, such as: toggles for "dark mode"
+         and for "showing tooltips" and a selection for changing the current "display language".',
         '/n', '/N', '/n',
-        'In the second Section is a selection to change the current display language.',
+        'The second Section contains a "reformation" toggle,
+            which can be used to reformat the input text with a "regular expression".
+            This assists to distinguish the words from each other as preparation for the decoding process.',
+        '/n',
+        'Next is the "translator selection" with the Google translator as the default.
+            The results from the Google translator are quite poor, but the access is reliable.',
+        'The other translators are freely available but limited AI translators.
+            The potential translation quality is much higher, however,
+            the translation is not deterministic and may lead to execution errors in some cases.
+            In this case, you may choose between the other translators or go back to the Google translator.',
         '/n', '/N', '/n',
         'The third sections provides a proxy configuration option and a button for checking the internet connection.',
         '/n', '/N', '/n',
         'Click the "RELOAD" button to reload the page and see the changes.',
         '/n', '/N', '/n',
-        'To reset the "application settings", just press the button on the bottom left side of the tab.'
+        'To reset the application settings, just press the button on the bottom left side of the tab.'
     ]
     App_settings:
         text: [
             'Dark mode',
             'Show tooltips',
-            'Reformat input text',
-            'Experimental AI translator',
             'Select language',
+            'Reformat input text',
+            'Select Translator',
             'Proxy configuration:'
         ]
         check: 'CHECK CONNECTION'

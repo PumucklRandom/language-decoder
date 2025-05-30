@@ -1,7 +1,5 @@
-from copy import copy
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
-from backend.dictionaries.dictionaries import Dicts
 from frontend.pages.ui.config import UILabels, UI_LABELS
 
 
@@ -63,14 +61,6 @@ class State(object):
     @decoder.setter
     def decoder(self, value: LanguageDecoder) -> None:
         self._storage['decoder'] = value
-
-    @property
-    def dicts(self) -> Dicts:
-        return self.get('dicts', None)
-
-    @dicts.setter
-    def dicts(self, value: Dicts) -> None:
-        self._storage['dicts'] = value
 
     @property
     def ui_labels(self) -> UILabels:
@@ -137,22 +127,6 @@ class State(object):
         self._storage['source_text'] = value
 
     @property
-    def source_language(self) -> str:
-        return self.get('source_language', 'auto')
-
-    @source_language.setter
-    def source_language(self, value: str) -> None:
-        self._storage['source_language'] = value
-
-    @property
-    def target_language(self) -> str:
-        return self.get('target_language', 'english')
-
-    @target_language.setter
-    def target_language(self, value: str) -> None:
-        self._storage['target_language'] = value
-
-    @property
     def title(self) -> str:
         return self.get('title', '')
 
@@ -183,14 +157,6 @@ class State(object):
     @c_hash.setter
     def c_hash(self, value: int) -> None:
         self._storage['c_hash'] = value
-
-    @property
-    def dict_name(self) -> str:
-        return self.get('dict_name', None)
-
-    @dict_name.setter
-    def dict_name(self, value: str) -> None:
-        self._storage['dict_name'] = value
 
     @property
     def table_page(self) -> dict:
@@ -233,14 +199,6 @@ class State(object):
         self._storage['repl'] = value
 
     @property
-    def proxies(self) -> dict:
-        return self.get('proxies', {})
-
-    @proxies.setter
-    def proxies(self, value: dict) -> None:
-        self._storage['proxies'] = value
-
-    @property
     def http(self) -> str:
         return self.get('http', '')
 
@@ -255,27 +213,3 @@ class State(object):
     @https.setter
     def https(self, value: str) -> None:
         self._storage['https'] = value
-
-    @property
-    def regex(self) -> CONFIG.Regex:
-        return self.get('regex', copy(CONFIG.Regex))
-
-    @regex.setter
-    def regex(self, value: CONFIG.Regex) -> None:
-        self._storage['regex'] = value
-
-    @property
-    def reformatting(self) -> bool:
-        return self.get('reformatting', True)
-
-    @reformatting.setter
-    def reformatting(self, value: bool) -> None:
-        self._storage['reformatting'] = value
-
-    @property
-    def alt_trans(self) -> bool:
-        return self.get('alt_trans', False)
-
-    @alt_trans.setter
-    def alt_trans(self, value: bool) -> None:
-        self._storage['alt_trans'] = value

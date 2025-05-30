@@ -13,8 +13,8 @@ file_dir = os.path.dirname(os.path.relpath(__file__))
 # app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
 # app.native.start_args['private_mode'] = True
 # app.native.start_args['storage_path'] = '.\\_internal\\pywebview'
-app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 # app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True
+app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
     local_file = os.path.join(file_dir, '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),

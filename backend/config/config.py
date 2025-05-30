@@ -8,9 +8,6 @@ from backend.logger.logger import logger, stream_handler
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
-# A mapping dict to replace language independent characters for the source text
-REPLACEMENTS = {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-', '–': '-'}
-
 # Definition of the static Config
 Config = namedtuple('Config', (
     'host',
@@ -26,26 +23,34 @@ Config = namedtuple('Config', (
     'frameless',
     'reload',
     'storage_secret',
+
     'session_time',
     'on_prem',
     'stream_handler',
     'route_timeout',
     'dicts_timeout',
+
     'size_fct',
     'size_min',
     'size_max',
     'table_options',
     'grid_options',
+
     'api_url',
     'api_key',
-    'model',
+    'model_name',
     'model_seed',
     'model_temp',
+    'model_context',
+    'model_age',
+
     'char_limit',
     'word_limit',
+
     'Upload',
     'Pdf',
-    'Regex'
+    'Regex',
+    'Replacements'
 ))
 # Definition of nested Upload
 Upload = namedtuple('Upload', [
@@ -84,6 +89,7 @@ def dict_to_config(config_dict: dict) -> Config:
     config_dict['Upload'] = Upload(**config_dict.pop('Upload'))
     config_dict['Pdf'] = Pdf(**config_dict.pop('Pdf'))
     config_dict['Regex'] = Regex(**config_dict.pop('Regex'))
+
     # Create the static configuration
     return Config(**config_dict)
 

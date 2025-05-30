@@ -42,7 +42,7 @@ class Page(ABC):
 
     @property
     def dicts(self) -> Dicts:
-        return self.state.dicts
+        return self.decoder.dicts
 
     @property
     def UI_LABELS(self) -> UILabels:
@@ -54,20 +54,11 @@ class Page(ABC):
         if self.state.uuid == '': self.state.uuid = app.storage.tab.get('uuid')
         if self.state.user_uuid == '': self.state.user_uuid = app.storage.browser.get('id')
         if self.decoder is None: self.state.decoder = LanguageDecoder(user_uuid = self.state.user_uuid)
-        if self.dicts is None: self.state.dicts = self.decoder.dicts
         ui.dark_mode().set_value(self.state.dark_mode)
         # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
                   dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
                   negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
-
-    def set_decoder_state(self) -> None:
-        self.decoder.source_language = self.state.source_language
-        self.decoder.target_language = self.state.target_language
-        self.decoder.reformatting = self.state.reformatting
-        self.decoder.alt_trans = self.state.alt_trans
-        self.decoder.proxies = self.state.proxies
-        self.decoder.regex = self.state.regex
 
     @Classproperty
     def URL(cls) -> str:

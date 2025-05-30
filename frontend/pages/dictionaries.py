@@ -12,27 +12,27 @@ class Dictionaries(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ui_rename_flag: ui.checkbox
         self.ui_selector: ui.select
         self.ui_table: UITable
+        self.rename: bool = False
 
     @catch
     def _clear_table(self) -> None:
-        self.dicts.dictionaries.get(self.state.dict_name, {}).clear()
+        self.dicts.dictionaries.get(self.decoder.dict_name, {}).clear()
         self.ui_table.rows.clear()
         self.ui_table.update()
         # self.dicts.save(user_uuid = self.state.user_uuid)
 
     @catch
     def _delete_table(self) -> None:
-        self._remove_select_option(self.state.dict_name)
-        self.dicts.dictionaries.pop(self.state.dict_name, {})
+        self._remove_select_option(self.decoder.dict_name)
+        self.dicts.dictionaries.pop(self.decoder.dict_name, {})
         self.ui_selector.set_value(None)
         # self.dicts.save(user_uuid = self.state.user_uuid)
 
     @catch
     def _load_table(self) -> None:
-        self.ui_table.set_values(self.dicts.dictionaries.get(self.state.dict_name, {}))
+        self.ui_table.set_values(self.dicts.dictionaries.get(self.decoder.dict_name, {}))
 
     @catch
     def _select_table(self) -> None:
@@ -40,27 +40,27 @@ class Dictionaries(Page):
         if not self.ui_selector.value:
             self._deselect_table()
             return
-        if self.ui_rename_flag.value:
+        if self.rename:
             self._rename_table()
             return
         self._update_dict()  # self._save_dict()
-        self.state.dict_name = self.ui_selector.value
-        if self.state.dict_name not in self.dicts.dictionaries.keys():
-            self.dicts.dictionaries[self.state.dict_name] = {}
+        self.decoder.dict_name = self.ui_selector.value
+        if self.decoder.dict_name not in self.dicts.dictionaries.keys():
+            self.dicts.dictionaries[self.decoder.dict_name] = {}
         self._load_table()
 
     @catch
     def _rename_table(self) -> None:
-        self.ui_rename_flag.value = False
-        self._remove_select_option(self.state.dict_name)
-        self.dicts.dictionaries.pop(self.state.dict_name, {})
-        self.state.dict_name = self.ui_selector.value
+        self.rename = False
+        self._remove_select_option(self.decoder.dict_name)
+        self.dicts.dictionaries.pop(self.decoder.dict_name, {})
+        self.decoder.dict_name = self.ui_selector.value
         self.ui_selector.update()
         # self.dicts.save(user_uuid = self.state.user_uuid)
 
     @catch
     def _deselect_table(self) -> None:
-        self.state.dict_name = None
+        self.decoder.dict_name = None
         self.ui_table.rows.clear()
         self.ui_table.update()
 
@@ -71,8 +71,8 @@ class Dictionaries(Page):
 
     @catch
     def _update_dict(self) -> None:
-        if self.state.dict_name:
-            self.dicts.dictionaries[self.state.dict_name] = self.ui_table.get_values(as_dict = True)
+        if self.decoder.dict_name:
+            self.dicts.dictionaries[self.decoder.dict_name] = self.ui_table.get_values(as_dict = True)
 
     @catch
     def _save_dict(self) -> None:
@@ -83,22 +83,22 @@ class Dictionaries(Page):
         self.state.table_page = self.ui_table.pagination
 
     @catch
-    def _dialog_select(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.DICTIONARY.Dialogs_select)
+    def _dialog_select(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.DICTIONARY.Dialogs_select).open()
 
     @catch
-    def _dialog_table(self) -> ui_dialog:
-        return ui_dialog(label_list = self.UI_LABELS.DICTIONARY.Dialogs_table)
+    def _dialog_table(self) -> None:
+        ui_dialog(label_list = self.UI_LABELS.DICTIONARY.Dialogs_table).open()
 
     @catch
     async def _export(self) -> None:
-        if not self.state.dict_name: return
+        if not self.decoder.dict_name: return
         self._save_dict()
-        content = self.dicts.to_json_str(dict_name = self.state.dict_name)
+        content = self.dicts.to_json_str(dict_name = self.decoder.dict_name)
         await self.open_route(
             content = content,
             file_type = 'json',
-            filename = self.state.dict_name
+            filename = self.decoder.dict_name
         )
 
     @catch
@@ -157,7 +157,7 @@ class Dictionaries(Page):
             with ui.card().style('width:650px').classes('items-center'):
                 with ui.element():  # is somehow needed for the table border
                     self._table()
-                with ui.button(icon = 'help', on_click = self._dialog_table().open) \
+                with ui.button(icon = 'help', on_click = self._dialog_table) \
                         .classes('absolute-top-right'):
                     if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
                 with ui.button(icon = 'delete', on_click = self._clear_table) \
@@ -167,20 +167,20 @@ class Dictionaries(Page):
     @catch
     def _selector(self) -> None:
         with ui.card().style('width:500px'):
-            self.ui_rename_flag = ui.checkbox(
-                text = self.UI_LABELS.DICTIONARY.Selector.rename).props('dense')
-            # TODO: disable filtering options on rename
+            ui.checkbox(
+                text = self.UI_LABELS.DICTIONARY.Selector.rename) \
+                .props('dense').bind_value(self, 'rename')
             self.ui_selector = ui.select(
                 label = self.UI_LABELS.DICTIONARY.Selector.select,
-                value = self.state.dict_name,
+                value = self.decoder.dict_name,
                 options = list(self.dicts.dictionaries.keys()),
                 with_input = True,
                 new_value_mode = 'add-unique',
                 on_change = self._select_table,
                 clearable = True) \
                 .props('outlined') \
-                .style('width:350px')
-            with ui.button(icon = 'help', on_click = self._dialog_select().open) \
+                .style('width:350px; font-size:12pt')
+            with ui.button(icon = 'help', on_click = self._dialog_select) \
                     .classes('absolute-top-right'):
                 if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
             with ui.button(icon = 'delete', on_click = self._delete_table) \

@@ -52,7 +52,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.11.9.0'
+VERSION = '0.12.0.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 PW_PATH = './_data/password.txt'
@@ -65,12 +65,7 @@ def update_version(version: str) -> None:
     """
     Update version information in the version.rc file.
 
-    Args:
-        version: Version string in format 'x.y.z.w'
-
-    Raises:
-        FileNotFoundError: If version.rc file is not found
-        ValueError: If version format is invalid
+    :param version: Version string in format 'x.y.z.w'
     """
     if not re.match(r'^\d+\.\d+\.\d+\.\d+$', version):
         raise ValueError(f"Invalid version format: {version}. Expected format: x.y.z.w")
@@ -93,16 +88,9 @@ def del_old_build() -> None:
     """
     Remove previous build artifacts.
 
-    Removes:
-    - ./build directory
-    - ./dist directory
-    - app_name.spec file
+    Removes: ./build directory, ./dist directory, ./app_name.spec file
     """
-    paths_to_remove = [
-        './build',
-        './dist',
-        f'./{APP_NAME}.spec'
-    ]
+    paths_to_remove = ('./build', './dist', f'./{APP_NAME}.spec')
 
     for path in paths_to_remove:
         try:
@@ -120,8 +108,7 @@ def get_password() -> str:
     """
     Get certificate password from file.
 
-    Returns:
-        Password string or empty string if file not found or error occurs
+    return: Password string or empty string if file not found or error occurs
     """
     try:
         if not os.path.isfile(PW_PATH):
@@ -138,10 +125,9 @@ def get_password() -> str:
 
 def build_app() -> bool:
     """
-    Build the application using PyInstaller.
+    Get certificate password from file.
 
-    Returns:
-        True if build succeeded, False otherwise
+    return: Password string or empty string if file not found or error occurs
     """
     cmd_build = [
         'pyinstaller', '__main__.py',
@@ -177,8 +163,7 @@ def sign_app() -> bool:
     """
     Sign the executable with the certificate.
 
-    Returns:
-        True if signing succeeded, False otherwise
+    return: True if signing succeeded, False otherwise
     """
     password = get_password()
     if not password:
@@ -221,12 +206,10 @@ def zip_directory(zip_file_path: str, source_directory: str) -> bool:
     """
     Create a zip archive of the directory.
 
-    Args:
-        zip_file_path: Path to the output zip file
-        source_directory: Directory to zip
+    :param zip_file_path: Path to the output zip file
+    :param source_directory: Directory to zip
 
-    Returns:
-        True if zipping succeeded, False otherwise
+    return: True if zipping succeeded, False otherwise
     """
     if not os.path.isdir(source_directory):
         logger.error(f"Source directory not found: {source_directory}")
@@ -257,8 +240,7 @@ def main() -> int:
     """
     Main build process.
 
-    Returns:
-        Exit code (0 for success, non-zero for error)
+    return: Exit code (0 for success, non-zero for error)
     """
     try:
         # Step 1: Update version
