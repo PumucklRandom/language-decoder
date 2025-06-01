@@ -1,6 +1,6 @@
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import UILabels, UI_LABELS
+from frontend.pages.ui.config import UILabels
 
 
 class State(object):

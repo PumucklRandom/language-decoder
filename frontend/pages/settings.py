@@ -2,7 +2,7 @@ from copy import copy
 from nicegui import ui, Client
 from backend.config.config import CONFIG
 from backend.error.error import DecoderError
-from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages, get_ui_labels
+from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.custom import ui_dialog, UITable, UIList
 from frontend.pages.ui.page_abc import Page
