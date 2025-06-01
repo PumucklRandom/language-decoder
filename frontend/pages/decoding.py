@@ -40,11 +40,12 @@ class Decoding(Page):
 
     @catch
     def _refresh_grid(self) -> None:
-        self._update_words()
-        self._update_grid()
+        self._get_grid_values()
+        self._set_grid_values()
 
     @catch
-    def _update_grid(self, preload: bool = False, new_source: bool = False, new_indices: bool = False) -> None:
+    def _set_grid_values(self, preload: bool = False, new_source: bool = False,
+                         new_indices: bool = False) -> None:
         self.ui_grid.set_values(
             source_words = self.state.source_words,
             target_words = self.state.target_words,
@@ -54,20 +55,20 @@ class Decoding(Page):
         )
 
     @catch
-    def _update_words(self) -> None:
+    def _get_grid_values(self) -> None:
         self.state.source_words, self.state.target_words = self.ui_grid.get_values()
         self.state.grid_page = self.ui_grid.get_grid_page()
 
     @catch
     def _replace_words(self) -> None:
-        self._update_words()
+        self._get_grid_values()
         self.state.source_words, self.state.target_words = self.decoder.find_replace(
             source_words = self.state.source_words,
             target_words = self.state.target_words,
             find = self.state.find,
             repl = self.state.repl
         )
-        self._update_grid()
+        self._set_grid_values()
 
     def _clear_replace(self) -> None:
         self.state.find, self.state.repl = '', ''
@@ -82,7 +83,7 @@ class Decoding(Page):
         if self.state.title: self.filename = self.state.title
         if self.state.source_text and self.state.decode:
             self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
-            self._update_grid(preload = True, new_source = True)
+            self._set_grid_values(preload = True, new_source = True)
             notification = ui.notification(
                 message = f'{self.UI_LABELS.DECODING.Messages.decoding} {len(self.state.source_words)}',
                 position = 'top',
@@ -97,7 +98,7 @@ class Decoding(Page):
             await self._task_handler()
             notification.dismiss()
         else:
-            self._update_grid(new_indices = True)
+            self._set_grid_values(new_indices = True)
         self.state.decode = False
 
     @catch
@@ -135,15 +136,15 @@ class Decoding(Page):
             source_words = self.state.source_words,
             target_words = self.state.target_words,
         )
-        self._update_grid()
+        self._set_grid_values()
 
     @catch
     def create_pdf(self) -> None:
-        _hash = hash(f'{self.state.title}{self.state.source_words}'
-                     f'{self.state.target_words}{self.state.pdf_params}')
+        _hash = hash(f'{self.state.title}{self.settings.pdf_params}'
+                     f'{self.state.target_words}{self.state.source_words}')
         if self.state.c_hash != _hash:
             self.state.c_hash = _hash
-            pdf = PDF(**self.state.pdf_params)
+            pdf = PDF(**self.settings.pdf_params)
             self.state.content = pdf.convert2pdf(
                 title = self.state.title,
                 source_words = self.state.source_words,
@@ -165,7 +166,7 @@ class Decoding(Page):
             self.state.title = pathlib.Path(event.name).stem
             self.filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
-            self._update_grid(new_source = True)
+            self._set_grid_values(new_source = True)
         except DecoderError:
             ui.notify(self.UI_LABELS.DECODING.Messages.invalid, type = 'warning', position = 'top')
         finally:
@@ -182,7 +183,7 @@ class Decoding(Page):
     @catch
     def _pdf_dialog(self) -> None:
         if not self.state.target_words: return
-        self._update_words()
+        self._get_grid_values()
         self.create_pdf()
         with ui.dialog() as dialog:
             with ui.card().classes('items-center'):
@@ -202,7 +203,7 @@ class Decoding(Page):
     @catch
     async def _export(self) -> None:
         if not self.state.target_words: return
-        self._update_words()
+        self._get_grid_values()
         content = self.decoder.to_json_str(
             source_words = self.state.source_words,
             target_words = self.state.target_words,
@@ -235,7 +236,7 @@ class Decoding(Page):
     @catch
     def _replace(self) -> None:
         with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
-            if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.replace)
+            if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.replace)
             with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)):
                 with ui.menu_item(auto_close = False):
                     self.ui_find_input = ui.input(
@@ -255,12 +256,12 @@ class Decoding(Page):
     def _header(self) -> None:
         with ui.header():
             ui.button(text = self.UI_LABELS.DECODING.Header.upload,
-                      on_click = lambda: self.goto(URLS.UPLOAD, call = self._update_words))
+                      on_click = lambda: self.goto(URLS.UPLOAD, call = self._get_grid_values))
             ui.label(text = self.UI_LABELS.DECODING.Header.decoding).classes('absolute-center')
             ui.space()
             ui.button(text = self.UI_LABELS.DECODING.Header.dictionaries,
-                      on_click = lambda: self.goto(URLS.DICTIONARIES, call = self._update_words))
-            ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._update_words))
+                      on_click = lambda: self.goto(URLS.DICTIONARIES, call = self._get_grid_values))
+            ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._get_grid_values))
 
     @catch
     async def _center(self) -> None:
@@ -270,11 +271,12 @@ class Decoding(Page):
                 endofs = self.decoder.regex.endofs + self.decoder.regex.quotes,
                 find_str = self.state.find
             )
-            self.ui_grid(dark_mode = self.state.dark_mode)
+            self.ui_grid.page(dark_mode = self.settings.app.dark_mode)
+        with ui.footer(): self.ui_grid.pagination()
         await self._decode_words()
         with ui.button(icon = 'help', on_click = self._dialog) \
                 .classes(top_right(5, 5)).props('dense'):
-            if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.help).style('width:70px')
+            if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.help).style('width:70px')
 
     @catch
     def _footer(self) -> None:
@@ -282,23 +284,23 @@ class Decoding(Page):
             self._replace()
             ui.space()
             with ui.button(text = self.UI_LABELS.DECODING.Footer.import_, on_click = self._import):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.import_)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.import_)
             ui.space()
             ui.button(text = self.UI_LABELS.DECODING.Footer.apply, on_click = self._apply_dict)
             ui.space()
             with ui.button(icon = 'refresh', on_click = self._refresh_grid):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.refresh)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.refresh)
             ui.space()
             ui.button(text = self.UI_LABELS.DECODING.Footer.create, on_click = self._pdf_dialog)
             ui.space()
             with ui.button(text = self.UI_LABELS.DECODING.Footer.export, on_click = self._export):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.export)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.export)
             ui.space()
             with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.view)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.view)
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)
         await self._center()
-        self._header()
         self._footer()
+        self._header()

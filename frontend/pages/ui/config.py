@@ -1,4 +1,5 @@
 import os
+import json
 import yaml
 import traceback
 from copy import deepcopy
@@ -48,7 +49,6 @@ URLS = Urls(
 )
 
 # List of all static colors
-
 Color = namedtuple('Color', ('KEY', 'VAL'))
 PRIMARY = Color('primary', '#409696')
 SECONDARY = Color('secondary', '#5A96E0')
@@ -153,33 +153,56 @@ class JS:
         '''
 
 
-ui.add_head_html(code = '''
-                     <style>
-                         .q-textarea.flex-grow .q-field__control{
-                             height: 100%;
-                         }
-                     </style>
-                 ''', shared = True)
-ui.add_head_html(code = '''
-                     <style>
-                         @font-face{
-                             font-family: "RobotoMono";
-                             src: url('/fonts/RobotoMono/RobotoMono.ttf');
-                         }
-                     </style>
-                 ''', shared = True)
-ui.add_head_html(code = '''
-                     <style>
-                         .sticky-header q-table__top,
-                         .sticky-header thead tr th {
-                             position: sticky;
-                             z-index: 1;
-                         }
-                         .sticky-header thead tr:first-child th {
-                             top: 0;
-                         }
-                     </style>
-                 ''', shared = True)
+ui.add_head_html(
+    code = '''
+        <style>
+            .table-bottom-space .q-table__middle {
+                padding-bottom: 15px;
+            }
+        </style>
+    ''',
+    shared = True
+)
+
+ui.add_head_html(
+    code = '''
+        <style>
+             .q-textarea.flex-grow .q-field__control{
+                 height: 100%;
+             }
+        </style>
+    ''',
+    shared = True
+)
+ui.add_head_html(
+    code = '''
+        <style>
+            @font-face{
+                 font-family: "RobotoMono";
+                 src: url('/fonts/RobotoMono/RobotoMono.ttf');
+            }
+        </style>
+    ''',
+    shared = True
+)
+ui.add_head_html(
+    code = '''
+        <style>
+            .sticky-header q-table__top,
+            .sticky-header thead tr th {
+                position: sticky;
+                z-index: 1;
+            }
+            .sticky-header thead tr:first-child th {
+                top: 0;
+            }
+        </style>
+    ''',
+    shared = True
+)
+
+ui.header.default_style('height:66px')  # align-items:center
+ui.footer.default_style('height:66px')  # align-items:center
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
 

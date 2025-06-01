@@ -57,15 +57,16 @@ class PDF(object):
         self.left_margin = left_margin
         self.title_height = title_height
         self.line_height = line_height
+        self.header_height = self.line_height * 3
+        self.pps = 1 / self.pages_per_sheet if self.pages_per_sheet else 0
         self.width = width
         self._fpdf: FPDF
 
-    def __init_fpdf__(self) -> FPDF:
+    def __init_fpdf__(self) -> None:
         self._fpdf = FPDF(format = 'A4', orientation = 'P', unit = 'mm')
         self._fpdf.add_font(family = 'Noto', fname = self.font_path)
         self._fpdf.set_auto_page_break(auto = False, margin = 0)
         self._fpdf.set_margins(top = self.top_margin, left = self.left_margin)
-        return self._fpdf
 
     def _format_lines(self, source_words: list[str], target_words: list[str]) -> list[str]:
         line_len = 0
@@ -102,7 +103,7 @@ class PDF(object):
         while completed_lines < lines_len:
             # get the lines for one page
             page_lines = pdf_lines[completed_lines:completed_lines + self.line_lim]
-            if self.page_sep and len(pages) % 2:  # page number is odd
+            if self.page_sep and bool(self.pps * len(pages) % 2 % 1):
                 # if page number is odd add page separator at the beginning of the line
                 page_lines = [self.page_sep + line for line in page_lines]
             # join lines to a single page and remove the self.new_lines at the end of the page
@@ -114,8 +115,7 @@ class PDF(object):
         try:
             self.__init_fpdf__()
             pdf_title = f'    {title}'
-            header_height = self.line_height * 3
-            pps = 1 / self.pages_per_sheet if self.pages_per_sheet else 0
+
             for p, page in enumerate(pdf_pages):
                 self._fpdf.add_page()
                 if p == 0:
@@ -123,14 +123,14 @@ class PDF(object):
                     self._fpdf.set_font(family = 'Noto', size = self.title_size)
                     self._fpdf.cell(text = pdf_title, w = self.width, h = self.title_height,
                                     new_x = 'LMARGIN', new_y = 'NEXT')
-                    self._fpdf.cell(text = '', w = self.width, h = header_height - self.title_height,
+                    self._fpdf.cell(text = '', w = self.width, h = self.header_height - self.title_height,
                                     new_x = 'LMARGIN', new_y = 'NEXT')
                     # write formatted page
                     self._fpdf.set_font(family = 'Noto', size = self.font_size)
                     self._fpdf.multi_cell(text = page, w = self.width, h = self.line_height)
-                elif pps * p % 2 < 1.:  # front pages
+                elif self.pps * p % 2 < 1.:  # front pages
                     # add space to the top of the front pages
-                    self._fpdf.cell(text = '', w = self.width, h = header_height,
+                    self._fpdf.cell(text = '', w = self.width, h = self.header_height,
                                     new_x = 'LMARGIN', new_y = 'NEXT')
                     # write formatted page
                     self._fpdf.multi_cell(text = page, w = self.width, h = self.line_height)

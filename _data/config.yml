@@ -16,7 +16,7 @@ session_time: 100_000
 on_prem: true
 stream_handler: false
 route_timeout: 30
-dicts_timeout: 30
+files_timeout: 30
 
 size_fct: 8.5
 size_min: 50
@@ -39,7 +39,19 @@ Upload:
     auto_upload: true
     max_files: 1
 
-Pdf:
+App:
+    dark_mode: true
+    show_tips: true
+    language: 'english'
+    reformatting: true
+    model_name: 'Google Translator'
+    http: ''
+    https: ''
+
+# A mapping dict to replace language independent characters for the source text
+Replacements: {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-', '–': '-'}
+
+Pdf_params:
     pages_per_sheet: 2
     page_sep: false
     tab_size: 4
@@ -61,6 +73,3 @@ Regex:
     opens: '<(\[{'
     close: '>)\]}'
     quotes: "\"'´`"
-
-# A mapping dict to replace language independent characters for the source text
-Replacements: {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-', '–': '-'}
