@@ -1,6 +1,6 @@
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import UILabels, UI_LABELS
+from frontend.pages.ui.config import UILabels
 
 
 class State(object):
@@ -64,35 +64,11 @@ class State(object):
 
     @property
     def ui_labels(self) -> UILabels:
-        return self.get('ui_labels', UI_LABELS)
+        return self.get('ui_labels', None)
 
     @ui_labels.setter
     def ui_labels(self, value: UILabels) -> None:
         self._storage['ui_labels'] = value
-
-    @property
-    def language(self) -> str:
-        return self.get('language', 'english')
-
-    @language.setter
-    def language(self, value: str) -> None:
-        self._storage['language'] = value
-
-    @property
-    def dark_mode(self) -> bool:
-        return self.get('dark_mode', CONFIG.dark)
-
-    @dark_mode.setter
-    def dark_mode(self, value: bool) -> None:
-        self._storage['dark_mode'] = value
-
-    @property
-    def show_tips(self) -> bool:
-        return self.get('show_tips', True)
-
-    @show_tips.setter
-    def show_tips(self, value: bool) -> None:
-        self._storage['show_tips'] = value
 
     @property
     def source_words(self) -> list[str]:
@@ -143,14 +119,6 @@ class State(object):
         self._storage['content'] = value
 
     @property
-    def pdf_params(self) -> dict:
-        return self.get('pdf_params', CONFIG.Pdf._asdict())
-
-    @pdf_params.setter
-    def pdf_params(self, value: dict) -> None:
-        self._storage['pdf_params'] = value
-
-    @property
     def c_hash(self) -> int:
         return self.get('c_hash', 0)
 
@@ -197,19 +165,3 @@ class State(object):
     @repl.setter
     def repl(self, value: str) -> None:
         self._storage['repl'] = value
-
-    @property
-    def http(self) -> str:
-        return self.get('http', '')
-
-    @http.setter
-    def http(self, value: str) -> None:
-        self._storage['http'] = value
-
-    @property
-    def https(self) -> str:
-        return self.get('https', '')
-
-    @https.setter
-    def https(self, value: str) -> None:
-        self._storage['https'] = value

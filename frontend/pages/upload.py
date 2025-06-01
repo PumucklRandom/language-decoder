@@ -78,7 +78,7 @@ class Upload(Page):
                     .classes('w-[50%] items-center'):
                 with ui.button(icon = 'help', on_click = self._dialog) \
                         .classes('absolute-top-right'):
-                    if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.help)
+                    if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.help)
                 ui.label(self.UI_LABELS.UPLOAD.Uploads[0]).style('font-size:14pt')
                 ui.upload(
                     label = self.UI_LABELS.UPLOAD.Uploads[1],
@@ -90,7 +90,7 @@ class Upload(Page):
                     .props('accept=.txt flat dense')
                 with ui.input(label = self.UI_LABELS.UPLOAD.Title).classes(top_left(130, 70)) \
                         .bind_value(self.state, 'title'):
-                    if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.title)
+                    if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.title)
                 ui.textarea(
                     label = f'{self.UI_LABELS.UPLOAD.Input_txt[0]} {self.word_limit}',
                     placeholder = self.UI_LABELS.UPLOAD.Input_txt[1],
@@ -122,10 +122,10 @@ class Upload(Page):
         with ui.button(text = self.UI_LABELS.UPLOAD.Footer.decode,
                        on_click = lambda: self.goto(URLS.DECODING, call = self._decode)) \
                 .classes(bot_right(12, 23, 'px', '%')):
-            if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.decode)
+            if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.decode)
         ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, '_n_words_text')
         with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
-            if self.state.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.delete)
+            if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.delete)
 
     async def page(self, client: Client) -> None:
         await self.__init_ui__(client = client)

@@ -17,24 +17,6 @@ class Dictionaries(Page):
         self.rename: bool = False
 
     @catch
-    def _clear_table(self) -> None:
-        self.dicts.dictionaries.get(self.decoder.dict_name, {}).clear()
-        self.ui_table.rows.clear()
-        self.ui_table.update()
-        # self.dicts.save(user_uuid = self.state.user_uuid)
-
-    @catch
-    def _delete_table(self) -> None:
-        self._remove_select_option(self.decoder.dict_name)
-        self.dicts.dictionaries.pop(self.decoder.dict_name, {})
-        self.ui_selector.set_value(None)
-        # self.dicts.save(user_uuid = self.state.user_uuid)
-
-    @catch
-    def _load_table(self) -> None:
-        self.ui_table.set_values(self.dicts.dictionaries.get(self.decoder.dict_name, {}))
-
-    @catch
     def _select_table(self) -> None:
         if not self.ui_selector: return
         if not self.ui_selector.value:
@@ -43,26 +25,26 @@ class Dictionaries(Page):
         if self.rename:
             self._rename_table()
             return
-        self._update_dict()  # self._save_dict()
-        self.decoder.dict_name = self.ui_selector.value
-        if self.decoder.dict_name not in self.dicts.dictionaries.keys():
-            self.dicts.dictionaries[self.decoder.dict_name] = {}
-        self._load_table()
+        self._get_dict_values()  # self._save_dict()
+        self.dicts.dict_name = self.ui_selector.value
+        if self.dicts.dict_name not in self.dicts.dictionaries.keys():
+            self.dicts.dictionaries[self.dicts.dict_name] = {}
+        self._set_dict_values()
+
+    @catch
+    def _deselect_table(self) -> None:
+        self.dicts.dict_name = None
+        self.ui_table.rows.clear()
+        self.ui_table.update()
 
     @catch
     def _rename_table(self) -> None:
         self.rename = False
-        self._remove_select_option(self.decoder.dict_name)
-        self.dicts.dictionaries.pop(self.decoder.dict_name, {})
-        self.decoder.dict_name = self.ui_selector.value
+        self._remove_select_option(self.dicts.dict_name)
+        self.dicts.dictionaries.pop(self.dicts.dict_name, {})
+        self.dicts.dict_name = self.ui_selector.value
         self.ui_selector.update()
         # self.dicts.save(user_uuid = self.state.user_uuid)
-
-    @catch
-    def _deselect_table(self) -> None:
-        self.decoder.dict_name = None
-        self.ui_table.rows.clear()
-        self.ui_table.update()
 
     @catch
     def _remove_select_option(self, option: str) -> None:
@@ -70,16 +52,34 @@ class Dictionaries(Page):
             self.ui_selector.options.remove(option)
 
     @catch
-    def _update_dict(self) -> None:
-        if self.decoder.dict_name:
-            self.dicts.dictionaries[self.decoder.dict_name] = self.ui_table.get_values(as_dict = True)
-
-    @catch
     def _save_dict(self) -> None:
-        self._update_dict()
+        self._get_dict_values()
         self.dicts.save()
 
-    def update_table_state(self) -> None:
+    @catch
+    def _get_dict_values(self) -> None:
+        if self.dicts.dict_name:
+            self.dicts.dictionaries[self.dicts.dict_name] = self.ui_table.get_values(as_dict = True)
+
+    @catch
+    def _delete_table(self) -> None:
+        self._remove_select_option(self.dicts.dict_name)
+        self.dicts.dictionaries.pop(self.dicts.dict_name, {})
+        self.ui_selector.set_value(None)
+        # self.dicts.save(user_uuid = self.state.user_uuid)
+
+    @catch
+    def _clear_table(self) -> None:
+        self.dicts.dictionaries.get(self.dicts.dict_name, {}).clear()
+        self.ui_table.rows.clear()
+        self.ui_table.update()
+        # self.dicts.save(user_uuid = self.state.user_uuid)
+
+    @catch
+    def _set_dict_values(self) -> None:
+        self.ui_table.set_values(self.dicts.dictionaries.get(self.dicts.dict_name, {}))
+
+    def _get_table_page(self) -> None:
         self.state.table_page = self.ui_table.pagination
 
     @catch
@@ -92,13 +92,13 @@ class Dictionaries(Page):
 
     @catch
     async def _export(self) -> None:
-        if not self.decoder.dict_name: return
+        if not self.dicts.dict_name: return
         self._save_dict()
-        content = self.dicts.to_json_str(dict_name = self.decoder.dict_name)
+        content = self.dicts.to_json_str(dict_name = self.dicts.dict_name)
         await self.open_route(
             content = content,
             file_type = 'json',
-            filename = self.decoder.dict_name
+            filename = self.dicts.dict_name
         )
 
     @catch
@@ -114,7 +114,7 @@ class Dictionaries(Page):
             self.dicts.from_json_str(dict_name = dict_name, data = data)
             self.ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
             self.ui_selector.set_value(dict_name)
-            self._load_table()
+            self._set_dict_values()
             # self._save_dict()
         except DictionaryError:
             ui.notify(self.UI_LABELS.DICTIONARY.Messages.invalid, type = 'warning', position = 'top')
@@ -144,7 +144,7 @@ class Dictionaries(Page):
         with ui.header():
             with ui.button(icon = 'keyboard_backspace',
                            on_click = lambda: self.goto('back', call = self._save_dict)):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.back)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.back)
             ui.label(self.UI_LABELS.DICTIONARY.Header.dictionaries).classes('absolute-center')
             ui.space()
             ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._save_dict))
@@ -159,10 +159,10 @@ class Dictionaries(Page):
                     self._table()
                 with ui.button(icon = 'help', on_click = self._dialog_table) \
                         .classes('absolute-top-right'):
-                    if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
+                    if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
                 with ui.button(icon = 'delete', on_click = self._clear_table) \
                         .classes('absolute-bottom-right'):
-                    if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.clear)
+                    if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.clear)
 
     @catch
     def _selector(self) -> None:
@@ -172,7 +172,7 @@ class Dictionaries(Page):
                 .props('dense').bind_value(self, 'rename')
             self.ui_selector = ui.select(
                 label = self.UI_LABELS.DICTIONARY.Selector.select,
-                value = self.decoder.dict_name,
+                value = self.dicts.dict_name,
                 options = list(self.dicts.dictionaries.keys()),
                 with_input = True,
                 new_value_mode = 'add-unique',
@@ -182,10 +182,10 @@ class Dictionaries(Page):
                 .style('width:350px; font-size:12pt')
             with ui.button(icon = 'help', on_click = self._dialog_select) \
                     .classes('absolute-top-right'):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
             with ui.button(icon = 'delete', on_click = self._delete_table) \
                     .classes('absolute-bottom-right'):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.delete)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.delete)
 
     @catch
     def _table(self) -> None:
@@ -193,24 +193,24 @@ class Dictionaries(Page):
         DICT_COLS[1].update({'label': self.UI_LABELS.DICTIONARY.Table.val})
         self.ui_table = UITable(
             columns = DICT_COLS,
-            dark_mode = self.state.dark_mode,
+            dark_mode = self.settings.app.dark_mode,
             pagination = self.state.table_page,
-            on_pagination_change = self.update_table_state
+            on_pagination_change = self._get_table_page
         ).style('min-width:500px; max-height:75vh').classes('sticky-header')
-        self._load_table()
+        self._set_dict_values()
 
     @catch
     def _footer(self) -> None:
         with ui.footer():
             ui.space()
             with ui.button(text = self.UI_LABELS.DICTIONARY.Footer.import_, on_click = self._import):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.import_)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.import_)
             ui.space()
             with ui.button(icon = 'save', on_click = self._save_dict):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.save)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.save)
             ui.space()
             with ui.button(text = self.UI_LABELS.DICTIONARY.Footer.export, on_click = self._export):
-                if self.state.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.export)
+                if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.export)
             ui.space()
 
     async def page(self, client: Client) -> None:

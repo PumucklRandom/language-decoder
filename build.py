@@ -52,7 +52,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.12.1.0'
+VERSION = '0.12.2.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 PW_PATH = './_data/password.txt'

@@ -28,7 +28,7 @@ Config = namedtuple('Config', (
     'on_prem',
     'stream_handler',
     'route_timeout',
-    'dicts_timeout',
+    'files_timeout',
 
     'size_fct',
     'size_min',
@@ -48,17 +48,28 @@ Config = namedtuple('Config', (
     'word_limit',
 
     'Upload',
-    'Pdf',
-    'Regex',
-    'Replacements'
+    'App',
+    'Replacements',  # Replacement settings
+    'Pdf_params',
+    'Regex'
 ))
 # Definition of nested Upload
-Upload = namedtuple('Upload', [
+Upload = namedtuple('Upload', (
     'auto_upload',
     'max_files'
-])
-# Definition of nested Pdf
-Pdf = namedtuple('Pdf', (
+))
+# Definition of nested App settings
+App = namedtuple('APP', (
+    'dark_mode',
+    'show_tips',
+    'language',
+    'reformatting',
+    'model_name',
+    'http',
+    'https'
+))
+# Definition of nested Pdf settings
+Pdf_params = namedtuple('Pdf', (
     'pages_per_sheet',
     'page_sep',
     'tab_size',
@@ -71,7 +82,7 @@ Pdf = namedtuple('Pdf', (
     'title_height',
     'line_height'
 ))
-# Definition of nested Regex
+# Definition of nested Regex settings
 Regex = namedtuple('Regex', (
     'endofs',
     'puncts',
@@ -87,7 +98,8 @@ Regex = namedtuple('Regex', (
 def dict_to_config(config_dict: dict) -> Config:
     # Extract data and create nested sub configurations
     config_dict['Upload'] = Upload(**config_dict.pop('Upload'))
-    config_dict['Pdf'] = Pdf(**config_dict.pop('Pdf'))
+    config_dict['App'] = App(**config_dict.pop('App'))
+    config_dict['Pdf_params'] = Pdf_params(**config_dict.pop('Pdf_params'))
     config_dict['Regex'] = Regex(**config_dict.pop('Regex'))
 
     # Create the static configuration

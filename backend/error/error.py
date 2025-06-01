@@ -21,23 +21,28 @@ class ConfigError(BackendError):
     pass
 
 
-class DictionaryError(BackendError):
-    """Exception raised for dictionary-related errors."""
-    pass
-
-
 class DecoderError(BackendError):
-    """Exception raised for decoder-related errors."""
-    pass
-
-
-class AITranslatorError(DecoderError):
     """Exception raised for decoder-related errors."""
     pass
 
 
 class PDFFormatterError(BackendError):
     """Exception raised for PDF formatter-related errors."""
+    pass
+
+
+class DictionaryError(BackendError):
+    """Exception raised for dictionary-related errors."""
+    pass
+
+
+class SettingsError(BackendError):
+    """Exception raised for settings-related errors."""
+    pass
+
+
+class AITranslatorError(DecoderError):
+    """Exception raised for decoder-related errors."""
     pass
 
 

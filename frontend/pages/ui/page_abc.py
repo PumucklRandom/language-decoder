@@ -4,29 +4,37 @@ from abc import ABC, abstractmethod
 from nicegui import ui, app, Client
 from fastapi.responses import Response
 from backend.config.config import CONFIG
+from backend.user_data.settings import Settings
+from backend.user_data.dictionaries import Dicts
 from backend.decoder.language_decoder import LanguageDecoder
-from backend.dictionaries.dictionaries import Dicts
-from frontend.pages.ui.config import URLS, COLORS, UILabels
+from frontend.pages.ui.config import URLS, COLORS, UILabels, get_ui_labels
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.state import State
 
 
 class Classproperty(property):
-    def __get__(self, obj, objtype = None):
-        return super(Classproperty, self).__get__(objtype)
+    def __init__(self, fget = None, fset = None, fdel = None, doc = None):
+        super().__init__(fget, fset, fdel, doc)
 
-    def __set__(self, obj, value):
-        super(Classproperty, self).__set__(type(obj), value)
+    def __get__(self, instance, owner = None):
+        return super().__get__(owner)
 
-    def __delete__(self, obj):
-        super(Classproperty, self).__delete__(type(obj))
+    def __set__(self, instance, value):
+        super().__set__(type(instance), value)
+
+    def __delete__(self, instance):
+        super().__delete__(type(instance))
 
 
 class Page(ABC):
     """
-    Basic class for all pages with integrated URL history and a self build functionality
+    Basic class for all pages with integrated URL path, state, backend, page navigation and app routing
     """
     _URL: str
+
+    @Classproperty
+    def URL(self) -> str:
+        return self._URL
 
     def __init__(self) -> None:
         self.state: State
@@ -45,24 +53,34 @@ class Page(ABC):
         return self.decoder.dicts
 
     @property
+    def settings(self) -> Settings:
+        return self.decoder.settings
+
+    @property
     def UI_LABELS(self) -> UILabels:
         return self.state.ui_labels
+
+    @catch
+    def get_ui_labels(self) -> None:
+        self.state.ui_labels = get_ui_labels(self.settings.app.language)
+
+    @property
+    def show_tips(self) -> bool:
+        return self.settings.app.show_tips
 
     async def __init_ui__(self, client: Client) -> None:
         await client.connected()
         self.state = State(storage = app.storage.tab)
-        if self.state.uuid == '': self.state.uuid = app.storage.tab.get('uuid')
+        # if self.state.uuid == '': self.state.uuid = client.tab_id
         if self.state.user_uuid == '': self.state.user_uuid = app.storage.browser.get('id')
         if self.decoder is None: self.state.decoder = LanguageDecoder(user_uuid = self.state.user_uuid)
-        ui.dark_mode().set_value(self.state.dark_mode)
+        self.settings.load()
+        if self.state.ui_labels is None: self.get_ui_labels()
+        ui.dark_mode().set_value(self.settings.app.dark_mode)
         # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
                   dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
                   negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
-
-    @Classproperty
-    def URL(cls) -> str:
-        return cls._URL
 
     @staticmethod
     @catch
@@ -131,6 +149,13 @@ class Page(ABC):
 
 
 class UIPage(ui.page):
+    """
+    A wrapper for the nicegui page class which:
+    - passes the URL path for each page
+    - generate a new page instance for every user
+    - builds the pages
+    """
+
     def __init__(self, page_class: type(Page)) -> None:
         super().__init__(path = page_class.URL)
         self.page_class = page_class

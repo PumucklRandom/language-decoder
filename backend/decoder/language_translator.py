@@ -6,6 +6,7 @@ import httpx
 import base64
 import openai
 import traceback
+from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 from backend.config.config import CONFIG
 from backend.error.error import AITranslatorError
 from backend.error.error import ConfigError
@@ -67,9 +68,9 @@ class LanguageTranslator(object):
 
     def _set_proxy(self, proxies: dict = None) -> None:
         if isinstance(proxies, dict):
-            if proxies.get('http', None):
+            if proxies.get('http', ''):
                 proxies.update({'http://': httpx.HTTPTransport(proxy = f'http://{proxies.get("http")}')})
-            if proxies.get('https', None):
+            if proxies.get('https', ''):
                 proxies.update({'https://': httpx.HTTPTransport(proxy = f'http://{proxies.get("https")}')})
             proxies.pop('http', None)
             proxies.pop('https', None)
@@ -92,9 +93,9 @@ class LanguageTranslator(object):
             csv_string = self._to_csv(source_words)
             response = self.client.chat.completions.create(
                 messages = [
-                    {'role': 'system', 'content': self._get_prompt()},
-                    {'role': 'user', 'content': csv_string},
-                    # {'role': 'assistant', 'content': 'Source\tTarget\n'}
+                    ChatCompletionSystemMessageParam(role = 'system', content = self._get_prompt()),
+                    ChatCompletionUserMessageParam(role = 'user', content = csv_string)
+                    # ChatCompletionAssistantMessageParam(content = 'Source\tTarget\n')
                 ],
                 model = self.models.get(self.model_name),
                 temperature = self.model_temp,
@@ -104,6 +105,8 @@ class LanguageTranslator(object):
                     # "HTTP-Referer": "LanguageDecoder",
                 },
             )
+            if not response.choices[0].message.content: return source_words
+
             return self._check_content(
                 content = response.choices[0].message.content,
                 csv_len = len(source_words) + 1
@@ -146,7 +149,7 @@ class LanguageTranslator(object):
 
     @staticmethod
     def _to_csv(source_words: list[str]) -> str:
-        with io.StringIO() as io_string:
+        with io.StringIO() as io_string:  # type: io.StringIO
             csv_writer = csv.writer(io_string, delimiter = '\t', lineterminator = '\n')
             csv_writer.writerows([('Source', 'Target')] + list(zip(source_words)))
             return io_string.getvalue()

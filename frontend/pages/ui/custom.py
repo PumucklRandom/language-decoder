@@ -122,46 +122,62 @@ class UITable(Table):
             self.tar_color = COLORS.BLUE_GREY1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
+        self.classes('table-bottom-space')
         self.props('flat bordered separator=cell')
         self.props['rows-per-page-options'] = CONFIG.table_options
         self.props['rows-per-page'] = CONFIG.table_options[2]
 
+        # Add padding to the bottom of the table body
+        # self.style('--table-bottom-padding: 20px')
+
+        # Add global CSS for table padding if not already added
+        # if not hasattr(UITable, '_css_added'):
+        #     ui.add_head_html('''
+        #         <style>
+        #             .custom-table-with-space .q-table__middle {
+        #                 padding-bottom: 20px;
+        #             }
+        #         </style>
+        #     ''')
+        #     UITable._css_added = True
+
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
-            <q-th auto-width>
-                <q-btn icon="add" size="12px" dense round color="{COLORS.PRIMARY.KEY}" :props="props"
-                @click="() => $parent.$emit('_add_row')"/>
-                <!-- <q-tooltip> add row below </q-tooltip> -->
-            </q-th>
             <q-th v-for="col in props.cols" :key="col.field" :props="props"
                 style="font-size:16px; text-align:center">
                 {{{{ col.label }}}}
             </q-th>
+            <q-th auto-width>
+                <q-btn icon="add" size="14px" dense round color="{COLORS.PRIMARY.KEY}" :props="props"
+                @click="() => $parent.$emit('_add_row')"/>
+                <!-- <q-tooltip> add row below </q-tooltip> -->
+            </q-th>
+
         </q-tr>
     '''
 
     def _body(self) -> str:
         return f'''
             <q-tr :props="props">
-                <q-td auto-width style="background-color:{self.btn_color}; text-align:center">
-                    <div class="col">
-                        <q-btn icon="remove" size="8px" dense round color="{COLORS.PRIMARY.KEY}"
-                        @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>
-                        <!-- <q-tooltip> delete row </q-tooltip> -->
-                    </div>
-                    <div class="col">
-                        <q-btn icon="add" size="8px" dense round color="{COLORS.PRIMARY.KEY}"
-                        @click="() => $parent.$emit('_add_row', props.row)" :props="props"/>
-                        <!-- <q-tooltip> add row below </q-tooltip> -->
-                    </div>
-                </q-td>
                 <q-td key="source" style="background-color:{self.scr_color}" :props="props">
                     <q-input v-model="props.row.source" dense borderless debounce="{CONFIG.debounce}"
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
                 <q-td key="target" style="background-color:{self.tar_color}" :props="props">
                     <q-input v-model="props.row.target" dense borderless debounce="{CONFIG.debounce}"
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                </q-td>
+                <q-td auto-width style="background-color:{self.btn_color}; text-align:center">
+                    <div style="position:absolute; top:50%; left:60%; transform:translate(-50%, -50%)">
+                        <q-btn icon="remove" size="11px" dense round color="{COLORS.PRIMARY.KEY}"
+                            @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>
+                        <!-- <q-tooltip> delete row </q-tooltip> -->
+                    </div>
+                    <div style="position:absolute; top:103%; left:-1%; transform:translate(-50%, -50%); z-index:1">
+                        <q-btn icon="add" size="11.5px" dense round color="{COLORS.PRIMARY.KEY}"
+                            @click="() => $parent.$emit('_add_row', props.row)" :props="props"/>
+                        <!-- <q-tooltip> add row below </q-tooltip> -->
+                    </div>
                 </q-td>
             </q-tr>
         '''
@@ -234,28 +250,31 @@ class UIGridPages(object):
         self.ui_page: ui.pagination
         self.visible: bool = False
 
-    def __call__(self, *args, **kwargs) -> None:
+    def page(self, *args, **kwargs) -> None:
         with ui.card().style('min-width:1000px; min-height:562px'):
             self._table(*args, **kwargs)
             ui.space().style('height:5px')
-            with ui.element().bind_visibility_from(self, 'visible'):
-                ui.label('Max words per page:').classes(bot_right(15, 410))
-                ui.select(options = CONFIG.grid_options,
-                          value = CONFIG.grid_options[2],
-                          on_change = self.repage) \
-                    .props('dense options-dense borderless') \
-                    .style('width:50px') \
-                    .classes(bot_right(5, 350)) \
-                    .bind_value(self, 'page_size')
-                self.ui_page = ui.pagination(
-                    min = 1, max = 1,
-                    direction_links = True,
-                    value = self.page_number,
-                    on_change = self.scroll) \
-                    .props('max-pages="8"') \
-                    .style('width:350px') \
-                    .classes(bot_right(10, 0)) \
-                    .bind_value(self, 'page_number')
+
+    def pagination(self):
+        with ui.card().classes(bot_right(66, 0)).style('min-width:550px; min-height:50px') \
+                .bind_visibility_from(self, 'visible'):
+            ui.label('Max words per page:').classes(bot_right(15, 410))
+            ui.select(options = CONFIG.grid_options,
+                      value = CONFIG.grid_options[2],
+                      on_change = self.repage) \
+                .classes(bot_right(5, 350)) \
+                .props('dense options-dense borderless') \
+                .style('width:50px') \
+                .bind_value(self, 'page_size')
+            self.ui_page = ui.pagination(
+                min = 1, max = 1,
+                direction_links = True,
+                value = self.page_number,
+                on_change = self.scroll) \
+                .classes(bot_right(10, 0)) \
+                .props('max-pages="8"') \
+                .style('width:350px') \
+                .bind_value(self, 'page_number')
 
     @ui.refreshable
     def _table(self, *args, **kwargs) -> None:

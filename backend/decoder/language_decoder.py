@@ -8,10 +8,11 @@ from typing import Union
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
 from backend.decoder.language_translator import LanguageTranslator
-from backend.config.config import CONFIG, Config
+from backend.config.config import CONFIG, Regex
 from backend.error.error import DecoderError, AITranslatorError, catch
 from backend.logger.logger import logger
-from backend.dictionaries.dictionaries import Dicts
+from backend.user_data.dictionaries import Dicts
+from backend.user_data.settings import Settings
 from backend.utils import utilities as utils
 
 
@@ -26,38 +27,21 @@ class LanguageDecoder(object):
                  user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  source_language: str = 'auto',
                  target_language: str = 'english',
-                 model_name: str = 'Google Translator',
-                 dict_name: str = None,
-                 reformatting: bool = True,
-                 regex: Config.Regex = CONFIG.Regex,
-                 new_line: str = '\n',
-                 char_limit: int = CONFIG.char_limit,
-                 proxies: dict = None) -> None:
+                 char_limit: int = CONFIG.char_limit) -> None:
 
         """
-        :param user_uuid: user uuid to identify correspondent dictionaries
+        :param user_uuid: user uuid to identify correspondent user data
         :param source_language: the translation source language
         :param target_language: the translation target language
-        :param model_name: name of the translator model
-        :param dict_name: name of the dictionary to apply
-        :param reformatting: use regex to reformat the source text
-        :param regex: a set of character patterns for regex compilations
-        :param new_line: new line string
         :param char_limit: character limit of one translation batch
-        :param proxies: set proxies for translator
         """
-
-        self.user_uuid = user_uuid
+        self.user_uuid = '00000000-0000-0000-0000-000000000000' if CONFIG.on_prem else user_uuid
         self.source_language = source_language
         self.target_language = target_language
-        self.model_name = model_name
-        self.dict_name = dict_name
-        self.reformatting = reformatting
-        self.regex = regex
-        self.new_line = new_line
         self.char_limit = char_limit
-        self.proxies = proxies
         self.dicts = Dicts(user_uuid = self.user_uuid)
+        self.settings = Settings(user_uuid = self.user_uuid)
+        self.proxies = self.settings.get_proxies()
         self._translator = GoogleTranslator(
             source = self.source_language,
             target = self.target_language,
@@ -81,6 +65,17 @@ class LanguageDecoder(object):
             model_name = self.model_name,
             proxies = self.proxies
         )
+
+    def get_proxies(self) -> None:
+        self.proxies = self.settings.get_proxies()
+
+    @property
+    def model_name(self) -> str:
+        return self.settings.app.model_name
+
+    @property
+    def regex(self) -> Regex:
+        return self.settings.regex
 
     @property
     def models(self) -> list[str]:
@@ -130,12 +125,12 @@ class LanguageDecoder(object):
             raise DecoderError(message, code = exception.code)
 
     def _reformat_text(self, text: str) -> str:
+        self.dicts.load()
         # remove new lines. for regex add whitespace at the end of text
         text = ' '.join(text.split()) + ' '
-        self.dicts.load()
         # replace special characters with common ones
-        for chars in self.dicts.replacements.keys():
-            text = text.replace(chars, self.dicts.replacements.get(chars))
+        for chars in self.settings.replacements.keys():
+            text = text.replace(chars, self.settings.replacements.get(chars))
         # swap quotes/brackets with EndOfSentence marks if quotes/brackets are followed by EndOfSentence marks
         text = re.sub(rf'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.endofs}])', r'\2\1', text)
         # remove any white whitespaces after "begin marks" and add one whitespace before "begin marks"
@@ -185,7 +180,7 @@ class LanguageDecoder(object):
             logger.error(message)
             raise DecoderError(message)
         # reformat text for translator
-        if self.reformatting:
+        if self.settings.app.reformatting:
             source_text = self._reformat_text(text = source_text)
         else:
             source_text = ' '.join(source_text.split())
@@ -236,9 +231,9 @@ class LanguageDecoder(object):
 
     @catch(DecoderError)
     def apply_dict(self, source_words: list[str], target_words: list[str]) -> list[str]:
-        if not self.dict_name: return target_words
+        if not self.dicts.dict_name: return target_words
         self.dicts.load()
-        dictionary = self.dicts.dictionaries.get(self.dict_name, {})
+        dictionary = self.dicts.dictionaries.get(self.dicts.dict_name, {})
         target_words_copy = target_words.copy()
         target_words.clear()
         for source_word, target_word in zip(source_words, target_words_copy):
