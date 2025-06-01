@@ -65,7 +65,7 @@ GREY10 = Color('grey-10', '#212121')
 BLUE_GREY1 = Color('blue-grey-1', '#ECEFF1')
 BLUE_GREY10 = Color('blue-grey-10', '#263238')
 PRIME_DARK = Color('prime-dark', '#204848')
-PRIME_LIGHT = Color('prime-light', '#60DEDE')
+PRIME_LIGHT = Color('prime-light', '#A0DEDE')
 
 Colors = namedtuple(
     'Colors', ('PRIMARY', 'SECONDARY', 'ACCENT', 'DARK', 'DARK_PAGE', 'POSITIVE', 'NEGATIVE', 'INFO', 'WARNING',

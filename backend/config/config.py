@@ -1,4 +1,3 @@
-from __future__ import annotations
 import os
 import yaml
 import traceback
@@ -6,6 +5,7 @@ from collections import namedtuple
 from backend.error.error import ConfigError
 from backend.logger.logger import logger, stream_handler
 
+os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
 # Definition of the static Config

@@ -8,7 +8,6 @@ from frontend.pages.decoding import Decoding
 from frontend.pages.dictionaries import Dictionaries
 from frontend.pages.settings import Settings
 
-os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
 dir_path = os.path.dirname(os.path.relpath(__file__))
 
 
