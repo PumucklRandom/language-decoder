@@ -156,7 +156,7 @@ ui.add_head_html(
     code = '''
         <style>
             .table-bottom-space .q-table__middle {
-                padding-bottom: 15px;
+                padding-bottom: 16px;
             }
         </style>
     ''',

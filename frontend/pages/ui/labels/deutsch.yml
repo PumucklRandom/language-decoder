@@ -162,7 +162,8 @@ DICTIONARY:
     Dialogs_table: [
         'Hier können Sie das aktuell ausgewählte Wörterbuch anpassen.',
         '/n',
-        'Mit den Schaltflächen "+" und "-" können Sie Einträge im Wörterbuch hinzufügen oder entfernen.',
+        'Mit den Schaltflächen "+" und "Mülleimer" innerhalb der Tabelle
+            können Sie Einträge im Wörterbuch hinzufügen oder entfernen.',
         '/n',
         'Um das aktuell ausgewählte Wörterbuch zu leeren, drücken Sie die untere Taste "Mülleimer".',
         '/n', '/N', '/n',

@@ -127,20 +127,6 @@ class UITable(Table):
         self.props['rows-per-page-options'] = CONFIG.table_options
         self.props['rows-per-page'] = CONFIG.table_options[2]
 
-        # Add padding to the bottom of the table body
-        # self.style('--table-bottom-padding: 20px')
-
-        # Add global CSS for table padding if not already added
-        # if not hasattr(UITable, '_css_added'):
-        #     ui.add_head_html('''
-        #         <style>
-        #             .custom-table-with-space .q-table__middle {
-        #                 padding-bottom: 20px;
-        #             }
-        #         </style>
-        #     ''')
-        #     UITable._css_added = True
-
     _header = f'''
         <q-tr style="background-color:{COLORS.PRIMARY.VAL}" :props="props">
             <q-th v-for="col in props.cols" :key="col.field" :props="props"
@@ -169,12 +155,13 @@ class UITable(Table):
                 </q-td>
                 <q-td auto-width style="background-color:{self.btn_color}; text-align:center">
                     <div style="position:absolute; top:50%; left:60%; transform:translate(-50%, -50%)">
-                        <q-btn icon="remove" size="11px" dense round color="{COLORS.PRIMARY.KEY}"
+                        <q-btn icon="delete" size="12px" dense round color="{COLORS.PRIMARY.KEY}"
                             @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>
                         <!-- <q-tooltip> delete row </q-tooltip> -->
                     </div>
-                    <div style="position:absolute; top:103%; left:-1%; transform:translate(-50%, -50%); z-index:1">
-                        <q-btn icon="add" size="11.5px" dense round color="{COLORS.PRIMARY.KEY}"
+                    <div style="position:absolute; top:103%; left:-1%;
+                        transform:translate(-50%, -50%); z-index:1">
+                        <q-btn icon="add" size="12px" dense round color="{COLORS.PRIMARY.KEY}"
                             @click="() => $parent.$emit('_add_row', props.row)" :props="props"/>
                         <!-- <q-tooltip> add row below </q-tooltip> -->
                     </div>

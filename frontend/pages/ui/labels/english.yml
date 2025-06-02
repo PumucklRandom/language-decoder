@@ -153,7 +153,7 @@ DICTIONARY:
     Dialogs_table: [
         'Here you can customize the currently selected dictionary.',
         '/n',
-        'With the "+" and "-" buttons you can add or remove entries in the dictionary.',
+        'With the "+" and "trash bin" buttons inside the table you can add or remove entries in the dictionary.',
         '/n',
         'To clear the currently selected dictionary, press the lower "trash bin" button.',
         '/n', '/N', '/n',
