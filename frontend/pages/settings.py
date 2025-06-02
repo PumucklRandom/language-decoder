@@ -202,7 +202,7 @@ class Settings(Page):
         self.ui_table = UITable(
             columns = REPLACE_COLS,
             dark_mode = self.settings.app.dark_mode) \
-            .style('min-width:420px; max-height:80vh').classes('sticky-header')
+            .classes('sticky-header').style('min-width:420px; max-height:80vh')
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._get_replacements):

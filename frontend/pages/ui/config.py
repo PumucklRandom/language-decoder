@@ -11,9 +11,12 @@ from backend.logger.logger import logger
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
 # app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
-# app.native.start_args['private_mode'] = True
-# app.native.start_args['storage_path'] = '.\\_internal\\pywebview'
-# app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True
+# app.native.window_args['draggable '] = CONFIG.native
+# app.native.start_args['private_mode'] = CONFIG.native
+# app.native.start_args['storage_path'] = './_internal/backend/user_data/cookies'
+# app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True  zoomable
+app.native.window_args['text_select'] = CONFIG.native
+app.native.window_args['zoomable'] = CONFIG.native
 app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
