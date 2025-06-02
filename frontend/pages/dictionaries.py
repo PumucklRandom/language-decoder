@@ -195,8 +195,8 @@ class Dictionaries(Page):
             columns = DICT_COLS,
             dark_mode = self.settings.app.dark_mode,
             pagination = self.state.table_page,
-            on_pagination_change = self._get_table_page
-        ).style('min-width:500px; max-height:75vh').classes('sticky-header')
+            on_pagination_change = self._get_table_page) \
+            .style('min-width:500px; max-height:75vh').classes('sticky-header')
         self._set_dict_values()
 
     @catch
