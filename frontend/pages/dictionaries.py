@@ -1,5 +1,5 @@
 import pathlib
-from nicegui import ui, events, Client
+from nicegui import ui, events
 from backend.error.error import DictionaryError
 from frontend.pages.ui.config import URLS, DICT_COLS
 from frontend.pages.ui.error import catch
@@ -213,8 +213,8 @@ class Dictionaries(Page):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.export)
             ui.space()
 
-    async def page(self, client: Client) -> None:
-        await self.__init_ui__(client = client)
+    async def page(self) -> None:
+        self.__init_ui__()
         self._header()
         self._center()
         self._footer()

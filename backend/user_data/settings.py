@@ -3,9 +3,9 @@ import json
 from copy import copy
 from uuid import UUID
 from typing import Union
-from backend.config.config import CONFIG, Regex
 from backend.error.error import SettingsError, catch
 from backend.logger.logger import logger
+from backend.config.config import CONFIG, Regex
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 

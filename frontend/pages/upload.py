@@ -2,7 +2,7 @@ import re
 import math
 import chardet
 import pathlib
-from nicegui import ui, events, Client
+from nicegui import ui, events
 from frontend.pages.ui.config import URLS, top_left, bot_left, bot_right
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.custom import ui_dialog
@@ -127,7 +127,7 @@ class Upload(Page):
         with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
             if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.delete)
 
-    async def page(self, client: Client) -> None:
-        await self.__init_ui__(client = client)
+    async def page(self) -> None:
+        self.__init_ui__()
         self._header()
         self._center()

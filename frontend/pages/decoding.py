@@ -1,6 +1,6 @@
 import pathlib
 import asyncio
-from nicegui import ui, events, Client
+from nicegui import ui, events
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.decoder.pdf import PDF
@@ -12,6 +12,7 @@ from frontend.pages.ui.page_abc import Page
 
 class Decoding(Page):
     _URL = URLS.DECODING
+    _IS_ASYNC = True
 
     def __init__(self) -> None:
         super().__init__()
@@ -299,8 +300,8 @@ class Decoding(Page):
             with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.view)
 
-    async def page(self, client: Client) -> None:
-        await self.__init_ui__(client = client)
+    async def page(self) -> None:
+        self.__init_ui__()
         await self._center()
         self._footer()
         self._header()

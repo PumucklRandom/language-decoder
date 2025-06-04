@@ -1,7 +1,7 @@
 from copy import copy
-from nicegui import ui, Client
-from backend.config.config import CONFIG
+from nicegui import ui
 from backend.error.error import DecoderError
+from backend.config.config import CONFIG
 from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.custom import ui_dialog, UITable, UIList
@@ -237,7 +237,7 @@ class Settings(Page):
             if self.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.pdf.reset)
         self._set_adv_values()
 
-    async def page(self, client: Client) -> None:
-        await self.__init_ui__(client = client)
+    async def page(self) -> None:
+        self.__init_ui__()
         self._header()
         self._center()

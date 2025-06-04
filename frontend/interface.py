@@ -1,5 +1,5 @@
 import os
-from nicegui import ui
+from nicegui import ui, app
 from backend.config.config import CONFIG
 from frontend.pages.ui.page_abc import UIPage
 from frontend.pages.start import Start
@@ -18,6 +18,7 @@ def build() -> None:
     UIPage(Decoding).build()
     UIPage(Dictionaries).build()
     UIPage(Settings).build()
+    app.on_startup(UIPage.create_cleanup)
 
 
 def run() -> None:

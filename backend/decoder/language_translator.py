@@ -7,10 +7,9 @@ import base64
 import openai
 import traceback
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
-from backend.config.config import CONFIG
-from backend.error.error import AITranslatorError
-from backend.error.error import ConfigError
+from backend.error.error import ConfigError, AITranslatorError
 from backend.logger.logger import logger
+from backend.config.config import CONFIG
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
