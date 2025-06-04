@@ -98,6 +98,9 @@ class LanguageTranslator(object):
                 ],
                 model = self.models.get(self.model_name),
                 temperature = self.model_temp,
+                # top_k = 10,
+                # top_p = 0.5,
+                # frequency_penalty = 0.0,  # + for frequent word penalty
                 seed = self.model_seed,
                 extra_headers = {
                     "X-Title": "LanguageDecoder",

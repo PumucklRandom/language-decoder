@@ -93,10 +93,10 @@ class LanguageDecoder(object):
             result.extend(self._translator.translate('\n'.join(batch)).split('\n'))
         return result
 
-    def translate(self, source: Union[list[str], str]) -> Union[list[str], str]:
+    def translate(self, source: Union[list[str], str], lt_flag = True) -> Union[list[str], str]:
         try:
             if isinstance(source, list):
-                if self.model_name != 'Google Translator':
+                if lt_flag and self.model_name != 'Google Translator':
                     self._config_langslator()
                     return self._langslator.translate(source)
                 self._config_translator()
@@ -218,7 +218,7 @@ class LanguageDecoder(object):
             text += '.'
         scr_sentences = self._split_sentences(text = text)
         logger.info(f'Decode {len(scr_sentences)} sentences.')
-        tar_sentences = self.translate(source = scr_sentences)
+        tar_sentences = self.translate(source = scr_sentences, lt_flag = False)
         if len(tar_sentences) != len(scr_sentences):
             message = 'Length mismatch between source and target sentences'
             logger.error(message)
