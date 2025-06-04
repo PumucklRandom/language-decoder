@@ -2,9 +2,9 @@ import os
 import json
 from uuid import UUID
 from typing import Union
-from backend.config.config import CONFIG
 from backend.error.error import DictionaryError, catch
 from backend.logger.logger import logger
+from backend.config.config import CONFIG
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
@@ -21,9 +21,9 @@ class Dicts(object):
         self.dicts_path = os.path.join(file_dir, dicts_path)
         self.json_path: str = os.path.join(self.dicts_path, f'{self.user_uuid}.json')
         self.dictionaries: dict[str, dict[str, str]] = {}
+        self.dict_name: Union[str, None] = None
         self.json_date: float = 0.0
         self.json_hash: int = 0
-        self.dict_name: str = None
 
     def _get_hash(self) -> int:
         return hash(f'{self.dictionaries}')

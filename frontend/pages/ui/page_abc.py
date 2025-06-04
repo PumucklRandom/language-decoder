@@ -1,8 +1,11 @@
 import asyncio
+from time import time
 from urllib import parse
 from abc import ABC, abstractmethod
-from nicegui import ui, app, Client
 from fastapi.responses import Response
+from nicegui.storage import PURGE_INTERVAL
+from nicegui import ui, app, Client, background_tasks
+from backend.logger.logger import logger
 from backend.config.config import CONFIG
 from backend.user_data.settings import Settings
 from backend.user_data.dictionaries import Dicts
@@ -10,6 +13,8 @@ from backend.decoder.language_decoder import LanguageDecoder
 from frontend.pages.ui.config import URLS, COLORS, UILabels, get_ui_labels
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.state import State
+
+pages_lock = asyncio.Lock()
 
 
 class Classproperty(property):
@@ -37,12 +42,17 @@ class Page(ABC):
         return self._URL
 
     def __init__(self) -> None:
-        self.state: State
+        self.state: State = None  # type: ignore
+        self._time_stamp: float
         self.word_limit: int = CONFIG.word_limit
         self.max_file_size: int = self.word_limit * 50
         self.max_decode_size: int = self.max_file_size * 2
         self.auto_upload: bool = CONFIG.Upload.auto_upload
         self.max_files: int = CONFIG.Upload.max_files
+
+    @property
+    def time_stamp(self) -> float:
+        return self._time_stamp
 
     @property
     def decoder(self) -> LanguageDecoder:
@@ -60,18 +70,13 @@ class Page(ABC):
     def UI_LABELS(self) -> UILabels:
         return self.state.ui_labels
 
-    @catch
-    def get_ui_labels(self) -> None:
-        self.state.ui_labels = get_ui_labels(self.settings.app.language)
-
     @property
     def show_tips(self) -> bool:
         return self.settings.app.show_tips
 
-    async def __init_ui__(self, client: Client) -> None:
-        await client.connected()
-        self.state = State(storage = app.storage.tab)
-        # if self.state.uuid == '': self.state.uuid = client.tab_id
+    def __init_ui__(self) -> None:
+        self._time_stamp = time()
+        if self.state is None: self.state = State(storage = app.storage.tab)
         if self.state.user_uuid == '': self.state.user_uuid = app.storage.browser.get('id')
         if self.decoder is None: self.state.decoder = LanguageDecoder(user_uuid = self.state.user_uuid)
         self.settings.load()
@@ -81,6 +86,10 @@ class Page(ABC):
         ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
                   dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
                   negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
+
+    @catch
+    def get_ui_labels(self) -> None:
+        self.state.ui_labels = get_ui_labels(self.settings.app.language)
 
     @staticmethod
     @catch
@@ -144,7 +153,7 @@ class Page(ABC):
             self._del_app_routes(route = route)
 
     @abstractmethod
-    async def page(self, client: Client) -> None:
+    async def page(self) -> None:
         pass
 
 
@@ -156,14 +165,44 @@ class UIPage(ui.page):
     - builds the pages
     """
 
+    pages: dict[str, Page] = dict()
+
+    @classmethod
+    async def cleanup_pages(cls):
+        while True:
+            async with pages_lock:
+                for page_id, page in list(cls.pages.items()):
+                    if time() > page.time_stamp + CONFIG.session_time:
+                        del cls.pages[page_id]
+            try:
+                await asyncio.sleep(PURGE_INTERVAL)
+            except asyncio.CancelledError:
+                logger.info('Cancelled cleanup_pages')
+                break
+
+    @classmethod
+    def create_cleanup(cls):
+        logger.info('Create cleanup_pages')
+        background_tasks.create(cls.cleanup_pages(), name = 'cleanup_pages')
+
+    @staticmethod
+    @app.on_shutdown
+    async def teardown_cleanup():
+        await background_tasks.teardown()
+
     def __init__(self, page_class: type(Page)) -> None:
         super().__init__(path = page_class.URL)
         self.page_class = page_class
 
     async def page(self, client: Client) -> None:
-        # for every user a new page instance is generated
-        page_instance = self.page_class()
-        await page_instance.page(client = client)
+        await client.connected()
+        page_id = f'{self.page_class.__name__}_{client.tab_id}'
+        async with pages_lock:
+            if page_id not in self.pages:
+                # for every page_class and user_tab a new page instance is created
+                self.pages[page_id] = self.page_class()
+            # call the page instance to render the page
+            await self.pages[page_id].page()
 
     def build(self) -> None:
         self(self.page)

@@ -12,11 +12,11 @@ frameless: false  # set to false
 reload: true  # set to false for desktop app!!! true for dev
 storage_secret: 'STORAGE_SECRET'
 
-session_time: 10_000
+session_time: 1_800  # seconds
 on_prem: false
 stream_handler: true
-route_timeout: 30
-files_timeout: 30
+route_timeout: 300  # in seconds
+files_timeout: 30  # in days
 
 size_fct: 8.5
 size_min: 50
@@ -32,8 +32,8 @@ model_temp: 0.0
 model_context: 64_000
 model_age: 12  # in months
 
-char_limit: 2850
-word_limit: 1000
+char_limit: 2_850
+word_limit: 1_000
 
 Upload:
     auto_upload: true

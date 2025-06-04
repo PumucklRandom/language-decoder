@@ -1,4 +1,4 @@
-from nicegui import ui, Client
+from nicegui import ui
 from frontend.pages.ui.config import URLS
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.page_abc import Page
@@ -57,6 +57,6 @@ class Start(Page):
                     new_tab = True
                 )
 
-    async def page(self, client: Client) -> None:
-        await self.__init_ui__(client = client)
+    async def page(self) -> None:
+        self.__init_ui__()
         self._center()

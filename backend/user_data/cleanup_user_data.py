@@ -1,7 +1,7 @@
 import os
 import time
-from backend.config.config import CONFIG
 from backend.logger.logger import logger
+from backend.config.config import CONFIG
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 

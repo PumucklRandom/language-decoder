@@ -5,13 +5,12 @@ from copy import deepcopy
 from nicegui import ui, app
 from collections import namedtuple
 from backend.error.error import UIConfigError
-from backend.config.config import CONFIG
 from backend.logger.logger import logger
+from backend.config.config import CONFIG
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
 # app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
-# app.native.window_args['draggable '] = CONFIG.native
 # app.native.start_args['private_mode'] = CONFIG.native
 # app.native.start_args['storage_path'] = './_internal/backend/user_data/cookies'
 # app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True  zoomable

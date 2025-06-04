@@ -7,10 +7,10 @@ from pprint import PrettyPrinter
 from typing import Union
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
-from backend.decoder.language_translator import LanguageTranslator
-from backend.config.config import CONFIG, Regex
 from backend.error.error import DecoderError, AITranslatorError, catch
 from backend.logger.logger import logger
+from backend.config.config import CONFIG, Regex
+from backend.decoder.language_translator import LanguageTranslator
 from backend.user_data.dictionaries import Dicts
 from backend.user_data.settings import Settings
 from backend.utils import utilities as utils
