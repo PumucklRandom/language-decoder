@@ -1,5 +1,6 @@
 import pathlib
 import asyncio
+import traceback
 from nicegui import ui, events
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
@@ -120,9 +121,12 @@ class Decoding(Page):
         except asyncio.exceptions.CancelledError:
             logger.info('Decoding cancelled')
         except DecoderError as exception:
-            logger.warning(exception.message)
             if exception.code == 429:
+                logger.warning(exception.message)
                 ui.notify(self.UI_LABELS.DECODING.Messages.rate_limit, type = 'warning', position = 'top')
+                return
+            logger.error(f'Error in "_task_handler" with exception: {exception}\n{traceback.format_exc()}')
+            ui.notify(self.UI_LABELS.GENERAL.Error.internal, type = 'negative', position = 'top')
 
     @catch
     def _task_cancel(self) -> None:
