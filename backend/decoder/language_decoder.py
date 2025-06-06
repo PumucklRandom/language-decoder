@@ -1,128 +1,92 @@
 import re
 import json
-import requests
-import traceback
 from uuid import UUID
-from pprint import PrettyPrinter
 from typing import Union
-from deep_translator import GoogleTranslator
-from deep_translator.exceptions import RequestError, TooManyRequests, TranslationNotFound
-from backend.error.error import DecoderError, AITranslatorError, catch
+from requests.exceptions import ConnectionError, ProxyError
+from backend.error.error import DecoderError, NormalTranslatorError, NeuralTranslatorError, catch
 from backend.logger.logger import logger
 from backend.config.config import CONFIG, Regex
-from backend.decoder.language_translator import LanguageTranslator
+from backend.decoder.normal_translator import NormalTranslator
+from backend.decoder.neural_translator import NeuralTranslator
 from backend.user_data.dictionaries import Dicts
 from backend.user_data.settings import Settings
-from backend.utils import utilities as utils
 
 
 class LanguageDecoder(object):
     """
     The LanguageDecoder translates a given source language to a desired target language word by word (decoding).
-    Therefor the Google translator is used to generate a decoded text file.
-    After checking the decoded text file, the decoding can be converted to a pdf file.
+    It uses NormalTranslator for common translations and NeuralTranslator for advanced translations.
     """
 
     def __init__(self,
                  user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  source_language: str = 'auto',
-                 target_language: str = 'english',
-                 char_limit: int = CONFIG.char_limit) -> None:
-
+                 target_language: str = 'english') -> None:
         """
         :param user_uuid: user uuid to identify correspondent user data
         :param source_language: the translation source language
         :param target_language: the translation target language
-        :param char_limit: character limit of one translation batch
         """
         self.user_uuid = '00000000-0000-0000-0000-000000000000' if CONFIG.on_prem else user_uuid
         self.source_language = source_language
         self.target_language = target_language
-        self.char_limit = char_limit
         self.dicts = Dicts(user_uuid = self.user_uuid)
         self.settings = Settings(user_uuid = self.user_uuid)
-        self.proxies = self.settings.get_proxies()
-        self._translator = GoogleTranslator(
-            source = self.source_language,
-            target = self.target_language,
-            proxies = self.proxies
-        )
-        self._langslator = LanguageTranslator(
-            source = self.source_language,
-            target = self.target_language,
-            proxies = self.proxies
+        self._normal_trans = NormalTranslator()
+        self._neural_trans = NeuralTranslator()
+
+    def _set_normal_trans(self) -> None:
+        self._normal_trans.__config__(
+            source_language = self.source_language,
+            target_language = self.target_language,
+            proxies = self.proxies,
+            endofs = self.regex.endofs + self.regex.quotes
         )
 
-    def _config_translator(self) -> None:
-        self._translator.source, self._translator.target = self._translator._map_language_to_code(  # noqa
-            self.source_language, self.target_language)
-        self._translator.proxies = self.proxies
-
-    def _config_langslator(self) -> None:
-        self._langslator.__config__(
-            source = self.source_language,
-            target = self.target_language,
+    def _set_neural_trans(self) -> None:
+        self._neural_trans.__config__(
+            source_language = self.source_language,
+            target_language = self.target_language,
+            proxies = self.proxies,
+            endofs = self.regex.endofs + self.regex.quotes,
             model_name = self.model_name,
-            proxies = self.proxies
         )
-
-    def get_proxies(self) -> None:
-        self.proxies = self.settings.get_proxies()
 
     @property
-    def model_name(self) -> str:
-        return self.settings.app.model_name
+    def proxies(self) -> dict:
+        return self.settings.get_proxies()
 
     @property
     def regex(self) -> Regex:
         return self.settings.regex
 
     @property
+    def model_name(self) -> str:
+        return self.settings.app.model_name
+
+    @property
     def models(self) -> list[str]:
-        return ['Google Translator'] + list(self._langslator.models.keys())
+        return ['Google Translator'] + list(self._neural_trans.models.keys())
 
     @catch(DecoderError)
     def get_supported_languages(self, show: bool = False) -> list[str]:
-        languages = self._translator.get_supported_languages(as_dict = True)
-        if show: PrettyPrinter(indent = 4).pprint(languages.keys())
-        return list(languages.keys())
+        return self._normal_trans.get_supported_languages(show = show)
 
-    def _translate_batch(self, source: list[str]) -> list[str]:
-        result = list()
-        for batch in utils.yield_batch_eos(source, self.char_limit, endofs = self.regex.endofs + self.regex.quotes):
-            result.extend(self._translator.translate('\n'.join(batch)).split('\n'))
-        return result
-
-    def translate(self, source: Union[list[str], str], lt_flag = True) -> Union[list[str], str]:
+    def translate(self, source: list[str], neural = True) -> list[str]:
         try:
-            if isinstance(source, list):
-                if lt_flag and self.model_name != 'Google Translator':
-                    self._config_langslator()
-                    return self._langslator.translate(source)
-                self._config_translator()
-                return self._translate_batch(source)
-            self._config_translator()
-            return self._translator.translate(source)
-        except TooManyRequests as exception:
-            message = 'Too many requests! Try again later!'
-            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise DecoderError(message)
-        except RequestError as exception:
-            message = 'Bad Request Error! Check your request and try again!'
-            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise DecoderError(message)
-        except requests.exceptions.ProxyError as exception:
-            message = 'Connection Error! Check your internet connection or your proxy settings!'
-            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise DecoderError(message)
-        except TranslationNotFound as exception:
-            message = 'Translator Error!'
-            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise DecoderError(message)
-        except AITranslatorError as exception:
-            message = 'AI Translator Error!'
-            logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise DecoderError(message, code = exception.code)
+            if neural and self.model_name != 'Google Translator':
+                self._set_neural_trans()
+                return self._neural_trans.translate_batch(source)
+            self._set_normal_trans()
+            return self._normal_trans.translate_batch(source)
+        except ProxyError:
+            raise ProxyError
+        except ConnectionError:
+            raise ConnectionError
+        except NormalTranslatorError as exception:
+            raise DecoderError(exception.message, code = exception.code)
+        except NeuralTranslatorError as exception:
+            raise DecoderError(exception.message, code = exception.code)
 
     def _reformat_text(self, text: str) -> str:
         self.dicts.load()
@@ -218,7 +182,7 @@ class LanguageDecoder(object):
             text += '.'
         scr_sentences = self._split_sentences(text = text)
         logger.info(f'Decode {len(scr_sentences)} sentences.')
-        tar_sentences = self.translate(source = scr_sentences, lt_flag = False)
+        tar_sentences = self.translate(source = scr_sentences, neural = False)
         if len(tar_sentences) != len(scr_sentences):
             message = 'Length mismatch between source and target sentences'
             logger.error(message)

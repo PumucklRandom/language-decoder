@@ -41,7 +41,12 @@ class SettingsError(BackendError):
     pass
 
 
-class AITranslatorError(DecoderError):
+class NormalTranslatorError(DecoderError):
+    """Exception raised for decoder-related errors."""
+    pass
+
+
+class NeuralTranslatorError(DecoderError):
     """Exception raised for decoder-related errors."""
     pass
 
