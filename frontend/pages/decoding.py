@@ -1,7 +1,7 @@
 import pathlib
 import asyncio
 from nicegui import ui, events
-from requests.exceptions import ConnectionError, ProxyError
+from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.decoder.pdf import PDF
@@ -122,7 +122,7 @@ class Decoding(Page):
             logger.info('Decoding cancelled')
         except ProxyError:
             ui.notify(self.UI_LABELS.SETTINGS.Messages.proxy_error, type = 'warning', position = 'top')
-        except ConnectionError:
+        except HTTPConnectionError:
             ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_error, type = 'warning', position = 'top')
         except DecoderError as exception:
             if exception.code == 429:

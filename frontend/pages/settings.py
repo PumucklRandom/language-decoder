@@ -1,6 +1,6 @@
 from copy import copy
 from nicegui import ui
-from requests.exceptions import ConnectionError, ProxyError
+from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.config.config import CONFIG
 from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
@@ -41,7 +41,7 @@ class Settings(Page):
             ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_success, type = 'positive', position = 'top')
         except ProxyError:
             ui.notify(self.UI_LABELS.SETTINGS.Messages.proxy_error, type = 'warning', position = 'top')
-        except ConnectionError:
+        except HTTPConnectionError:
             ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_error, type = 'warning', position = 'top')
         except DecoderError as exception:
             ui.notify(exception.message, type = 'negative', position = 'top')

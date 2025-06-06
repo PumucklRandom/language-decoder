@@ -2,7 +2,7 @@ import re
 import json
 from uuid import UUID
 from typing import Union
-from requests.exceptions import ConnectionError, ProxyError
+from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError, NormalTranslatorError, NeuralTranslatorError, catch
 from backend.logger.logger import logger
 from backend.config.config import CONFIG, Regex
@@ -81,8 +81,8 @@ class LanguageDecoder(object):
             return self._normal_trans.translate_batch(source)
         except ProxyError:
             raise ProxyError
-        except ConnectionError:
-            raise ConnectionError
+        except HTTPConnectionError:
+            raise HTTPConnectionError
         except NormalTranslatorError as exception:
             raise DecoderError(exception.message, code = exception.code)
         except NeuralTranslatorError as exception:

@@ -1,7 +1,7 @@
 import traceback
 from typing import Optional
 from pprint import PrettyPrinter
-from requests.exceptions import ConnectionError, ProxyError
+from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from deep_translator.exceptions import BaseError, RequestError, TooManyRequests
 from deep_translator import GoogleTranslator
 from backend.error.error import NormalTranslatorError
@@ -60,10 +60,10 @@ class NormalTranslator(object):
             message = 'Proxy Error! Check your proxy settings!'
             logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
             raise ProxyError
-        except ConnectionError as exception:
+        except HTTPConnectionError as exception:
             message = 'Connection Error! Check your internet connection!'
             logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise ConnectionError
+            raise HTTPConnectionError
         except TooManyRequests as exception:
             message = 'Too many requests! Try again later!'
             logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')

@@ -6,7 +6,7 @@ import httpx
 import base64
 import openai
 import traceback
-from requests.exceptions import ConnectionError, ProxyError
+from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from openai import APIStatusError, BadRequestError, RateLimitError
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 from backend.error.error import ConfigError, NeuralTranslatorError
@@ -128,10 +128,10 @@ class NeuralTranslator(object):
             message = 'Proxy Error! Check your proxy settings!'
             logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
             raise ProxyError
-        except ConnectionError as exception:
+        except HTTPConnectionError as exception:
             message = 'Connection Error! Check your internet connection!'
             logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
-            raise ConnectionError
+            raise HTTPConnectionError
         except RateLimitError as exception:
             message = 'Rate Limit is reached! Try again on another day!'
             logger.error(f'{message} with exception: {exception}\n{traceback.format_exc()}')
