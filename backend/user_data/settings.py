@@ -23,7 +23,7 @@ class Settings(object):
         self.json_path = os.path.join(self.setts_path, f'{self.user_uuid}.json')
         self.app: App = App()
         self.replacements: dict[str, str] = CONFIG.Replacements.copy()
-        self.pdf_params: dict = CONFIG.Pdf_params._asdict()
+        self.pdf_params: dict = CONFIG.Pdf_params._asdict()  # noqa
         self.regex: Regex = copy(CONFIG.Regex)
         self.json_date: float = 0.0
         self.json_hash: int = 0

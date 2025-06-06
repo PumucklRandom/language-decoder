@@ -305,7 +305,9 @@ SETTINGS:
         'Zitatmarkierungen'
     ]
     Messages:
-        connect_check: 'Verbindung erfolgreich'
+        connect_success: 'Verbindung erfolgreich!'
+        connect_error: 'Verbindung fehlgeschlagen. Überprüfen Sie Ihre Internetverbindung!'
+        proxy_error: 'Proxy Fehler. Überprüfen Sie Ihre Proxy Einstellungen!'
     Tips:
         back: 'Zurück'
         app:

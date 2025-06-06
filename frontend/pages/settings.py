@@ -1,5 +1,6 @@
 from copy import copy
 from nicegui import ui
+from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.config.config import CONFIG
 from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
@@ -22,7 +23,6 @@ class Settings(Page):
         self._get_replacements()
         self._get_pdf_values()
         self._get_adv_values()
-        self.decoder.get_proxies()
         self.settings.save()
 
     def _reset_app_settings(self) -> None:
@@ -37,13 +37,14 @@ class Settings(Page):
     @catch
     def _connection_check(self) -> None:
         try:
-            self.decoder.get_proxies()
-            self.decoder.translate(source = 'test')
-            ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_check,
-                      type = 'positive', position = 'top')
+            self.decoder.translate(source = ['test'])
+            ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_success, type = 'positive', position = 'top')
+        except ProxyError:
+            ui.notify(self.UI_LABELS.SETTINGS.Messages.proxy_error, type = 'warning', position = 'top')
+        except HTTPConnectionError:
+            ui.notify(self.UI_LABELS.SETTINGS.Messages.connect_error, type = 'warning', position = 'top')
         except DecoderError as exception:
-            ui.notify(exception.message,
-                      type = 'warning', position = 'top')
+            ui.notify(exception.message, type = 'negative', position = 'top')
 
     @catch
     def _clear_replacements(self) -> None:

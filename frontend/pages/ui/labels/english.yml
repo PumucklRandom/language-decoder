@@ -287,7 +287,10 @@ SETTINGS:
         'Quotation marks'
     ]
     Messages:
-        connect_check: 'Connection successful'
+        connect_success: 'Connection successful!'
+        connect_error: 'Connection Error! Check your internet connection!'
+        proxy_error: 'Proxy error! Check your proxy settings!'
+
     Tips:
         back: 'Go back'
         app:
