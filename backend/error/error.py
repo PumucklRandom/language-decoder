@@ -13,52 +13,42 @@ class LanguageDecoderError(Exception):
 
 class BackendError(LanguageDecoderError):
     """Base exception class for backend errors."""
-    pass
 
 
 class ConfigError(BackendError):
     """Exception raised for configuration errors."""
-    pass
 
 
 class DecoderError(BackendError):
     """Exception raised for decoder-related errors."""
-    pass
 
 
 class PDFFormatterError(BackendError):
     """Exception raised for PDF formatter-related errors."""
-    pass
 
 
 class DictionaryError(BackendError):
     """Exception raised for dictionary-related errors."""
-    pass
 
 
 class SettingsError(BackendError):
     """Exception raised for settings-related errors."""
-    pass
 
 
 class NormalTranslatorError(DecoderError):
     """Exception raised for decoder-related errors."""
-    pass
 
 
 class NeuralTranslatorError(DecoderError):
     """Exception raised for decoder-related errors."""
-    pass
 
 
 class FrontendError(LanguageDecoderError):
     """Base exception class for frontend errors."""
-    pass
 
 
 class UIConfigError(FrontendError):
     """Exception raised for ui configuration errors."""
-    pass
 
 
 def catch(error: Type[LanguageDecoderError]) -> callable:
