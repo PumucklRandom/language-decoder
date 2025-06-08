@@ -154,9 +154,7 @@ class NeuralTranslator(object):
         return self._from_csv('\n'.join(valid_rows[:csv_len]))
 
     def _get_prompt(self) -> str:
-        return self.PROMPT \
-            .replace('<SOURCE>', f'{self.source_language}') \
-            .replace('<TARGET>', f'{self.target_language}')
+        return self.PROMPT.replace('<SOURCE>', self.source_language).replace('<TARGET>', self.target_language)
 
     @staticmethod
     def _encode_key(api_key: str) -> str:

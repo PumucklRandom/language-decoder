@@ -14,52 +14,45 @@ class PDF(object):
     def __init__(self,
                  font_path: str = '../fonts/RobotoMono/RobotoMono.ttf',
                  new_line: str = '\n',
-                 pages_per_sheet: int = 2,
-                 page_sep: bool = False,
-                 tab_size: int = 4,
-                 char_lim: int = 75,
-                 line_lim: int = 54,
-                 top_margin: float = 0.3,
-                 left_margin: float = -0.8,
                  title_size: float = 24,
                  font_size: float = 13.25,
-                 title_height: float = 9.6,
-                 line_height: float = 5.3,
-                 width: float = 215.) -> None:
+                 top_margin: float = 0.3,
+                 left_margin: float = -0.8,
+                 char_lim: int = 75,
+                 line_lim: int = 54,
+                 page_lim: int = 2,
+                 tab_size: int = 4,
+                 page_sep: bool = False) -> None:
 
         """
         :param font_path: path to the font used for the pdf (monospace font recommended)
         :param new_line: new line string
-        :param pages_per_sheet: number of pages per sheet
-        :param page_sep: optional pdf page seperator activation
-        :param tab_size: the tab size between two words
-        :param char_lim: character limit of one line (max: 75)
-        :param line_lim: lines limit of one page (max: 54) reduce in steps of 3
+        :param title_size: font size of the title (max: 24)
+        :param font_size: font size of the text (max: 13.25)
         :param top_margin: top margin of the pdf (edge at 0)
         :param left_margin: left margin of the pdf (edge at -1)
-        :param title_size: font size of the title (max: 24)
-        :param font_size: font size of the text (max: 13.2)
-        :param title_height: height for the pdf title (max 10.2)
-        :param line_height: height for each pdf line (5.3)
-        :param width: width of the pdf text field (min 215)
+        :param char_lim: character limit of one line (max: 75)
+        :param line_lim: lines limit of one page (max: 54) reduce in steps of 3
+        :param page_lim: page limit of one sheet
+        :param tab_size: the tab size between two words
+        :param page_sep: optional pdf page seperator activation
         """
-
         self.font_path = os.path.join(file_dir, font_path)
         self.new_line = new_line
-        self.pages_per_sheet = pages_per_sheet
-        self.page_sep = '|' if page_sep else ''
-        self.tab_size = tab_size
-        self.char_lim = char_lim - (1 if page_sep else 0)
-        self.line_lim = int(line_lim / 3) * 3
         self.title_size = title_size
         self.font_size = font_size
         self.top_margin = top_margin
         self.left_margin = left_margin
-        self.title_height = title_height
-        self.line_height = line_height
+        self.char_lim = char_lim - (1 if page_sep else 0)
+        self.line_lim = int(line_lim / 3) * 3
+        self.tab_size = tab_size
+        self.page_lim = page_lim
+        self.page_sep = '|' if page_sep else ''
+        self.title_height = title_size / 2.5
+        self.line_height = font_size / 2.5
         self.header_height = self.line_height * 3
-        self.pps = 1 / self.pages_per_sheet if self.pages_per_sheet else 0
-        self.width = width
+        self.width = 215.
+        self.pps = 1 / self.page_lim if self.page_lim else 0
         self._fpdf: FPDF
 
     def __init_fpdf__(self) -> None:
@@ -115,7 +108,6 @@ class PDF(object):
         try:
             self.__init_fpdf__()
             pdf_title = f'    {title}'
-
             for p, page in enumerate(pdf_pages):
                 self._fpdf.add_page()
                 if p == 0:

@@ -70,17 +70,15 @@ App = namedtuple('APP', (
 ))
 # Definition of nested Pdf settings
 Pdf_params = namedtuple('Pdf', (
-    'pages_per_sheet',
-    'page_sep',
-    'tab_size',
-    'char_lim',
-    'line_lim',
-    'top_margin',
-    'left_margin',
     'title_size',
     'font_size',
-    'title_height',
-    'line_height'
+    'top_margin',
+    'left_margin',
+    'char_lim',
+    'line_lim',
+    'page_lim',
+    'tab_size',
+    'page_sep'
 ))
 # Definition of nested Regex settings
 Regex = namedtuple('Regex', (
