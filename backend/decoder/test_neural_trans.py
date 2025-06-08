@@ -9,7 +9,7 @@ URL = 'https://openrouter.ai/api/v1'
 API_KEY = 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNzRlZGJhYmQyNzUxNjRmNWMyYzI3Mw=='
 # the only usable model at the moment if not rate limited!
 # MODEL_NAME = 'Google: Gemini 2.0 Flash Experimental'
-MODEL_NAME = 'Meta: Llama 4 Scout'
+MODEL_NAME = 'Google: Gemma 3 27B'
 base_path = r'./'
 prompt_path = os.path.join(base_path, 'prompt.txt')
 source_path = os.path.join(base_path, 'source.txt')

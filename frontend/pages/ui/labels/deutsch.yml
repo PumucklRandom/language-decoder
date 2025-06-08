@@ -269,17 +269,15 @@ SETTINGS:
             drücken Sie einfach auf die Schaltfläche unten links auf der Registerkarte.'
     ]
     Pdf: [
-        'Seiten pro Blatt',
-        'Seitentrennzeichen verwenden [0, 1]',
-        'Tabulatorgröße zwischen Wörtern',
-        'Zeichen pro Zeile',
-        'Zeilen pro Seite',
-        'Oberer Seitenrand',
-        'Linker Seitenrand',
         'Titel Schriftgröße',
         'Text Schriftgröße',
-        'Titlehöhe',
-        'Zeilenhöhe'
+        'Oberer Seitenrand',
+        'Linker Seitenrand',
+        'Zeichen pro Zeile',
+        'Zeilen pro Seite',
+        'Seiten pro Blatt',
+        'Tabulatorgröße zwischen Wörtern',
+        'Seitentrennzeichen verwenden [0, 1]'
     ]
     Dialogs_adv: [
         'Auf dieser Registerkarte können Sie die Einstellungen für die 

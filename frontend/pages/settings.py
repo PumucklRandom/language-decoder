@@ -78,16 +78,14 @@ class Settings(Page):
     def _get_pdf_values(self) -> None:
         _, values = self.ui_pdf_list.get_values()
         for key, val in zip(self.settings.pdf_params.keys(), values):
-            if key == 'page_per_sheet':
-                self.settings.pdf_params[key] = int(val)
+            if key in ['font_size', 'title_size']:
+                self.settings.pdf_params[key] = float(abs(val))
+            elif key in ['top_margin', 'left_margin']:
+                self.settings.pdf_params[key] = float(val)
+            elif key in ['char_lim', 'line_lim', 'page_lim', 'tab_size']:
+                self.settings.pdf_params[key] = int(abs(val))
             elif key == 'page_sep':
                 self.settings.pdf_params[key] = bool(val)
-            elif key in ['tab_size', 'char_lim', 'line_lim']:
-                self.settings.pdf_params[key] = int(abs(val))
-            elif key in ['top_margin', 'left_margin']:
-                self.settings.pdf_params[key] = val
-            else:
-                self.settings.pdf_params[key] = abs(val)
 
     @catch
     def _set_adv_values(self) -> None:

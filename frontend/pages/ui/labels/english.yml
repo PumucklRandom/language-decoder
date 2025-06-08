@@ -253,17 +253,15 @@ SETTINGS:
         'To reset the "pdf layout" settings, just press the button on the bottom left side of the tab.'
     ]
     Pdf: [
-        'Pages per sheet',
-        'Use page seperator [0, 1]',
-        'Tab size between words',
-        'Characters per line',
-        'Lines per page',
-        'Top margin',
-        'Left margin',
         'Title font size',
         'Text font size',
-        'Title height',
-        'Line height'
+        'Top margin',
+        'Left margin',
+        'Characters per line',
+        'Lines per page',
+        'Pages per sheet',
+        'Tab size between words',
+        'Use page seperator [0, 1]'
     ]
     Dialogs_adv: [
         'On this tab, you can change the "regular expression" settings for the input text.',

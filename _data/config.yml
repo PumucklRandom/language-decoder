@@ -52,17 +52,15 @@ App:
 Replacements: {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-', '–': '-'}
 
 Pdf_params:
-    pages_per_sheet: 2
-    page_sep: false
-    tab_size: 4
-    char_lim: 75
-    line_lim: 54
-    top_margin: 0.3
-    left_margin: -0.8
     title_size: 24
     font_size: 13.25
-    title_height: 9.6
-    line_height: 5.3
+    top_margin: 0.3
+    left_margin: -0.8
+    char_lim: 75
+    line_lim: 54
+    page_lim: 2
+    tab_size: 4
+    page_sep: false
 
 Regex:
     endofs: '.!?'
