@@ -99,7 +99,6 @@ def dict_to_config(config_dict: dict) -> Config:
     config_dict['App'] = App(**config_dict.pop('App'))
     config_dict['Pdf_params'] = Pdf_params(**config_dict.pop('Pdf_params'))
     config_dict['Regex'] = Regex(**config_dict.pop('Regex'))
-
     # Create the static configuration
     return Config(**config_dict)
 

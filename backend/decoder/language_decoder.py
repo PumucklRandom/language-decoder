@@ -40,7 +40,8 @@ class LanguageDecoder(object):
             source_language = self.source_language,
             target_language = self.target_language,
             proxies = self.proxies,
-            endofs = self.regex.endofs + self.regex.quotes
+            endofs = self.regex.endofs,
+            quotes = self.regex.quotes
         )
 
     def _set_neural_trans(self) -> None:
@@ -48,7 +49,8 @@ class LanguageDecoder(object):
             source_language = self.source_language,
             target_language = self.target_language,
             proxies = self.proxies,
-            endofs = self.regex.endofs + self.regex.quotes,
+            endofs = self.regex.endofs,
+            quotes = self.regex.quotes,
             model_name = self.model_name,
         )
 

@@ -1,4 +1,6 @@
+import re
 from typing import Iterator
+from backend.config.config import CONFIG
 
 
 def maxlen(a_list: list) -> int:
@@ -38,11 +40,11 @@ def yield_batch(string_list: list[str], char_limit: int, offset: int = 1) -> Ite
 
 
 def yield_batch_eos(string_list: list[str], char_limit: int, offset: int = 1,
-                    endofs: str = '.!?\'"') -> Iterator[list[str]]:
-    endofs = set(endofs)
+                    endofs: str = CONFIG.Regex.endofs, quotes = CONFIG.Regex.quotes) -> Iterator[list[str]]:
     last_valid_index = 0
     batch, batch_len = [], 0
-    string_data = ((string, len(string) + offset, string[-1] in endofs) for string in string_list)
+    pattern = re.compile(rf'.*?[{endofs}][{quotes}]?$')
+    string_data = ((string, len(string) + offset, bool(pattern.match(string))) for string in string_list)
     for string, str_len, eos in string_data:
         batch_len += str_len
         # Check if adding the current string exceeds the character limit
