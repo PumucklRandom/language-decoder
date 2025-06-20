@@ -19,13 +19,15 @@ class NormalTranslator(object):
                  source_language: str = 'auto',
                  target_language: str = 'english',
                  proxies: Optional[dict] = None,
-                 endofs: str = '.!?\'"',
+                 endofs: str = CONFIG.Regex.endofs,
+                 quotes: str = CONFIG.Regex.quotes,
                  **kwargs) -> None:
         """
         :param source_language: the translation source language
         :param target_language: the translation target language
         :param proxies: set proxies for translator
         :param endofs: end of sentence characters to split sentences
+        :param quotes: quote characters to split sentences
         """
         self._translator = GoogleTranslator(
             source = source_language,
@@ -34,13 +36,15 @@ class NormalTranslator(object):
             **kwargs
         )
         self.endofs = endofs
+        self.quotes = quotes
 
     def __config__(self, source_language: str, target_language: str,
-                   proxies: Optional[dict] = None, endofs: str = '.!?\'"') -> None:
+                   proxies: Optional[dict] = None, endofs: str = '', quotes: str = '') -> None:
         self._translator.source, self._translator.target = self._translator._map_language_to_code(  # noqa
             source_language, target_language)
         self._translator.proxies = proxies
-        self.endofs = endofs
+        if endofs: self.endofs = endofs
+        if quotes: self.quotes = quotes
 
     def get_supported_languages(self, show: bool = False) -> list[str]:
         languages = self._translator.get_supported_languages(as_dict = True)
@@ -49,7 +53,8 @@ class NormalTranslator(object):
 
     def translate_batch(self, source_words: list[str]) -> list[str]:
         result = list()
-        for batch in utils.yield_batch_eos(source_words, char_limit = CONFIG.char_limit, endofs = self.endofs):
+        for batch in utils.yield_batch_eos(source_words, char_limit = CONFIG.char_limit,
+                                           endofs = self.endofs, quotes = self.quotes):
             result.extend(self._translate(batch))
         return result
 

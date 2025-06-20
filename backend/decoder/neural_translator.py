@@ -28,7 +28,8 @@ class NeuralTranslator(object):
                  source_language: str = 'auto',
                  target_language: str = 'english',
                  proxies: dict = None,
-                 endofs: str = '.!?\'"',
+                 endofs: str = CONFIG.Regex.endofs,
+                 quotes: str = CONFIG.Regex.quotes,
                  model_name: str = CONFIG.model_name,
                  model_temp: float = CONFIG.model_temp,
                  model_seed: int = CONFIG.model_seed,
@@ -39,6 +40,7 @@ class NeuralTranslator(object):
         :param target_language: the translation target language
         :param proxies: set proxies for translator
         :param endofs: end of sentence characters to split sentences
+        :param quotes: quote characters to split sentences
         :param model_name: LLM/GPT model name
         :param model_temp: model temperature to adapt model 'creativity' and 'determinism'
         :param model_seed: model seed to adapt 'determinism'
@@ -51,6 +53,7 @@ class NeuralTranslator(object):
         self.model_temp = model_temp
         self.model_seed = model_seed
         self.endofs = endofs
+        self.quotes = quotes
         if not NeuralTranslator.PROMPT:
             NeuralTranslator.PROMPT = self._load_prompt()
         self.client = openai.OpenAI(
@@ -61,7 +64,7 @@ class NeuralTranslator(object):
         self.models = self.get_available_models()
 
     def __config__(self, source_language: str, target_language: str, model_name: str,
-                   proxies: dict = None, endofs: str = '.!?\'"') -> None:
+                   proxies: dict = None, endofs: str = '', quotes: str = '') -> None:
         self.source_language = source_language
         self.target_language = target_language
         if self.model_name in self.models.keys():
@@ -69,7 +72,8 @@ class NeuralTranslator(object):
         else:
             self.model_name = CONFIG.model_name
         self._set_proxy(proxies = proxies)
-        self.endofs = endofs
+        if endofs: self.endofs = endofs
+        if quotes: self.quotes = quotes
 
     def _set_proxy(self, proxies: dict = None) -> None:
         if isinstance(proxies, dict):
@@ -94,7 +98,8 @@ class NeuralTranslator(object):
 
     def translate_batch(self, source_words: list[str]) -> list[str]:
         result = list()
-        for batch in utils.yield_batch_eos(source_words, char_limit = CONFIG.char_limit, endofs = self.endofs):
+        for batch in utils.yield_batch_eos(source_words, char_limit = CONFIG.char_limit,
+                                           endofs = self.endofs, quotes = self.quotes):
             result.extend(self._translate(batch))
         return result
 

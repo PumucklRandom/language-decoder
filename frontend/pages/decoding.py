@@ -185,7 +185,8 @@ class Decoding(Page):
 
     @catch
     def _dialog_sentences(self) -> None:
-        ui_dialog(label_list = self.state.sentences, classes = 'min-w-[80%]', style = 'width:200px').open()
+        ui_dialog(label_list = self.state.sentences[self.ui_grid.s_slice],
+                  classes = 'min-w-[80%]', style = 'width:200px').open()
 
     @catch
     def _pdf_dialog(self) -> None:
@@ -275,8 +276,9 @@ class Decoding(Page):
         with ui.element().classes('w-full items-center'):
             self.ui_grid = UIGridPages(
                 grid_page = self.state.grid_page,
-                endofs = self.decoder.regex.endofs + self.decoder.regex.quotes,
-                find_str = self.state.find
+                find_str = self.state.find,
+                endofs = self.decoder.regex.endofs,
+                quotes = self.decoder.regex.quotes,
             )
             self.ui_grid.page(dark_mode = self.settings.app.dark_mode)
         with ui.footer(): self.ui_grid.pagination()
