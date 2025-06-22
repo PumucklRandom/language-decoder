@@ -2,6 +2,7 @@ import re
 import math
 import chardet
 import pathlib
+from re import Pattern
 from nicegui import ui, events
 from frontend.pages.ui.config import URLS, top_left, bot_left, bot_right
 from frontend.pages.ui.error import catch
@@ -14,8 +15,8 @@ class Upload(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self._n_words_text: int = 0
-        self._pattern = re.compile(r'\S+|\s+')
+        self._pattern: Pattern = re.compile(r'\S+|\s+')
+        self._counter_label: str = f'0/{self.word_limit}'
 
     @catch
     def _clear_text(self) -> None:
@@ -25,12 +26,16 @@ class Upload(Page):
     @catch
     def _check_source_text(self) -> None:
         word_space_split = re.findall(self._pattern, self.state.source_text)
-        n_splits = len(word_space_split)
-        self._n_words_text = f'{math.ceil(n_splits / 2)}/{self.word_limit}'
-        if n_splits > 2 * self.word_limit:
-            self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
-            ui.notify(f'{self.UI_LABELS.UPLOAD.Messages.limit} {self.word_limit} words',
-                      type = 'warning', position = 'top')
+        n_words = math.ceil(len(word_space_split) / 2)
+        if n_words <= self.word_limit:
+            self._counter_label = f'{n_words}/{self.word_limit}'
+            return
+        self._counter_label = f'{self.word_limit}/{self.word_limit}'
+        self.state.source_text = ''.join(word_space_split[:2 * self.word_limit])
+        ui.notify(
+            f'{self.UI_LABELS.UPLOAD.Messages.limit[0]} {self.word_limit} {self.UI_LABELS.UPLOAD.Messages.limit[1]}',
+            type = 'warning', position = 'top'
+        )
 
     def _decode(self) -> None:
         self.state.decode = True
@@ -51,7 +56,7 @@ class Upload(Page):
 
     @catch
     def _on_upload_reject(self) -> None:
-        ui.notify(f'{self.UI_LABELS.UPLOAD.Messages.reject} {self.max_file_size} Bytes',
+        ui.notify(f'{self.UI_LABELS.UPLOAD.Messages.reject} {self.max_file_size / 10 ** 3} KB.',
                   type = 'warning', position = 'top')
 
     @catch
@@ -92,7 +97,7 @@ class Upload(Page):
                         .bind_value(self.state, 'title'):
                     if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.title)
                 ui.textarea(
-                    label = f'{self.UI_LABELS.UPLOAD.Input_txt[0]} {self.word_limit}',
+                    label = f'{self.UI_LABELS.UPLOAD.Input_txt[0]}',
                     placeholder = self.UI_LABELS.UPLOAD.Input_txt[1],
                     on_change = self._check_source_text) \
                     .style('font-size:12pt') \
@@ -100,7 +105,6 @@ class Upload(Page):
                     .bind_value(self.state, 'source_text')
                 ui.space().style('height:35px')
                 self._language_selector()
-                self._check_source_text()
 
     @catch
     def _language_selector(self) -> None:
@@ -123,7 +127,7 @@ class Upload(Page):
                        on_click = lambda: self.goto(URLS.DECODING, call = self._decode)) \
                 .classes(bot_right(12, 23, 'px', '%')):
             if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.decode)
-        ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, '_n_words_text')
+        ui.label().classes(bot_right(30, 10, 'px', '%')).bind_text_from(self, '_counter_label')
         with ui.button(icon = 'delete', on_click = self._clear_text).classes('absolute-bottom-right'):
             if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.delete)
 
