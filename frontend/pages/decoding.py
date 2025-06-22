@@ -160,7 +160,7 @@ class Decoding(Page):
 
     @catch
     def _on_upload_reject(self) -> None:
-        ui.notify(f'{self.UI_LABELS.DECODING.Messages.reject} {self.max_decode_size / 10 ** 3} KB',
+        ui.notify(f'{self.UI_LABELS.DECODING.Messages.reject} {self.max_decode_size / 10 ** 3} KB.',
                   type = 'warning', position = 'top')
 
     @catch

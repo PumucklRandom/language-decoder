@@ -47,15 +47,18 @@ UPLOAD:
     ]
     Title: 'Title'
     Input_txt: [
-        'Enter some text. Max Words: ',
-        'start typing'
+        'Enter some text',
+        'Start typing'
     ]
     Messages:
         decode: 'Upload a text file or enter some text below.'
         invalid: 'Invalid text file. Use a different one or paste some text below.'
         success: 'Upload finished.'
         reject: 'Upload a text file with max:'
-        limit: 'Reduce the text size to max:'
+        limit: [
+            'Reduce the text size to max:',
+            'words.'
+        ]
     Tips:
         help: 'Help'
         title: 'Title of text'
@@ -109,7 +112,7 @@ DECODING:
         download: 'DOWNLOAD'
         text: [
             'The pdf file is ready!',
-            'You can either first view the document:',
+            'You may either first view the document:',
             'Or just download the document:'
         ]
     Messages:

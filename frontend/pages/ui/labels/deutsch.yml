@@ -51,7 +51,7 @@ UPLOAD:
     ]
     Title: 'Titel'
     Input_txt: [
-        'Geben Sie einen Text ein. Wortlimit: ',
+        'Geben Sie einen Text ein',
         'Eingabe starten'
     ]
     Messages:
@@ -59,7 +59,10 @@ UPLOAD:
         invalid: 'Ungültige Textdatei. Verwenden Sie eine andere Datei oder fügen Sie unten einen Text ein.'
         success: 'Hochladen beendet.'
         reject: 'Hochladen einer Textdatei mit maximal:'
-        limit: 'Reduzieren Sie die Textmenge auf maximal:'
+        limit: [
+            'Reduzieren Sie die Textmenge auf maximal:',
+            'Wörter.'
+        ]
     Tips:
         help: 'Hilfe'
         title: 'Titel des Textes'

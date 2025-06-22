@@ -103,7 +103,7 @@ class Dictionaries(Page):
 
     @catch
     def _on_upload_reject(self) -> None:
-        ui.notify(f'{self.UI_LABELS.DICTIONARY.Messages.reject} {self.max_file_size / 10 ** 3} KB',
+        ui.notify(f'{self.UI_LABELS.DICTIONARY.Messages.reject} {self.max_file_size / 10 ** 3} KB.',
                   type = 'warning', position = 'top')
 
     @catch

@@ -29,11 +29,12 @@ Certificate Creation Instructions:
     Export-PfxCertificate -cert "Cert:/CurrentUser/My/Thumbprint" -FilePath certificate.pfx -Password $password
 
     # In case a certificate has to be removed
-    Remove-Item Cert:\CurrentUser\My\Thumbprint
+    Remove-Item Cert:/CurrentUser/My/Thumbprint
 """
 
 import os
 import re
+import sys
 import shutil
 import subprocess
 import pathlib
@@ -52,7 +53,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.12.6.0'
+VERSION = '0.12.6.1'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 PW_PATH = './_data/password.txt'
@@ -269,4 +270,4 @@ def main() -> int:
 
 if __name__ == '__main__':
     exit_code = main()
-    exit(exit_code)
+    sys.exit(exit_code)
