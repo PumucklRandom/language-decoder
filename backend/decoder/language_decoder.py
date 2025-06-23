@@ -97,19 +97,24 @@ class LanguageDecoder(object):
         # replace special characters with common ones
         for chars in self.settings.replacements.keys():
             text = text.replace(chars, self.settings.replacements.get(chars))
-        # swap quotes/brackets with EndOfSentence marks if quotes/brackets are followed by EndOfSentence marks
-        text = re.sub(rf'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.endofs}])', r'\2\1', text)
-        # remove any white whitespaces after "begin marks" and add one whitespace before "begin marks"
-        text = re.sub(rf'([{self.regex.begins}{self.regex.opens}])\s*', r' \1', text)
-        # remove any white whitespaces before "ending marks" and add one whitespace after "ending marks"
-        text = re.sub(rf'\s*([{self.regex.ending}{self.regex.close}])', r'\1 ', text)
-        # remove any whitespaces around "digit marks"
-        text = re.sub(rf'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
-        # remove any white whitespaces before "punctuations" and add one whitespace after "punctuations"
-        #   if "punctuations" are followed by letters or whitespace
-        text = re.sub(rf'\s*([{self.regex.puncts}]+)([^\W\d_]|[{self.regex.puncts}\s])', r'\1 \2', text)
-        # remove any whitespaces inside quote pairs and add one whitespaces outside of quote pairs
+        if self.regex.quotes and self.regex.close and self.regex.endofs:
+            # swap quotes/brackets with EndOfSentence marks if quotes/brackets are followed by EndOfSentence marks
+            text = re.sub(rf'([{self.regex.quotes}{self.regex.close}])\s*([{self.regex.endofs}])', r'\2\1', text)
+        if self.regex.begins and self.regex.opens:
+            # remove any white whitespaces after "begin marks" and add one whitespace before "begin marks"
+            text = re.sub(rf'([{self.regex.begins}{self.regex.opens}])\s*', r' \1', text)
+        if self.regex.ending and self.regex.close:
+            # remove any white whitespaces before "ending marks" and add one whitespace after "ending marks"
+            text = re.sub(rf'\s*([{self.regex.ending}{self.regex.close}])', r'\1 ', text)
+        if self.regex.digits:
+            # remove any whitespaces around "digit marks"
+            text = re.sub(rf'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
+        if self.regex.puncts:
+            # remove any white whitespaces before "punctuations" and add one whitespace after "punctuations"
+            #   if "punctuations" are followed by letters or whitespace
+            text = re.sub(rf'\s*([{self.regex.puncts}]+)([^\W\d_]|[{self.regex.puncts}\s])', r'\1 \2', text)
         for quote in self.regex.quotes:
+            # remove any whitespaces inside quote pairs and add one whitespaces outside of quote pairs
             text = re.sub(rf'([{quote}])\s*(.*?)\s*([{quote}])', r' \1\2\3 ', text)
         # remove redundant whitespaces
         text = ' '.join(text.split())

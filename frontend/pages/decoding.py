@@ -1,5 +1,6 @@
 import pathlib
 import asyncio
+import traceback
 from nicegui import ui, events
 from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
@@ -17,18 +18,18 @@ class Decoding(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.filename: str = 'decoded'
-        self.task: asyncio.Task
-        self.ui_grid: UIGridPages
-        self.ui_find_input: ui.input
-        self.ui_repl_input: ui.input
+        self._filename: str = 'decoded'
+        self._task: asyncio.Task
+        self._ui_grid: UIGridPages
+        self._ui_find_input: ui.input
+        self._ui_repl_input: ui.input
 
     @catch
     async def _open_pdf_view(self) -> None:
         await self.open_route(
             content = self.state.content,
             file_type = 'pdf',
-            filename = self.filename,
+            filename = self._filename,
             disposition = 'inline'
         )
 
@@ -37,7 +38,7 @@ class Decoding(Page):
         await self.open_route(
             content = self.state.content,
             file_type = 'pdf',
-            filename = self.filename
+            filename = self._filename
         )
 
     @catch
@@ -48,7 +49,7 @@ class Decoding(Page):
     @catch
     def _set_grid_values(self, preload: bool = False, new_source: bool = False,
                          new_indices: bool = False) -> None:
-        self.ui_grid.set_values(
+        self._ui_grid.set_values(
             source_words = self.state.source_words,
             target_words = self.state.target_words,
             preload = preload,
@@ -58,8 +59,8 @@ class Decoding(Page):
 
     @catch
     def _get_grid_values(self) -> None:
-        self.state.source_words, self.state.target_words = self.ui_grid.get_values()
-        self.state.grid_page = self.ui_grid.get_grid_page()
+        self.state.source_words, self.state.target_words = self._ui_grid.get_values()
+        self.state.grid_page = self._ui_grid.get_grid_page()
 
     @catch
     def _replace_words(self) -> None:
@@ -77,45 +78,49 @@ class Decoding(Page):
 
     @catch
     def _refresh_replace(self) -> None:
-        self.ui_find_input.update()
-        self.ui_repl_input.update()
+        self._ui_find_input.update()
+        self._ui_repl_input.update()
 
-    @catch
     async def _decode_words(self) -> None:
-        if self.state.title: self.filename = self.state.title
-        if self.state.source_text and self.state.decode:
-            self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
-            self._set_grid_values(preload = True, new_source = True)
-            notification = ui.notification(
-                message = f'{self.UI_LABELS.DECODING.Messages.decoding} {len(self.state.source_words)}',
-                position = 'top',
-                type = 'ongoing',
-                color = 'dark',
-                multi_line = True,
-                timeout = None,
-                spinner = True,
-                close_button = self.UI_LABELS.DECODING.Messages.cancel,
-                on_dismiss = self._task_cancel
-            )
-            await self._task_handler()
-            notification.dismiss()
-        else:
-            self._set_grid_values(new_indices = True)
-        self.state.decode = False
+        try:
+            if self.state.title: self._filename = self.state.title
+            if self.state.source_text and self.state.decode:
+                self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
+                self._set_grid_values(preload = True, new_source = True)
+                notification = ui.notification(
+                    message = f'{self.UI_LABELS.DECODING.Messages.decoding} {len(self.state.source_words)}',
+                    position = 'top',
+                    type = 'ongoing',
+                    color = 'dark',
+                    multi_line = True,
+                    timeout = None,
+                    spinner = True,
+                    close_button = self.UI_LABELS.DECODING.Messages.cancel,
+                    on_dismiss = self._task_cancel
+                )
+                await self._task_handler()
+                notification.dismiss()
+            else:
+                self._set_grid_values(new_indices = True)
+            self.state.decode = False
+        except Exception as exception:
+            logger.error(f'Error in "_decode_words" with exception: {exception}\n{traceback.format_exc()}')
+            ui.notify(self.UI_LABELS.GENERAL.Error.internal, type = 'negative', position = 'top')
+            self.state.decode = False
 
     @catch
     async def _task_handler(self) -> None:
         try:
-            self.task = asyncio.create_task(asyncio.to_thread(
+            self._task = asyncio.create_task(asyncio.to_thread(
                 self.decoder.decode_words,
                 source_words = self.state.source_words
             ))
-            self.state.target_words = await self.task
-            self.task = asyncio.create_task(asyncio.to_thread(
+            self.state.target_words = await self._task
+            self._task = asyncio.create_task(asyncio.to_thread(
                 self.decoder.translate_sentences,
                 source_words = self.state.source_words
             ))
-            self.state.sentences = await self.task
+            self.state.sentences = await self._task
             self._apply_dict()
             logger.info('Decoding done.')
         except asyncio.exceptions.CancelledError:
@@ -133,7 +138,7 @@ class Decoding(Page):
     @catch
     def _task_cancel(self) -> None:
         try:
-            self.task.cancel()
+            self._task.cancel()
         except AttributeError:
             return
 
@@ -171,7 +176,7 @@ class Decoding(Page):
                 data = data
             )
             self.state.title = pathlib.Path(event.name).stem
-            self.filename = self.state.title
+            self._filename = self.state.title
             self.state.source_text = ' '.join(self.state.source_words)
             self._set_grid_values(new_source = True)
         except DecoderError:
@@ -185,7 +190,8 @@ class Decoding(Page):
 
     @catch
     def _dialog_sentences(self) -> None:
-        ui_dialog(label_list = self.state.sentences[self.ui_grid.s_slice],
+        if not self.state.sentences: return
+        ui_dialog(label_list = self.state.sentences[self._ui_grid.s_slice],
                   classes = 'min-w-[80%]', style = 'width:200px').open()
 
     @catch
@@ -220,7 +226,7 @@ class Decoding(Page):
         await self.open_route(
             content = content,
             file_type = 'json',
-            filename = self.filename
+            filename = self._filename
         )
 
     @catch
@@ -247,12 +253,12 @@ class Decoding(Page):
             if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.replace)
             with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)):
                 with ui.menu_item(auto_close = False):
-                    self.ui_find_input = ui.input(
+                    self._ui_find_input = ui.input(
                         label = 'find',
-                        on_change = lambda: self.ui_grid.highlight_text(self.state.find)
+                        on_change = lambda: self._ui_grid.highlight_text(self.state.find)
                     ).bind_value(self.state, 'find')
                 with ui.menu_item(auto_close = False):
-                    self.ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')
+                    self._ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')
                 with ui.menu_item(auto_close = False).style('justify-content:center'):
                     with ui.row():
                         ui.button(text = self.UI_LABELS.DECODING.Footer.replace,
@@ -274,14 +280,14 @@ class Decoding(Page):
     @catch
     async def _center(self) -> None:
         with ui.element().classes('w-full items-center'):
-            self.ui_grid = UIGridPages(
+            self._ui_grid = UIGridPages(
                 grid_page = self.state.grid_page,
                 find_str = self.state.find,
                 endofs = self.decoder.regex.endofs,
                 quotes = self.decoder.regex.quotes,
             )
-            self.ui_grid.page(dark_mode = self.settings.app.dark_mode)
-        with ui.footer(): self.ui_grid.pagination()
+            self._ui_grid.page(dark_mode = self.settings.app.dark_mode)
+        with ui.footer(): self._ui_grid.pagination()
         await self._decode_words()
         with ui.button(icon = 'help', on_click = self._dialog) \
                 .classes(top_right(5, 5)).props('dense'):

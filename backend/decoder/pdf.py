@@ -43,8 +43,8 @@ class PDF(object):
         self.font_size = font_size
         self.top_margin = top_margin
         self.left_margin = left_margin
-        self.char_lim = char_lim - (1 if page_sep else 0)
-        self.line_lim = int(line_lim / 3) * 3
+        self.char_lim = char_lim - (1 if page_sep else 0) if char_lim > 1 else 1
+        self.line_lim = int(line_lim / 3) * 3 if line_lim > 3 else 3
         self.tab_size = tab_size
         self.page_lim = page_lim
         self.page_sep = '|' if page_sep else ''
