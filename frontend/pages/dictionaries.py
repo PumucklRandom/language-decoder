@@ -12,44 +12,50 @@ class Dictionaries(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ui_selector: ui.select
-        self.ui_table: UITable
-        self.rename: bool = False
+        self._ui_selector: ui.select
+        self._ui_table: UITable
+        self._rename: bool = False
 
     @catch
     def _select_table(self) -> None:
-        if not self.ui_selector: return
-        if not self.ui_selector.value:
+        if not self._ui_selector.value:
             self._deselect_table()
             return
-        if self.rename:
+        if self._rename:
             self._rename_table()
             return
-        self._get_dict_values()  # self._save_dict()
-        self.dicts.dict_name = self.ui_selector.value
-        if self.dicts.dict_name not in self.dicts.dictionaries.keys():
-            self.dicts.dictionaries[self.dicts.dict_name] = {}
+        self._get_dict_values()
+        self.dicts.dict_name = self._ui_selector.value
         self._set_dict_values()
 
     @catch
     def _deselect_table(self) -> None:
+        self._get_dict_values()
         self.dicts.dict_name = None
-        self.ui_table.rows.clear()
-        self.ui_table.update()
+        self._ui_table.rows.clear()
+        self._ui_table.update()
 
     @catch
     def _rename_table(self) -> None:
-        self.rename = False
+        self._rename = False
         self._remove_select_option(self.dicts.dict_name)
         self.dicts.dictionaries.pop(self.dicts.dict_name, {})
-        self.dicts.dict_name = self.ui_selector.value
-        self.ui_selector.update()
-        # self.dicts.save(user_uuid = self.state.user_uuid)
+        self.dicts.dict_name = self._ui_selector.value
+        self._ui_selector.update()
+        self._get_dict_values()
 
     @catch
     def _remove_select_option(self, option: str) -> None:
-        if option in self.ui_selector.options:
-            self.ui_selector.options.remove(option)
+        if option in self._ui_selector.options:
+            self._ui_selector.options.remove(option)
+
+    @catch
+    def _get_dict_values(self) -> None:
+        if self.dicts.dict_name:
+            self.dicts.dictionaries[self.dicts.dict_name] = self._ui_table.get_values(as_dict = True)
+        if not self._ui_selector.value: return
+        if self._ui_selector.value not in self.dicts.dictionaries.keys():
+            self.dicts.dictionaries[self._ui_selector.value] = self._ui_table.get_values(as_dict = True)
 
     @catch
     def _save_dict(self) -> None:
@@ -57,30 +63,25 @@ class Dictionaries(Page):
         self.dicts.save()
 
     @catch
-    def _get_dict_values(self) -> None:
-        if self.dicts.dict_name:
-            self.dicts.dictionaries[self.dicts.dict_name] = self.ui_table.get_values(as_dict = True)
-
-    @catch
     def _delete_table(self) -> None:
         self._remove_select_option(self.dicts.dict_name)
         self.dicts.dictionaries.pop(self.dicts.dict_name, {})
-        self.ui_selector.set_value(None)
-        # self.dicts.save(user_uuid = self.state.user_uuid)
+        self.dicts.dict_name = None
+        self._ui_selector.set_value(None)
 
     @catch
     def _clear_table(self) -> None:
         self.dicts.dictionaries.get(self.dicts.dict_name, {}).clear()
-        self.ui_table.rows.clear()
-        self.ui_table.update()
-        # self.dicts.save(user_uuid = self.state.user_uuid)
+        self._ui_table.rows.clear()
+        self._ui_table.update()
 
     @catch
     def _set_dict_values(self) -> None:
-        self.ui_table.set_values(self.dicts.dictionaries.get(self.dicts.dict_name, {}))
+        if self.dicts.dict_name:
+            self._ui_table.set_values(self.dicts.dictionaries.setdefault(self.dicts.dict_name, {}))
 
     def _get_table_page(self) -> None:
-        self.state.table_page = self.ui_table.pagination
+        self.state.table_page = self._ui_table.pagination
 
     @catch
     def _dialog_select(self) -> None:
@@ -93,7 +94,7 @@ class Dictionaries(Page):
     @catch
     async def _export(self) -> None:
         if not self.dicts.dict_name: return
-        self._save_dict()
+        self._get_dict_values()
         content = self.dicts.to_json_str(dict_name = self.dicts.dict_name)
         await self.open_route(
             content = content,
@@ -112,10 +113,9 @@ class Dictionaries(Page):
             data = event.content.read().decode('utf-8')
             dict_name = pathlib.Path(event.name).stem
             self.dicts.from_json_str(dict_name = dict_name, data = data)
-            self.ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
-            self.ui_selector.set_value(dict_name)
+            self._ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
+            self._ui_selector.set_value(dict_name)
             self._set_dict_values()
-            # self._save_dict()
         except DictionaryError:
             ui.notify(self.UI_LABELS.DICTIONARY.Messages.invalid, type = 'warning', position = 'top')
         finally:
@@ -169,8 +169,8 @@ class Dictionaries(Page):
         with ui.card().style('width:500px'):
             ui.checkbox(
                 text = self.UI_LABELS.DICTIONARY.Selector.rename) \
-                .props('dense').bind_value(self, 'rename')
-            self.ui_selector = ui.select(
+                .props('dense').bind_value(self, '_rename')
+            self._ui_selector = ui.select(
                 label = self.UI_LABELS.DICTIONARY.Selector.select,
                 value = self.dicts.dict_name,
                 options = list(self.dicts.dictionaries.keys()),
@@ -191,7 +191,7 @@ class Dictionaries(Page):
     def _table(self) -> None:
         DICT_COLS[0].update({'label': self.UI_LABELS.DICTIONARY.Table.key})
         DICT_COLS[1].update({'label': self.UI_LABELS.DICTIONARY.Table.val})
-        self.ui_table = UITable(
+        self._ui_table = UITable(
             columns = DICT_COLS,
             dark_mode = self.settings.app.dark_mode,
             pagination = self.state.table_page,

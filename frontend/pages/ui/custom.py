@@ -94,7 +94,7 @@ class UIList(Table):
 
     def _set_type(self, values) -> list[float]:
         if self.val_type == 'number':
-            return list(map(float, values))
+            return [float('nan') if val == '' else float(val) for val in values]
         return values
 
     def _body(self) -> str:
@@ -360,4 +360,5 @@ class UIGridPages(object):
     @property
     def s_slice(self) -> slice:
         p = self.page_number - 1
-        return slice(self.s_indices[p], self.s_indices[p + 1] - 1)
+        if self.s_indices:
+            return slice(self.s_indices[p], self.s_indices[p + 1] - 1)
