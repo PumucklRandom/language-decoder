@@ -7,10 +7,19 @@ from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, bot_right
 
 
-def ui_dialog(label_list: list[str], classes: str = 'max-w-[80%]',
-              style: str = 'min-width:200px', space: int = 10) -> ui.dialog:
+def ui_dialog(label_list: list[str], width: int = 800, u_width: str = 'px',
+              height: int = 100, max_width: int = 80, space: int = 10) -> ui.dialog:
+    """
+    :param label_list: list of labels to display in the dialog
+    :param width: width of the dialog in pixels
+    :param u_width: unit for the width of the dialog, e.g. 'px' or 'vw'
+    :param height: height of the dialog in pixels
+    :param max_width: maximum width of the dialog in percent
+    :param space: height space between the labels in pixels
+    """
     with ui.dialog() as dialog:
-        with ui.card().style(f'{style}; min-height:112px; font-size:11pt; gap:0.0rem').classes(f'{classes}'):
+        with ui.card().style(f'min-width:{width}{u_width}; min-height:{height}px; font-size:11pt; gap:0.0rem') \
+                .classes(f'max-w-[{max_width}%]'):
             ui.button(icon = 'close', on_click = dialog.close) \
                 .props('dense round size=12px') \
                 .classes('absolute-top-right')
@@ -226,20 +235,20 @@ class UIGrid(Table):
 class UIGridPages(object):
     def __init__(self, grid_page: dict = None, find_str: str = '',
                  endofs: str = CONFIG.Regex.endofs, quotes: str = CONFIG.Regex.quotes) -> None:
-        self.page_number: int = 1
-        self.page_size: int = CONFIG.grid_options[2]
-        self.prev_page: int = 1
+        self._page_number: int = 1
+        self._page_size: int = CONFIG.grid_options[2]
+        self._prev_page: int = 1
         self._set_grid_page(grid_page)
         self.find_str = find_str
         self.pattern: Pattern = re.compile(rf'.*?[{endofs}][{quotes}]?$')
         self.source_words: list[str] = []
         self.target_words: list[str] = []
-        self.eos_indices: tuple[int] = tuple()  # end of sentence word indices
-        self.indices: list[int] = []  # word indices per page
-        self.s_indices: list[int] = []  # sentence indices per page
-        self.ui_grid: UIGrid
-        self.ui_page: ui.pagination
-        self.visible: bool = False
+        self._eos_indices: tuple[int] = tuple()  # end of sentence word indices
+        self._indices: list[int] = []  # word indices per page
+        self._s_indices: list[int] = []  # sentence indices per page
+        self._ui_grid: UIGrid
+        self._ui_page: ui.pagination
+        self._visible: bool = False
 
     def page(self, *args, **kwargs) -> None:
         with ui.card().style('min-width:1000px; min-height:562px'):
@@ -248,7 +257,7 @@ class UIGridPages(object):
 
     def pagination(self):
         with ui.card().classes(bot_right(66, 0)).style('min-width:550px; min-height:50px') \
-                .bind_visibility_from(self, 'visible'):
+                .bind_visibility_from(self, '_visible'):
             ui.label('Max words per page:').classes(bot_right(15, 410))
             ui.select(options = CONFIG.grid_options,
                       value = CONFIG.grid_options[2],
@@ -256,84 +265,83 @@ class UIGridPages(object):
                 .classes(bot_right(5, 350)) \
                 .props('dense options-dense borderless') \
                 .style('width:50px') \
-                .bind_value(self, 'page_size')
-            self.ui_page = ui.pagination(
+                .bind_value(self, '_page_size')
+            self._ui_page = ui.pagination(
                 min = 1, max = 1,
                 direction_links = True,
-                value = self.page_number,
+                value = self._page_number,
                 on_change = self._scroll) \
                 .classes(bot_right(10, 0)) \
                 .props('max-pages="8"') \
                 .style('width:350px') \
-                .bind_value(self, 'page_number')
+                .bind_value(self, '_page_number')
 
     @ui.refreshable
     def _table(self, *args, **kwargs) -> None:
-        if not self.source_words or not self.indices:
-            self.visible = False
+        if not self.source_words or not self._indices:
+            self._visible = False
             with ui.element().style('height:500px'):
-                self.ui_grid = UIGrid()
+                self._ui_grid = UIGrid()
             return
-        self.visible = True
-        p = self.page_number - 1
-        self.ui_grid = UIGrid(
-            source_words = self.source_words[self.indices[p]:self.indices[p + 1]],
-            target_words = self.target_words[self.indices[p]:self.indices[p + 1]],
+        self._visible = True
+        p = self._page_number - 1
+        self._ui_grid = UIGrid(
+            source_words = self.source_words[self._indices[p]:self._indices[p + 1]],
+            target_words = self.target_words[self._indices[p]:self._indices[p + 1]],
             *args, **kwargs
         )
-        self.ui_grid.mark_cells(self.find_str)
+        self._ui_grid.mark_cells(self.find_str)
 
     def _get_indices(self, source_words: list[str]) -> None:
-        self.eos_indices = tuple(i + 1 for i, word in enumerate(source_words) if self.pattern.match(word))
+        self._eos_indices = tuple(i + 1 for i, word in enumerate(source_words) if self.pattern.match(word))
 
     def _set_indices(self) -> None:
-        if not self.eos_indices: return
-        self.indices, p, _i = [0], 0, 0
-        if self.page_size != 'All':
-            for i in self.eos_indices:
-                if i > (self.indices[p] + self.page_size):
-                    self.indices.append(_i)
+        if not self._eos_indices: return
+        self._indices, p, _i = [0], 0, 0
+        if self._page_size != 'All':
+            for i in self._eos_indices:
+                if i > (self._indices[p] + self._page_size):
+                    self._indices.append(_i)
                     p += 1
                 _i = i
-        if self.eos_indices[-1] != self.indices[-1]:
-            self.indices.append(self.eos_indices[-1])
-        self.ui_page.max = len(self.indices) - 1
+        if self._eos_indices[-1] != self._indices[-1]:
+            self._indices.append(self._eos_indices[-1])
+        self._ui_page.max = len(self._indices) - 1
 
     def _repage(self) -> None:
-        if not hasattr(self, 'ui_page'): return
         # Here it is important that the page reset is done first, to trigger the right scrolling!
-        self.ui_page.value = 1  # have to be first!!!
-        self.prev_page = 1
+        self._ui_page.value = 1  # have to be first!!!
+        self._prev_page = 1
         self._set_indices()
         self._set_s_indices()
         self._table.refresh()
 
     def _scroll(self) -> None:
         self._upd_values()
-        self.prev_page = self.page_number
+        self._prev_page = self._page_number
         self._table.refresh()
 
     def _upd_values(self):
-        if self.source_words and self.indices:
-            p = self.prev_page - 1
-            (self.source_words[self.indices[p]:self.indices[p + 1]],
-             self.target_words[self.indices[p]:self.indices[p + 1]]) = self.ui_grid.get_values()
+        if self.source_words and self._indices:
+            p = self._prev_page - 1
+            (self.source_words[self._indices[p]:self._indices[p + 1]],
+             self.target_words[self._indices[p]:self._indices[p + 1]]) = self._ui_grid.get_values()
 
     def _set_grid_page(self, grid_page: dict) -> None:
         if grid_page is None: grid_page = {}
-        self.page_number = grid_page.get('page', 1)
-        self.page_size = grid_page.get('rowsPerPage', CONFIG.grid_options[2])
-        self.prev_page = self.page_number
+        self._page_number = grid_page.get('page', 1)
+        self._page_size = grid_page.get('rowsPerPage', CONFIG.grid_options[2])
+        self._prev_page = self._page_number
 
     def get_grid_page(self) -> dict:
-        return {'page': self.page_number, 'rowsPerPage': self.page_size}
+        return {'page': self._page_number, 'rowsPerPage': self._page_size}
 
     def set_values(self, source_words: list[str], target_words: list[str], preload: bool = False,
                    new_source: bool = False, new_indices: bool = False) -> None:
         if not source_words: return
         if new_source:
-            self.ui_page.value = 1
-            self.prev_page = 1
+            self._ui_page.value = 1
+            self._prev_page = 1
             self._get_indices(source_words)
             self._set_indices()
             self._set_s_indices()
@@ -351,14 +359,14 @@ class UIGridPages(object):
 
     def highlight_text(self, find_str: str = '') -> None:
         self.find_str = find_str
-        self.ui_grid.mark_cells(self.find_str)
+        self._ui_grid.mark_cells(self.find_str)
 
     def _set_s_indices(self):
-        self.s_indices = [0]
-        self.s_indices.extend((self.eos_indices.index(i) + 1) * 3 for i in self.indices[1:])
+        self._s_indices = [0]
+        self._s_indices.extend((self._eos_indices.index(i) + 1) * 3 for i in self._indices[1:])
 
     @property
-    def s_slice(self) -> slice:
-        p = self.page_number - 1
-        if self.s_indices:
-            return slice(self.s_indices[p], self.s_indices[p + 1] - 1)
+    def slice(self) -> slice:
+        p = self._page_number - 1
+        if not self._s_indices: return slice(None)
+        return slice(self._s_indices[p], self._s_indices[p + 1] - 1)

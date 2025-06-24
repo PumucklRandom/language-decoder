@@ -16,8 +16,7 @@ def cleanup_files(directory: str, timeout: int = CONFIG.files_timeout) -> int:
     :return: number of removed files
     """
     files_removed = 0
-    time_now = time.time()
-    time_limit = time_now - (timeout * 24 * 3600)
+    time_limit = time.time() - (timeout * 24 * 3600)
     files_path = os.path.join(file_dir, directory)
     try:
         if not os.path.isdir(files_path):
@@ -27,7 +26,7 @@ def cleanup_files(directory: str, timeout: int = CONFIG.files_timeout) -> int:
         json_files = (file for file in os.listdir(files_path) if file.endswith('.json'))
         for json_file in json_files:
             json_path = os.path.join(files_path, json_file)
-            if os.path.isfile(json_path) and os.path.getmtime(json_path) < time_limit:
+            if os.path.isfile(json_path) and os.path.getatime(json_path) < time_limit:
                 try:
                     os.remove(json_path)
                     files_removed += 1

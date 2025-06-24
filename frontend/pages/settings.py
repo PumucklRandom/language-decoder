@@ -64,6 +64,9 @@ class Settings(Page):
     def _get_replacements(self) -> None:
         self.settings.replacements = self._ui_table.get_values(as_dict = True)
 
+    def _get_repla_page(self) -> None:
+        self.state.repla_page = self._ui_table.pagination
+
     @catch
     def _set_pdf_values(self) -> None:
         self._ui_pdf_list.set_values(
@@ -203,8 +206,10 @@ class Settings(Page):
         REPLACE_COLS[1].update({'label': self.UI_LABELS.SETTINGS.Table.val})
         self._ui_table = UITable(
             columns = REPLACE_COLS,
-            dark_mode = self.settings.app.dark_mode) \
-            .classes('sticky-header').style('min-width:420px; max-height:80vh')
+            dark_mode = self.settings.app.dark_mode,
+            pagination = self.state.repla_page,
+            on_pagination_change = self._get_repla_page
+        ).style('min-width:420px; max-height:80vh').classes('sticky-header')
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._get_replacements):

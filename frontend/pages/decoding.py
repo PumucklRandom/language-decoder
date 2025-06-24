@@ -43,6 +43,7 @@ class Decoding(Page):
 
     @catch
     def _refresh_grid(self) -> None:
+        if not self.state.source_words: return
         self._get_grid_values()
         self._set_grid_values()
 
@@ -64,6 +65,7 @@ class Decoding(Page):
 
     @catch
     def _replace_words(self) -> None:
+        if not self.state.target_words: return
         self._get_grid_values()
         self.state.source_words, self.state.target_words = self.decoder.find_replace(
             source_words = self.state.source_words,
@@ -144,6 +146,7 @@ class Decoding(Page):
 
     @catch
     def _apply_dict(self) -> None:
+        if not self.state.target_words: return
         self.state.target_words = self.decoder.apply_dict(
             source_words = self.state.source_words,
             target_words = self.state.target_words,
@@ -191,8 +194,7 @@ class Decoding(Page):
     @catch
     def _dialog_sentences(self) -> None:
         if not self.state.sentences: return
-        ui_dialog(label_list = self.state.sentences[self._ui_grid.s_slice],
-                  classes = 'min-w-[80%]', style = 'width:200px').open()
+        ui_dialog(label_list = self.state.sentences[self._ui_grid.slice], width = 80, u_width = 'vw').open()
 
     @catch
     def _pdf_dialog(self) -> None:

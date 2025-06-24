@@ -1,3 +1,4 @@
+from nicegui.observables import ObservableDict
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
 from frontend.pages.ui.config import UILabels
@@ -6,7 +7,7 @@ from frontend.pages.ui.config import UILabels
 class State(object):
     __slots__ = ('_storage',)
 
-    def __init__(self, storage: dict) -> None:
+    def __init__(self, storage: ObservableDict) -> None:
         super().__setattr__('_storage', storage)
 
     def __setattr__(self, name: str, value: any):
@@ -37,6 +38,10 @@ class State(object):
 
     def clear(self):
         self._storage.clear()
+
+    @property
+    def time_stamp(self) -> float:
+        return self._storage.last_modified
 
     @property
     def uuid(self) -> str:
@@ -133,6 +138,14 @@ class State(object):
     @table_page.setter
     def table_page(self, value: dict) -> None:
         self._storage['table_page'] = value
+
+    @property
+    def repla_page(self) -> dict:
+        return self.get('repla_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[0]})
+
+    @repla_page.setter
+    def repla_page(self, value: dict) -> None:
+        self._storage['repla_page'] = value
 
     @property
     def grid_page(self) -> dict:
