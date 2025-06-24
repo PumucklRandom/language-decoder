@@ -287,7 +287,7 @@ def to_labels(name: str, sub_tree: any):
     return sub_tree
 
 
-def load_labels(language: str = 'english') -> UILabels:
+def load_labels(language: str) -> UILabels:
     language_path = os.path.join(file_dir, f'labels/{language}.yml')
     if not os.path.isfile(language_path):
         message = f'UI Labels file not found at "{language_path}"'
@@ -316,14 +316,14 @@ def get_languages() -> list[str]:
 ui_labels_cache: dict[str, UILabels] = dict()
 
 
-def get_ui_labels(language: str = 'english') -> UILabels:
+def get_ui_labels(language: str) -> UILabels:
     if language in ui_labels_cache:
         return ui_labels_cache.get(language)
     try:
         ui_labels_cache[language] = load_labels(language)
         return ui_labels_cache.get(language)
     except UIConfigError:
-        return ui_labels_cache.get('english')
+        return ui_labels_cache.get(CONFIG.App.language)
 
 
-UI_LABELS: UILabels = get_ui_labels()
+UI_LABELS: UILabels = get_ui_labels(CONFIG.App.language)

@@ -1,6 +1,8 @@
 GENERAL:
     Error:
-        internal: 'Internal server error'
+        internal: 'Internal server error.'
+    Warning:
+        timeout: 'Session timeout.'
 START:
     Explanations:
         title: 'Explanation:'
@@ -143,7 +145,7 @@ DICTIONARY:
         '/n',
         'If you have already selected a dictionary,
             you can deselect it by clicking the "X" button inside the text field.',
-        '/n',
+        '/n', '/N', '/n',
         'To rename an existing dictionary, select the dictionary you want to rename.',
         'Check the "Rename dictionary" option and type in a new dictionary name.',
         'Ensure that the input field is in focus and press the Enter key.',
@@ -246,10 +248,24 @@ SETTINGS:
         val: 'Substitute'
     Dialogs_pdf: [
         'On this tab, you can change the "text layout" settings for the created PDF file.',
-        'It is not recommended to change these settings unless you know what you do.',
+        '/n', '/N', '/n',
+        'Title font size: Sets the font size of the document title.',
         '/n',
-        'If you want to find out more about the use of the "pdf layout" settings, you
-            have to take a look at the backend code under: "backend/decoder/pdf.py".',
+        'Text font size: Sets the font size of the decoded text.',
+        '/n',
+        'Top margin: Space between the top edge of the page and its content.',
+        '/n',
+        'Left margin: Space between the left edge of the page and its content.',
+        '/n',
+        'Characters per line: Maximum number of characters on a single line.',
+        '/n',
+        'Lines per page: — Maximum number of lines on one page.',
+        '/n',
+        'Pages per sheet: Number of PDF pages printed on one physical sheet.',
+        '/n',
+        'Tab size between words: Sets spacing between the words.',
+        '/n',
+        'Use page seperator [0, 1]: Adds a visual separator between pages if set to 1.',
         '/n', '/N', '/n',
         'Click on the "SAVE" button to save and apply your values.',
         '/n',

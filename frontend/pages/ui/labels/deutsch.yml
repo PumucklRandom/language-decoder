@@ -1,6 +1,8 @@
 GENERAL:
     Error:
-        internal: 'Interner Serverfehler'
+        internal: 'Interner Serverfehler.'
+    Warning:
+        timeout: 'Sitzung abgelaufen.'
 START:
     Explanations:
         title: 'Beschreibung:'
@@ -151,7 +153,7 @@ DICTIONARY:
         '/n',
         'Wenn Sie bereits ein Wörterbuch ausgewählt haben,
             können Sie die Auswahl abwählen, indem Sie auf die Schaltfläche "X" im Textfeld klicken.',
-        '/n',
+        '/n', '/N', '/n',
         'Um ein vorhandenes Wörterbuch umzubenennen, wählen Sie das Wörterbuch aus, das Sie umbenennen möchten.',
         'Aktivieren Sie die Option "Wörterbuch umbenennen" und geben Sie einen neuen Wörterbuchnamen ein.',
         'Stellen Sie sicher, dass das Eingabefeld im Fokus ist und drücken Sie die Eingabetaste.',
@@ -259,12 +261,26 @@ SETTINGS:
         key: 'Sonderzeichen'
         val: 'Alternative'
     Dialogs_pdf: [
-        'Auf dieser Registerkarte können Sie die "Textformatierungs-Einstellungen"
-            für die erstellte PDF-Datei ändern.',
-        'Es wird nicht empfohlen, diese Einstellungen zu ändern, wenn Sie nicht wissen, was Sie tun.',
+        'Auf dieser Registerkarte können Sie die "Textformatierungs-Einstellungen" für die erstellte PDF-Datei ändern.',
+        '/n', '/N', '/n',
+        'Titel Schriftgröße: Legt die Schriftgröße des Dokumenttitels fest.',
         '/n',
-        'Wenn Sie mehr über die Verwendung der "PDF-Formatierungs-Einstellungen" erfahren möchten,
-            sollten Sie einen Blick auf den Backend-Code werfen unter: "backend/decoder/pdf.py".',
+        'Text Schriftgröße: Legt die Schriftgröße des dekodierten Textes fest.',
+        '/n',
+        'Oberer Seitenrand: Abstand zwischen dem oberen Seitenrand und dem Inhalt.',
+        '/n',
+        'Linker Seitenrand: Abstand zwischen dem linken Seitenrand und dem Inhalt.',
+        '/n',
+        'Zeichen pro Zeile: Maximale Anzahl an Zeichen in einer Zeile.',
+        '/n',
+        'Zeilen pro Seite: Maximale Anzahl an Zeilen auf einer Seite.',
+        '/n',
+        'Seiten pro Blatt: Anzahl an PDF-Seiten, die auf ein physisches Blatt gedruckt werden.',
+        '/n',
+        'Tabulatorgröße zwischen Wörtern: Bestimmt den Abstand zwischen den Wörtern.',
+        '/n',
+        'Seitentrennzeichen verwenden [0, 1]: Fügt eine visuelle Trennung zwischen den Seiten ein,
+            bei einem Wert von 1.',
         '/n', '/N', '/n',
         'Klicken Sie auf die Schaltfläche "SPEICHERN", um Ihre Werte zu speichern und zu übernehmen.',
         '/n',
@@ -283,7 +299,7 @@ SETTINGS:
         'Seitentrennzeichen verwenden [0, 1]'
     ]
     Dialogs_adv: [
-        'Auf dieser Registerkarte können Sie die Einstellungen für die 
+        'Auf dieser Registerkarte können Sie die Einstellungen für die
             "Regular Expression" für den Eingabetext ändern.',
         'Es wird nicht empfohlen, diese Einstellungen zu ändern, wenn Sie nicht wissen, was Sie tun.',
         '/n',

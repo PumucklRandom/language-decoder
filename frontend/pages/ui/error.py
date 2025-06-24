@@ -12,10 +12,13 @@ def catch(func: callable) -> callable:
         async def async_wrapper(*args, **kwargs):
             try:
                 return await func(*args, **kwargs)
+            except AttributeError as exception:
+                ui.navigate.reload()
+                logger.warning(f'Warning in "{func.__name__}" with exception: {exception}\n{traceback.format_exc()}')
+                ui.notify(UI_LABELS.GENERAL.Warning.timeout, type = 'warning', position = 'top')
             except Exception as exception:
                 logger.error(f'Error in "{func.__name__}" with exception: {exception}\n{traceback.format_exc()}')
                 ui.notify(UI_LABELS.GENERAL.Error.internal, type = 'negative', position = 'top')
-                return None
 
         return async_wrapper
 
@@ -23,9 +26,12 @@ def catch(func: callable) -> callable:
     def sync_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except AttributeError as exception:
+            ui.navigate.reload()
+            logger.warning(f'Warning in "{func.__name__}" with exception: {exception}\n{traceback.format_exc()}')
+            ui.notify(UI_LABELS.GENERAL.Warning.timeout, type = 'warning', position = 'top')
         except Exception as exception:
             logger.error(f'Error in "{func.__name__}" with exception: {exception}\n{traceback.format_exc()}')
             ui.notify(UI_LABELS.GENERAL.Error.internal, type = 'negative', position = 'top')
-            return None
 
     return sync_wrapper

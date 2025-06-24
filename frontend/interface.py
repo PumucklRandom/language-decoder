@@ -18,7 +18,7 @@ def build() -> None:
     UIPage(Decoding).build()
     UIPage(Dictionaries).build()
     UIPage(Settings).build()
-    app.on_startup(UIPage.create_cleanup)
+    app.on_startup(UIPage.create_prune_task)
 
 
 def run() -> None:

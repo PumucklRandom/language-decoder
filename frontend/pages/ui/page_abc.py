@@ -1,5 +1,5 @@
+import time
 import asyncio
-from time import time
 from urllib import parse
 from abc import ABC, abstractmethod
 from fastapi.responses import Response
@@ -43,7 +43,6 @@ class Page(ABC):
 
     def __init__(self) -> None:
         self.state: State = None  # type: ignore
-        self._time_stamp: float
         self.word_limit: int = CONFIG.word_limit
         self.max_file_size: int = self.word_limit * 50
         self.max_decode_size: int = self.max_file_size * 2
@@ -52,7 +51,7 @@ class Page(ABC):
 
     @property
     def time_stamp(self) -> float:
-        return self._time_stamp
+        return self.state.time_stamp
 
     @property
     def decoder(self) -> LanguageDecoder:
@@ -75,7 +74,6 @@ class Page(ABC):
         return self.settings.app.show_tips
 
     def __init_ui__(self) -> None:
-        self._time_stamp = time()
         if self.state is None: self.state = State(storage = app.storage.tab)
         if self.state.user_uuid == '': self.state.user_uuid = app.storage.browser.get('id')
         if self.decoder is None: self.state.decoder = LanguageDecoder(user_uuid = self.state.user_uuid)
@@ -168,27 +166,22 @@ class UIPage(ui.page):
     pages: dict[str, Page] = dict()
 
     @classmethod
-    async def cleanup_pages(cls):
+    async def prune_pages(cls):
         while True:
             async with pages_lock:
                 for page_id, page in list(cls.pages.items()):
-                    if time() > page.time_stamp + CONFIG.session_time:
+                    if time.time() > page.time_stamp + CONFIG.session_time:
                         del cls.pages[page_id]
             try:
                 await asyncio.sleep(PURGE_INTERVAL)
             except asyncio.CancelledError:
-                logger.info('Cancelled cleanup_pages')
+                logger.info('Cancelled prune_pages')
                 break
 
     @classmethod
-    def create_cleanup(cls):
-        logger.info('Create cleanup_pages')
-        background_tasks.create(cls.cleanup_pages(), name = 'cleanup_pages')
-
-    @staticmethod
-    @app.on_shutdown
-    async def teardown_cleanup():
-        await background_tasks.teardown()
+    def create_prune_task(cls):
+        logger.info('Create prune_pages task')
+        background_tasks.create(cls.prune_pages(), name = 'prune_pages')
 
     def __init__(self, page_class: type(Page)) -> None:
         super().__init__(path = page_class.URL)
