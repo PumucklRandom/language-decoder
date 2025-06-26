@@ -48,8 +48,8 @@ UPLOAD:
             können Sie auf die Schaltfläche "Mülleimer" unten rechts klicken.'
     ]
     Uploads: [
-        'Laden Sie eine Textdatei hoch oder geben Sie unten einen Text ein.',
-        'Datei auswählen'
+        'Laden Sie eine Textdatei hoch oder geben Sie unten einen Text ein:',
+        'Textdatei hochladen'
     ]
     Title: 'Titel'
     Input_txt: [
@@ -113,8 +113,8 @@ DECODING:
              des aktuellen Textes zum besseren Verständnis.'
     ]
     Dialogs_import: [
-        'Laden Sie eine zuvor exportierte json-Datei hoch.',
-        'Datei auswählen'
+        'Laden Sie eine zuvor exportierte json-Datei hoch:',
+        'JSON-Datei hochladen'
     ]
     Dialogs_pdf:
         view: 'PDF ANSEHEN'
@@ -139,11 +139,13 @@ DECODING:
         export: 'Wörter exportieren'
         view: 'Satzansicht'
     Footer:
+        find: 'finden'
+        replace: 'ersetzen'
+        apply: 'ANWENDEN'
         import_: 'IMPORTIEREN'
-        apply: 'WÖRTERBUCH ANWENDEN'
+        apply_dict: 'WÖRTERBUCH ANWENDEN'
         create: 'PDF ERSTELLEN'
         export: 'EXPORTIEREN'
-        replace: 'ANWENDEN'
 DICTIONARY:
     Header:
         dictionaries: 'WÖRTERBÜCHER'
@@ -180,8 +182,8 @@ DICTIONARY:
         key: 'Ausgangswort'
         val: 'Zielwort'
     Dialogs_import: [
-        'Laden Sie eine zuvor exportierte json-Datei hoch.',
-        'Datei auswählen'
+        'Laden Sie eine zuvor exportierte json-Datei hoch:',
+        'JSON-Datei hochladen'
     ]
     Messages:
         add_row: 'Bitte wählen oder erstellen Sie ein Wörterbuch.'
@@ -210,7 +212,7 @@ SETTINGS:
     Dialogs_app: [
         'Auf dieser Registerkarte können Sie grundlegende Programmeinstellungen ändern.',
         '/n', '/N', '/n',
-        'Der erste Abschnitt enthält Optionen für die Benutzeroberfläche, wie z. B.: Das Umschalten vom "dunklen Modus"
+        'Der erste Abschnitt enthält Optionen für die Benutzeroberfläche, wie: Das Umschalten vom "dunklen Modus"
             und das Anzeigen von "Hinweisen", sowie eine Auswahl zum Ändern der aktuellen "Anzeigesprache".',
         '/n', '/N', '/n',
         'Der zweite Abschnitt enthält einen Schalter zur "Umformatierung",

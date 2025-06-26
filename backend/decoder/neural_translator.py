@@ -22,6 +22,19 @@ class NeuralTranslator(object):
     The NeuralTranslator uses NLP to literal translate source words to the desired target words.
     For that open and free available LLMs/GPTs are used to perform the translation.
     """
+
+    __slots__ = (
+        'source_language',
+        'target_language',
+        'endofs',
+        'quotes',
+        'model_name',
+        'model_temp',
+        'model_seed',
+        'client',
+        'models',
+    )
+
     PROMPT: str = ''
 
     def __init__(self,
@@ -97,7 +110,7 @@ class NeuralTranslator(object):
         return {model.name.removesuffix(' (free)'): model.id for model in models}
 
     def translate_batch(self, source_words: list[str]) -> list[str]:
-        result = list()
+        result = []
         for batch in utils.yield_batch_eos(source_words, char_limit = CONFIG.char_limit,
                                            endofs = self.endofs, quotes = self.quotes):
             result.extend(self._translate(batch))

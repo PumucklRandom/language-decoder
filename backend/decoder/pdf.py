@@ -10,6 +10,25 @@ file_dir = os.path.dirname(os.path.relpath(__file__))
 
 
 class PDF(object):
+    __slots__ = (
+        'font_path',
+        'new_line',
+        'title_size',
+        'font_size',
+        'top_margin',
+        'left_margin',
+        'char_lim',
+        'line_lim',
+        'page_lim',
+        'tab_size',
+        'page_sep',
+        'title_height',
+        'line_height',
+        'header_height',
+        'width',
+        'pps',
+        '_fpdf'
+    )
 
     def __init__(self,
                  font_path: str = '../fonts/RobotoMono/RobotoMono.ttf',
@@ -45,8 +64,8 @@ class PDF(object):
         self.left_margin = left_margin
         self.char_lim = char_lim - (1 if page_sep else 0) if char_lim > 1 else 1
         self.line_lim = int(line_lim / 3) * 3 if line_lim > 3 else 3
-        self.tab_size = tab_size
         self.page_lim = page_lim
+        self.tab_size = tab_size
         self.page_sep = '|' if page_sep else ''
         self.title_height = title_size / 2.5
         self.line_height = font_size / 2.5
@@ -65,7 +84,7 @@ class PDF(object):
         line_len = 0
         source_line = ''
         target_line = ''
-        pdf_lines = list()
+        pdf_lines = []
         for source_word, target_word in zip(source_words, target_words):
             # get the length of the longest word + word_space
             word_len = utils.maxlen([source_word, target_word]) + self.tab_size
@@ -92,7 +111,7 @@ class PDF(object):
 
     def _format_pages(self, pdf_lines: list[str]) -> list[str]:
         lines_len = len(pdf_lines)
-        pages, completed_lines = list(), 0
+        pages, completed_lines = [], 0
         while completed_lines < lines_len:
             # get the lines for one page
             page_lines = pdf_lines[completed_lines:completed_lines + self.line_lim]

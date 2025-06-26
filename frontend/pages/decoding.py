@@ -5,22 +5,28 @@ from nicegui import ui, events
 from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
+from backend.config.config import CONFIG
 from backend.decoder.pdf import PDF
-from frontend.pages.ui.config import URLS, JS, top_right
 from frontend.pages.ui.error import catch
-from frontend.pages.ui.custom import UIGridPages, ui_dialog
+from frontend.pages.ui.config import URLS, JS, top_right
+from frontend.pages.ui.custom import UIGridPages, UIUpload, ui_dialog
 from frontend.pages.ui.page_abc import Page
 
 
 class Decoding(Page):
+    __slots__ = (
+        '_ui_grid',
+        '_ui_menu',
+        '_ui_find_input',
+        '_ui_repl_input'
+    )
+
     _URL = URLS.DECODING
-    _IS_ASYNC = True
 
     def __init__(self) -> None:
         super().__init__()
-        self._filename: str = 'decoded'
-        self._task: asyncio.Task
         self._ui_grid: UIGridPages
+        self._ui_menu: ui.menu
         self._ui_find_input: ui.input
         self._ui_repl_input: ui.input
 
@@ -29,7 +35,7 @@ class Decoding(Page):
         await self.open_route(
             content = self.state.content,
             file_type = 'pdf',
-            filename = self._filename,
+            filename = self._get_filename(),
             disposition = 'inline'
         )
 
@@ -38,12 +44,22 @@ class Decoding(Page):
         await self.open_route(
             content = self.state.content,
             file_type = 'pdf',
-            filename = self._filename
+            filename = self._get_filename(),
         )
+
+    def _get_filename(self) -> str:
+        return self.state.title if self.state.title else 'decoded'
+
+    @catch
+    def on_key_event(self, event: events.KeyEventArguments):
+        if event.modifiers.ctrl and event.key == 'f' and event.action.keydown:
+            if hasattr(self, '_ui_menu'):
+                self._refresh_replace()
+                self._ui_menu.open()
 
     @catch
     def _refresh_grid(self) -> None:
-        if not self.state.source_words: return
+        if not self.decoder.source_words: return
         self._get_grid_values()
         self._set_grid_values()
 
@@ -51,8 +67,8 @@ class Decoding(Page):
     def _set_grid_values(self, preload: bool = False, new_source: bool = False,
                          new_indices: bool = False) -> None:
         self._ui_grid.set_values(
-            source_words = self.state.source_words,
-            target_words = self.state.target_words,
+            source_words = self.decoder.source_words,
+            target_words = self.decoder.target_words,
             preload = preload,
             new_source = new_source,
             new_indices = new_indices
@@ -60,16 +76,14 @@ class Decoding(Page):
 
     @catch
     def _get_grid_values(self) -> None:
-        self.state.source_words, self.state.target_words = self._ui_grid.get_values()
+        self.decoder.source_words, self.decoder.target_words = self._ui_grid.get_values()
         self.state.grid_page = self._ui_grid.get_grid_page()
 
     @catch
     def _replace_words(self) -> None:
-        if not self.state.target_words: return
+        if not self.decoder.target_words: return
         self._get_grid_values()
-        self.state.source_words, self.state.target_words = self.decoder.find_replace(
-            source_words = self.state.source_words,
-            target_words = self.state.target_words,
+        self.decoder.find_replace(
             find = self.state.find,
             repl = self.state.repl
         )
@@ -85,12 +99,11 @@ class Decoding(Page):
 
     async def _decode_words(self) -> None:
         try:
-            if self.state.title: self._filename = self.state.title
-            if self.state.source_text and self.state.decode:
-                self.state.source_words = self.decoder.split_text(source_text = self.state.source_text)
+            if self.decoder.source_text and self.state.decode:
+                self.decoder.split_text()
                 self._set_grid_values(preload = True, new_source = True)
                 notification = ui.notification(
-                    message = f'{self.UI_LABELS.DECODING.Messages.decoding} {len(self.state.source_words)}',
+                    message = f'{self.UI_LABELS.DECODING.Messages.decoding} {len(self.decoder.source_words)}',
                     position = 'top',
                     type = 'ongoing',
                     color = 'dark',
@@ -113,16 +126,10 @@ class Decoding(Page):
     @catch
     async def _task_handler(self) -> None:
         try:
-            self._task = asyncio.create_task(asyncio.to_thread(
-                self.decoder.decode_words,
-                source_words = self.state.source_words
-            ))
-            self.state.target_words = await self._task
-            self._task = asyncio.create_task(asyncio.to_thread(
-                self.decoder.translate_sentences,
-                source_words = self.state.source_words
-            ))
-            self.state.sentences = await self._task
+            self.state.task = asyncio.create_task(asyncio.to_thread(self.decoder.decode_words))
+            await self.state.task
+            self.state.task = asyncio.create_task(asyncio.to_thread(self.decoder.translate_sentences))
+            await self.state.task
             self._apply_dict()
             logger.info('Decoding done.')
         except asyncio.exceptions.CancelledError:
@@ -135,35 +142,25 @@ class Decoding(Page):
             if exception.code == 429:
                 ui.notify(self.UI_LABELS.DECODING.Messages.rate_limit, type = 'warning', position = 'top')
                 return
-            ui.notify(self.UI_LABELS.GENERAL.Error.internal, type = 'negative', position = 'top')
-
-    @catch
-    def _task_cancel(self) -> None:
-        try:
-            self._task.cancel()
-        except AttributeError:
-            return
+            ui.notify(self.UI_LABELS.GENERAL.Error.internal, type = 'warning', position = 'top')
 
     @catch
     def _apply_dict(self) -> None:
-        if not self.state.target_words: return
-        self.state.target_words = self.decoder.apply_dict(
-            source_words = self.state.source_words,
-            target_words = self.state.target_words,
-        )
+        if not self.decoder.target_words: return
+        self.decoder.apply_dict()
         self._set_grid_values()
 
     @catch
     def create_pdf(self) -> None:
         _hash = hash(f'{self.state.title}{self.settings.pdf_params}'
-                     f'{self.state.target_words}{self.state.source_words}')
+                     f'{self.decoder.target_words}{self.decoder.source_words}')
         if self.state.c_hash != _hash:
             self.state.c_hash = _hash
             pdf = PDF(**self.settings.pdf_params)
             self.state.content = pdf.convert2pdf(
                 title = self.state.title,
-                source_words = self.state.source_words,
-                target_words = self.state.target_words
+                source_words = self.decoder.source_words,
+                target_words = self.decoder.target_words
             )
 
     @catch
@@ -175,12 +172,9 @@ class Decoding(Page):
     def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
             data = event.content.read().decode('utf-8')
-            self.state.source_words, self.state.target_words, self.state.sentences = self.decoder.from_json_str(
-                data = data
-            )
+            self.decoder.from_json_str(data = data)
             self.state.title = pathlib.Path(event.name).stem
-            self._filename = self.state.title
-            self.state.source_text = ' '.join(self.state.source_words)
+            self.decoder.source_text = ' '.join(self.decoder.source_words)
             self._set_grid_values(new_source = True)
         except DecoderError:
             ui.notify(self.UI_LABELS.DECODING.Messages.invalid, type = 'warning', position = 'top')
@@ -193,19 +187,19 @@ class Decoding(Page):
 
     @catch
     def _dialog_sentences(self) -> None:
-        if not self.state.sentences: return
-        ui_dialog(label_list = self.state.sentences[self._ui_grid.slice], width = 80, u_width = 'vw').open()
+        if not self.decoder.sentences: return
+        ui_dialog(label_list = self.decoder.sentences[self._ui_grid.slice], width = 80, u_width = 'vw').open()
 
     @catch
     def _pdf_dialog(self) -> None:
-        if not self.state.target_words: return
+        if not self.decoder.target_words: return
         self._get_grid_values()
         self.create_pdf()
-        with ui.dialog() as dialog:
+        with ui.dialog().style('font-size:12pt') as dialog:
             with ui.card().classes('items-center'):
                 ui.button(icon = 'close', on_click = dialog.close) \
-                    .props('dense round size=12px') \
-                    .classes('absolute-top-right')
+                    .classes('absolute-top-right') \
+                    .props('dense round size=12px')
                 ui.space()
                 ui.label(self.UI_LABELS.DECODING.Dialogs_pdf.text[0])
                 ui.label(self.UI_LABELS.DECODING.Dialogs_pdf.text[1])
@@ -218,52 +212,54 @@ class Decoding(Page):
 
     @catch
     async def _export(self) -> None:
-        if not self.state.target_words: return
+        if not self.decoder.target_words: return
         self._get_grid_values()
-        content = self.decoder.to_json_str(
-            source_words = self.state.source_words,
-            target_words = self.state.target_words,
-            sentences = self.state.sentences
-        )
+        content = self.decoder.to_json_str()
         await self.open_route(
             content = content,
             file_type = 'json',
-            filename = self._filename
+            filename = self._get_filename()
         )
 
     @catch
     def _import(self) -> None:
         with ui.dialog() as dialog:
-            with ui.card().classes('items-center'):
+            with ui.card().classes('items-center').style('font-size:12pt'):
                 ui.button(icon = 'close', on_click = dialog.close) \
-                    .props('dense round size=12px') \
-                    .classes('absolute-top-right')
+                    .classes('absolute-top-right') \
+                    .props('dense round size=12px')
                 ui.label(text = self.UI_LABELS.DECODING.Dialogs_import[0])
-                ui.upload(
-                    label = self.UI_LABELS.DECODING.Dialogs_import[1],
+                UIUpload(
+                    text = self.UI_LABELS.DECODING.Dialogs_import[1],
                     on_upload = self._upload_handler,
                     on_rejected = self._on_upload_reject,
                     max_file_size = self.max_decode_size,
                     auto_upload = self.auto_upload,
                     max_files = self.max_files) \
-                    .props('accept=.json flat dense')
+                    .props('accept=.json')
             dialog.open()
 
     @catch
     def _replace(self) -> None:
+        ui.keyboard(on_key = self.on_key_event, active = CONFIG.native, repeating = False, ignore = [])
         with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
             if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.replace)
-            with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)):
+            with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)) as self._ui_menu:
                 with ui.menu_item(auto_close = False):
                     self._ui_find_input = ui.input(
-                        label = 'find',
-                        on_change = lambda: self._ui_grid.highlight_text(self.state.find)
-                    ).bind_value(self.state, 'find')
+                        label = self.UI_LABELS.DECODING.Footer.find,
+                        on_change = lambda: self._ui_grid.highlight_text(self.state.find)) \
+                        .style('font-size:11pt') \
+                        .props('id=find-input') \
+                        .bind_value(self.state, 'find')
                 with ui.menu_item(auto_close = False):
-                    self._ui_repl_input = ui.input(label = 'replace').bind_value(self.state, 'repl')
+                    self._ui_repl_input = ui.input(
+                        label = self.UI_LABELS.DECODING.Footer.replace) \
+                        .style('font-size:11pt') \
+                        .bind_value(self.state, 'repl')
                 with ui.menu_item(auto_close = False).style('justify-content:center'):
                     with ui.row():
-                        ui.button(text = self.UI_LABELS.DECODING.Footer.replace,
+                        ui.button(text = self.UI_LABELS.DECODING.Footer.apply,
                                   on_click = self._replace_words).props('dense')
                         ui.space().style('width:20px')
                         ui.button(icon = 'delete', on_click = self._clear_replace).props('dense')
@@ -273,7 +269,8 @@ class Decoding(Page):
         with ui.header():
             ui.button(text = self.UI_LABELS.DECODING.Header.upload,
                       on_click = lambda: self.goto(URLS.UPLOAD, call = self._get_grid_values))
-            ui.label(text = self.UI_LABELS.DECODING.Header.decoding).classes('absolute-center')
+            ui.label(text = self.UI_LABELS.DECODING.Header.decoding) \
+                .classes('absolute-center').style('font-size:14pt')
             ui.space()
             ui.button(text = self.UI_LABELS.DECODING.Header.dictionaries,
                       on_click = lambda: self.goto(URLS.DICTIONARIES, call = self._get_grid_values))
@@ -303,7 +300,7 @@ class Decoding(Page):
             with ui.button(text = self.UI_LABELS.DECODING.Footer.import_, on_click = self._import):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.import_)
             ui.space()
-            ui.button(text = self.UI_LABELS.DECODING.Footer.apply, on_click = self._apply_dict)
+            ui.button(text = self.UI_LABELS.DECODING.Footer.apply_dict, on_click = self._apply_dict)
             ui.space()
             with ui.button(icon = 'refresh', on_click = self._refresh_grid):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.refresh)

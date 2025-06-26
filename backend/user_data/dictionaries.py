@@ -10,6 +10,15 @@ file_dir = os.path.dirname(os.path.relpath(__file__))
 
 
 class Dicts(object):
+    __slots__ = (
+        'user_uuid',
+        'dicts_path',
+        'json_path',
+        'dictionaries',
+        'dict_name',
+        'json_date',
+        'json_hash'
+    )
 
     def __init__(self, user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  dicts_path: str = 'dicts') -> None:

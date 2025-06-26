@@ -30,6 +30,7 @@ Config = namedtuple('Config', (
     'route_timeout',
     'files_timeout',
 
+    'size_bias',
     'size_fct',
     'size_min',
     'size_max',

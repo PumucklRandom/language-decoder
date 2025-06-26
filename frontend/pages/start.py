@@ -1,10 +1,14 @@
 from nicegui import ui
-from frontend.pages.ui.config import URLS
 from frontend.pages.ui.error import catch
+from frontend.pages.ui.config import URLS
 from frontend.pages.ui.page_abc import Page
 
 
 class Start(Page):
+    __slots__ = (
+        '_font_size',
+    )
+
     _URL = URLS.START
 
     def __init__(self) -> None:
@@ -13,21 +17,22 @@ class Start(Page):
 
     @catch
     def _center(self) -> None:
-        with ui.column().style(f'font-size:{self._font_size}pt').classes('w-full items-center'):
+        with ui.column().classes('w-full items-center'). \
+                style(f'font-size:{self._font_size}pt'):
             self._explanation()
             ui.separator()
             self._disclaimer()
 
     @catch
     def _explanation(self) -> None:
-        with ui.card().style('min-width:1000px; min-height:562px; height:60vh').classes('w-[60%] items-center'):
+        with ui.card().classes('w-[60%] items-center'). \
+                style('min-width:1000px; min-height:562px; height:60vh'):
             ui.label(text = self.UI_LABELS.START.Explanations.title) \
                 .style(f'font-size:{self._font_size * 1.2}pt')
-            labels = ' '.join(self.UI_LABELS.START.Explanations.text[:-2])
-            ui.label(text = labels)
+            ui.label(text = ' '.join(self.UI_LABELS.START.Explanations.text[:-2]))
             with ui.row().style('gap:0.0rem'):
                 ui.label(text = self.UI_LABELS.START.Explanations.text[-2])
-                ui.space().style(f'width:{self._font_size / 2}px')
+                ui.space().style(f'width:{self._font_size * 0.5}px')
                 ui.link(
                     text = self.UI_LABELS.START.Explanations.text[-1],
                     target = self.UI_LABELS.START.Explanations.link,
@@ -40,8 +45,8 @@ class Start(Page):
 
     @catch
     def _disclaimer(self) -> None:
-        with ui.column().style(f'min-width:1000px; font-size:{self._font_size * 0.8}pt') \
-                .classes('w-[60%] items-center'):
+        with ui.column().classes('w-[60%] items-center') \
+                .style(f'min-width:1000px; font-size:{self._font_size * 0.8}pt'):
             ui.label(text = self.UI_LABELS.START.Disclaimers.title) \
                 .style(f'font-size:{self._font_size}pt')
             labels = ''
@@ -50,7 +55,7 @@ class Start(Page):
             ui.label(text = labels)
             with ui.row().style('gap:0.0rem'):
                 ui.label(text = self.UI_LABELS.START.Disclaimers.text[-2])
-                ui.space().style(f'width:{self._font_size * 0.8 / 2}px')
+                ui.space().style(f'width:{self._font_size * 0.8 * 0.5}px')
                 ui.link(
                     text = self.UI_LABELS.START.Disclaimers.text[-1],
                     target = self.UI_LABELS.START.Disclaimers.link,

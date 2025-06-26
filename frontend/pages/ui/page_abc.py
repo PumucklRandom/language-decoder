@@ -4,7 +4,7 @@ from urllib import parse
 from abc import ABC, abstractmethod
 from fastapi.responses import Response
 from nicegui.storage import PURGE_INTERVAL
-from nicegui import ui, app, Client, background_tasks
+from nicegui import ui, app, events, Client, background_tasks
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
 from backend.user_data.settings import Settings
@@ -35,6 +35,15 @@ class Page(ABC):
     """
     Basic class for all pages with integrated URL path, state, backend, page navigation and app routing
     """
+
+    __slots__ = (
+        'state',
+        'word_limit',
+        'max_file_size',
+        'max_decode_size',
+        'auto_upload',
+        'max_files',
+    )
     _URL: str
 
     @Classproperty
@@ -150,6 +159,11 @@ class Page(ABC):
         except asyncio.TimeoutError:
             self._del_app_routes(route = route)
 
+    @catch
+    def _task_cancel(self) -> None:
+        if self.state.task is None: return
+        self.state.task.cancel()
+
     @abstractmethod
     async def page(self) -> None:
         pass
@@ -163,7 +177,9 @@ class UIPage(ui.page):
     - builds the pages
     """
 
-    pages: dict[str, Page] = dict()
+    __slots__ = ('page_class',)
+
+    pages: dict[str, Page] = {}
 
     @classmethod
     async def prune_pages(cls):

@@ -1,13 +1,19 @@
 import pathlib
 from nicegui import ui, events
 from backend.error.error import DictionaryError
-from frontend.pages.ui.config import URLS, DICT_COLS
 from frontend.pages.ui.error import catch
-from frontend.pages.ui.custom import ui_dialog, UITable
+from frontend.pages.ui.config import URLS, DICT_COLS
+from frontend.pages.ui.custom import ui_dialog, UITable, UIUpload
 from frontend.pages.ui.page_abc import Page
 
 
 class Dictionaries(Page):
+    __slots__ = (
+        '_ui_selector',
+        '_ui_table',
+        '_rename'
+    )
+
     _URL = URLS.DICTIONARIES
 
     def __init__(self) -> None:
@@ -124,19 +130,19 @@ class Dictionaries(Page):
     @catch
     def _import(self) -> None:
         with ui.dialog() as dialog:
-            with ui.card().classes('items-center'):
+            with ui.card().classes('items-center').style('font-size:12pt'):
                 ui.button(icon = 'close', on_click = dialog.close) \
-                    .props('dense round size=12px') \
-                    .classes('absolute-top-right')
+                    .classes('absolute-top-right') \
+                    .props('dense round size=12px')
                 ui.label(text = self.UI_LABELS.DICTIONARY.Dialogs_import[0])
-                ui.upload(
-                    label = self.UI_LABELS.DICTIONARY.Dialogs_import[1],
+                UIUpload(
+                    text = self.UI_LABELS.DICTIONARY.Dialogs_import[1],
                     on_upload = self._upload_handler,
                     on_rejected = self._on_upload_reject,
                     max_file_size = self.max_file_size,
                     auto_upload = self.auto_upload,
                     max_files = self.max_files) \
-                    .props('accept=.json flat dense')
+                    .props('accept=.json')
             dialog.open()
 
     @catch
@@ -145,16 +151,17 @@ class Dictionaries(Page):
             with ui.button(icon = 'keyboard_backspace',
                            on_click = lambda: self.goto('back', call = self._save_dict)):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.back)
-            ui.label(self.UI_LABELS.DICTIONARY.Header.dictionaries).classes('absolute-center')
+            ui.label(self.UI_LABELS.DICTIONARY.Header.dictionaries) \
+                .classes('absolute-center').style('font-size:14pt')
             ui.space()
             ui.button(icon = 'settings', on_click = lambda: self.goto(URLS.SETTINGS, call = self._save_dict))
 
     @catch
     def _center(self) -> None:
         self.dicts.load()
-        with ui.column().style('font-size:12pt').classes('w-full items-center'):
+        with ui.column().classes('w-full items-center'):
             self._selector()
-            with ui.card().style('width:650px').classes('items-center'):
+            with ui.card().classes('items-center').style('width:700px'):
                 with ui.element():  # is somehow needed for the table border
                     self._table()
                 with ui.button(icon = 'help', on_click = self._dialog_table) \
@@ -166,7 +173,7 @@ class Dictionaries(Page):
 
     @catch
     def _selector(self) -> None:
-        with ui.card().style('width:500px'):
+        with ui.card().style('width:545px'):
             ui.checkbox(
                 text = self.UI_LABELS.DICTIONARY.Selector.rename) \
                 .props('dense').bind_value(self, '_rename')
@@ -178,8 +185,8 @@ class Dictionaries(Page):
                 new_value_mode = 'add-unique',
                 on_change = self._select_table,
                 clearable = True) \
-                .props('outlined') \
-                .style('width:350px; font-size:12pt')
+                .style('width:400px; font-size:13pt') \
+                .props('outlined popup-content-style="font-size: 11pt"')
             with ui.button(icon = 'help', on_click = self._dialog_select) \
                     .classes('absolute-top-right'):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.help)
@@ -196,7 +203,7 @@ class Dictionaries(Page):
             dark_mode = self.settings.app.dark_mode,
             pagination = self.state.table_page,
             on_pagination_change = self._get_table_page) \
-            .style('min-width:500px; max-height:75vh').classes('sticky-header')
+            .classes('sticky-header').style('min-width:550px; max-height:75vh')
         self._set_dict_values()
 
     @catch

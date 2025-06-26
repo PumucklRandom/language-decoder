@@ -4,13 +4,19 @@ from nicegui import ui
 from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.config.config import CONFIG
-from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
 from frontend.pages.ui.error import catch
+from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
 from frontend.pages.ui.custom import ui_dialog, UITable, UIList
 from frontend.pages.ui.page_abc import Page
 
 
 class Settings(Page):
+    __slots__ = (
+        '_ui_table',
+        '_ui_pdf_list',
+        '_ui_adv_list'
+    )
+
     _URL = URLS.SETTINGS
 
     def __init__(self) -> None:
@@ -131,33 +137,34 @@ class Settings(Page):
             with ui.button(icon = 'keyboard_backspace',
                            on_click = lambda: self.goto('back', call = self._save_settings)):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.back)
-            ui.label(self.UI_LABELS.SETTINGS.Header.settings).classes('absolute-center')
+            ui.label(self.UI_LABELS.SETTINGS.Header.settings) \
+                .classes('absolute-center').style('font-size:14pt')
 
     @catch
     def _center(self) -> None:
-        with ui.column().style('font-size:12pt').classes('w-full items-center'):
+        with ui.column().classes('w-full items-center'):
             with ui.tabs() as tabs:
                 panel0 = ui.tab(self.UI_LABELS.SETTINGS.Panel[0])
                 panel1 = ui.tab(self.UI_LABELS.SETTINGS.Panel[1])
                 panel2 = ui.tab(self.UI_LABELS.SETTINGS.Panel[2])
                 panel3 = ui.tab(self.UI_LABELS.SETTINGS.Panel[3])
             with ui.tab_panels(tabs, value = panel0, animated = True):
-                with ui.tab_panel(panel0).style('min-width:650px').classes('items-center'):
+                with ui.tab_panel(panel0).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_app_settings) \
                             .classes('absolute-top-right'):
                         if self.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.app.help)
                     self._app_settings()
-                with ui.tab_panel(panel1).style('min-width:650px').classes('items-center'):
+                with ui.tab_panel(panel1).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_replacements) \
                             .classes('absolute-top-right'):
                         if self.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.replace.help)
                     self._replacements()
-                with ui.tab_panel(panel2).style('min-width:650px').classes('items-center'):
+                with ui.tab_panel(panel2).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_pdf_settings) \
                             .classes('absolute-top-right'):
                         if self.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.pdf.help)
                     self._pdf_settings()
-                with ui.tab_panel(panel3).style('min-width:650px').classes('items-center'):
+                with ui.tab_panel(panel3).classes('items-center').style('min-width:650px'):
                     with ui.button(icon = 'help', on_click = self._dialog_adv_settings) \
                             .classes('absolute-top-right'):
                         if self.show_tips: ui.tooltip(self.UI_LABELS.SETTINGS.Tips.advanced.help)
@@ -175,23 +182,23 @@ class Settings(Page):
                     label = self.UI_LABELS.SETTINGS.App_settings.text[2],
                     options = get_languages(),
                     on_change = self.get_ui_labels) \
-                    .props('dense options-dense outlined') \
                     .style('min-width:240px; font-size:12pt') \
+                    .props('dense options-dense outlined') \
                     .bind_value(self.settings.app, 'language')
             ui.separator()
             ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[3]) \
                 .style('min-width:240px').bind_value(self.settings.app, 'reformatting')
             ui.select(label = self.UI_LABELS.SETTINGS.App_settings.text[4],
                       options = self.decoder.models) \
-                .props('options-dense outlined') \
                 .style('min-width:380px; font-size:12pt') \
+                .props('options-dense outlined') \
                 .bind_value(self.settings.app, 'model_name')
             ui.separator()
             ui.label(text = self.UI_LABELS.SETTINGS.App_settings.text[5])
             ui.input(label = 'http proxy', placeholder = 'ip-address:port') \
-                .style('min-width:240px').bind_value(self.settings.app, 'http')
+                .style('min-width:240px; font-size:12pt').bind_value(self.settings.app, 'http')
             ui.input(label = 'https proxy', placeholder = 'ip-address:port') \
-                .style('min-width:240px').bind_value(self.settings.app, 'https')
+                .style('min-width:240px; font-size:12pt').bind_value(self.settings.app, 'https')
             ui.button(text = self.UI_LABELS.SETTINGS.App_settings.check, on_click = self._connection_check)
         ui.separator()
         with ui.button(text = self.UI_LABELS.SETTINGS.App_settings.reload, on_click = ui.navigate.reload):
@@ -209,7 +216,7 @@ class Settings(Page):
             dark_mode = self.settings.app.dark_mode,
             pagination = self.state.repla_page,
             on_pagination_change = self._get_repla_page
-        ).style('min-width:420px; max-height:80vh').classes('sticky-header')
+        ).classes('sticky-header').style('min-width:420px; max-height:80vh')
         ui.separator()
         with ui.row():
             with ui.button(icon = 'save', on_click = self._get_replacements):

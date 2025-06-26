@@ -1,3 +1,4 @@
+import asyncio
 from nicegui.observables import ObservableDict
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
@@ -76,38 +77,6 @@ class State(object):
         self._storage['ui_labels'] = value
 
     @property
-    def source_words(self) -> list[str]:
-        return self.get('source_words', [])
-
-    @source_words.setter
-    def source_words(self, value: list[str]) -> None:
-        self._storage['source_words'] = value
-
-    @property
-    def target_words(self) -> list[str]:
-        return self.get('target_words', [])
-
-    @target_words.setter
-    def target_words(self, value: list[str]) -> None:
-        self._storage['target_words'] = value
-
-    @property
-    def sentences(self) -> list[str]:
-        return self.get('sentences', [])
-
-    @sentences.setter
-    def sentences(self, value: list[str]) -> None:
-        self._storage['sentences'] = value
-
-    @property
-    def source_text(self) -> str:
-        return self.get('source_text', '')
-
-    @source_text.setter
-    def source_text(self, value: str) -> None:
-        self._storage['source_text'] = value
-
-    @property
     def title(self) -> str:
         return self.get('title', '')
 
@@ -116,12 +85,20 @@ class State(object):
         self._storage['title'] = value
 
     @property
-    def content(self) -> bytes:
-        return self.get('content', b'')
+    def decode(self) -> bool:
+        return self.get('decode', False)
 
-    @content.setter
-    def content(self, value: bytes) -> None:
-        self._storage['content'] = value
+    @decode.setter
+    def decode(self, value: bool) -> None:
+        self._storage['decode'] = value
+
+    @property
+    def task(self) -> asyncio.Task:
+        return self.get('task', None)
+
+    @task.setter
+    def task(self, value: asyncio.Task) -> None:
+        self._storage['task'] = value
 
     @property
     def c_hash(self) -> int:
@@ -132,36 +109,12 @@ class State(object):
         self._storage['c_hash'] = value
 
     @property
-    def table_page(self) -> dict:
-        return self.get('table_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[2]})
+    def content(self) -> bytes:
+        return self.get('content', b'')
 
-    @table_page.setter
-    def table_page(self, value: dict) -> None:
-        self._storage['table_page'] = value
-
-    @property
-    def repla_page(self) -> dict:
-        return self.get('repla_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[0]})
-
-    @repla_page.setter
-    def repla_page(self, value: dict) -> None:
-        self._storage['repla_page'] = value
-
-    @property
-    def grid_page(self) -> dict:
-        return self.get('grid_page', {'page': 1, 'rowsPerPage': CONFIG.grid_options[2]})
-
-    @grid_page.setter
-    def grid_page(self, value: dict) -> None:
-        self._storage['grid_page'] = value
-
-    @property
-    def decode(self) -> bool:
-        return self.get('decode', False)
-
-    @decode.setter
-    def decode(self, value: bool) -> None:
-        self._storage['decode'] = value
+    @content.setter
+    def content(self, value: bytes) -> None:
+        self._storage['content'] = value
 
     @property
     def find(self) -> str:
@@ -178,3 +131,27 @@ class State(object):
     @repl.setter
     def repl(self, value: str) -> None:
         self._storage['repl'] = value
+
+    @property
+    def grid_page(self) -> dict:
+        return self.get('grid_page', {'page': 1, 'rowsPerPage': CONFIG.grid_options[2]})
+
+    @grid_page.setter
+    def grid_page(self, value: dict) -> None:
+        self._storage['grid_page'] = value
+
+    @property
+    def table_page(self) -> dict:
+        return self.get('table_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[2]})
+
+    @table_page.setter
+    def table_page(self, value: dict) -> None:
+        self._storage['table_page'] = value
+
+    @property
+    def repla_page(self) -> dict:
+        return self.get('repla_page', {'page': 1, 'rowsPerPage': CONFIG.table_options[0]})
+
+    @repla_page.setter
+    def repla_page(self, value: dict) -> None:
+        self._storage['repla_page'] = value
