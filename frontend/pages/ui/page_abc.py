@@ -4,7 +4,7 @@ from urllib import parse
 from abc import ABC, abstractmethod
 from fastapi.responses import Response
 from nicegui.storage import PURGE_INTERVAL
-from nicegui import ui, app, events, Client, background_tasks
+from nicegui import ui, app, Client, background_tasks
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
 from backend.user_data.settings import Settings

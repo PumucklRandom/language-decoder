@@ -42,6 +42,7 @@ class UIUpload(object):
             self._upload = ui.upload(*args, **kwargs).style('width: 340px; font-size:12pt').props('flat')
             ui.button(
                 text = text,
+                icon = 'upload',
                 on_click = lambda: self._upload.run_method('pickFiles')) \
                 .classes(top_left(25, 170, center = True)) \
                 .style('font-size:11pt; width:324px') \
