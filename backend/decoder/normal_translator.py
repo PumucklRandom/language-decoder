@@ -15,6 +15,12 @@ class NormalTranslator(object):
     NormalTranslator is used to provide a simple interface for normal translators like GoogleTranslator.
     """
 
+    __slots__ = (
+        '_translator',
+        'endofs',
+        'quotes',
+    )
+
     def __init__(self,
                  source_language: str = 'auto',
                  target_language: str = 'english',
@@ -52,7 +58,7 @@ class NormalTranslator(object):
         return list(languages.keys())
 
     def translate_batch(self, source_words: list[str]) -> list[str]:
-        result = list()
+        result = []
         for batch in utils.yield_batch_eos(source_words, char_limit = CONFIG.char_limit,
                                            endofs = self.endofs, quotes = self.quotes):
             result.extend(self._translate(batch))

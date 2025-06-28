@@ -11,6 +11,17 @@ file_dir = os.path.dirname(os.path.relpath(__file__))
 
 
 class Settings(object):
+    __slots__ = (
+        'user_uuid',
+        'setts_path',
+        'json_path',
+        'app',
+        'replacements',
+        'pdf_params',
+        'regex',
+        'json_date',
+        'json_hash'
+    )
 
     def __init__(self, user_uuid: Union[UUID, str] = '00000000-0000-0000-0000-000000000000',
                  setts_path: str = 'setts') -> None:
@@ -78,7 +89,15 @@ class Settings(object):
 
 
 class App:
-    __slots__ = ('dark_mode', 'show_tips', 'language', 'reformatting', 'model_name', 'http', 'https')
+    __slots__ = (
+        'dark_mode',
+        'show_tips',
+        'language',
+        'reformatting',
+        'model_name',
+        'http',
+        'https'
+    )
 
     def __init__(self,
                  dark_mode: bool = CONFIG.App.dark_mode,

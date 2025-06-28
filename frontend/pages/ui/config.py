@@ -23,10 +23,10 @@ app.add_static_file(
     url_path = '/fonts/RobotoMono/RobotoMono.ttf'
 )
 
-DEFAULT_COLS = [
+DEFAULT_COLS = (
     {'name': 'source', 'field': 'source', 'required': True, 'align': 'left'},
     {'name': 'target', 'field': 'target', 'required': True, 'align': 'left'},
-]
+)
 
 DICT_COLS = deepcopy(DEFAULT_COLS)
 DICT_COLS[0].update({'label': 'Source words', 'sortable': True})
@@ -96,14 +96,14 @@ COLORS = Colors(
 
 
 class JS:
+    __slots__ = ()
+
     FOCUS_INPUT = '''
-        setTimeout(function() {
-            const findInput = document.querySelector('.q-menu input[aria-label="find"]');
-            if (findInput) {
-                findInput.focus();
-                findInput.select();
-            }
-        }, 0);
+        const findInput = document.getElementById('find-input');
+        if (findInput) {
+            findInput.focus();
+            findInput.select();
+        }
     '''
 
     DEL_OBSERVER = '''
@@ -156,48 +156,37 @@ class JS:
 
 ui.add_head_html(
     code = '''
-        <style>
-            .table-bottom-space .q-table__middle {
-                padding-bottom: 16px;
-            }
-        </style>
-    ''',
-    shared = True
-)
-
-ui.add_head_html(
-    code = '''
-        <style>
-             .q-textarea.flex-grow .q-field__control{
-                 height: 100%;
-             }
-        </style>
-    ''',
-    shared = True
-)
-ui.add_head_html(
-    code = '''
-        <style>
-            @font-face{
-                 font-family: "RobotoMono";
-                 src: url('/fonts/RobotoMono/RobotoMono.ttf');
-            }
-        </style>
-    ''',
-    shared = True
-)
-ui.add_head_html(
-    code = '''
-        <style>
-            .sticky-header q-table__top,
-            .sticky-header thead tr th {
-                position: sticky;
-                z-index: 1;
-            }
-            .sticky-header thead tr:first-child th {
-                top: 0;
-            }
-        </style>
+    <style>
+        @font-face {
+            font-family: "RobotoMono";
+            src: url('/fonts/RobotoMono/RobotoMono.ttf');
+        }
+        
+        .q-page, .q-layout {
+            font-size: 12pt;
+        }
+        
+        .q-tab__label {
+            font-size: 11.5pt;
+        }
+        
+        .q-textarea.flex-grow .q-field__control {
+            height: 100%;
+        }
+        
+        .padding-bottom .q-table__middle {
+            padding-bottom: 16px;
+        }
+        
+        .sticky-header q-table__top,
+        .sticky-header thead tr th {
+            position: sticky;
+            z-index: 2;
+        }
+        .sticky-header thead tr:first-child th {
+            top: 0;
+        }
+    </style>
     ''',
     shared = True
 )
@@ -305,7 +294,7 @@ def load_labels(language: str) -> UILabels:
 
 
 def get_languages() -> list[str]:
-    languages = list()
+    languages = []
     labels_path = os.path.join(file_dir, 'labels/')
     for language_file in os.listdir(labels_path):
         if os.path.isfile(os.path.join(labels_path, language_file)) and language_file.endswith('.yml'):
@@ -313,7 +302,7 @@ def get_languages() -> list[str]:
     return languages
 
 
-ui_labels_cache: dict[str, UILabels] = dict()
+ui_labels_cache: dict[str, UILabels] = {}
 
 
 def get_ui_labels(language: str) -> UILabels:

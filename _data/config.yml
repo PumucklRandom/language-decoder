@@ -18,9 +18,10 @@ stream_handler: false
 route_timeout: 300  # in seconds
 files_timeout: 30  # in days
 
-size_fct: 8.5
+size_bias: 26.1
+size_fct: 8.92
 size_min: 50
-size_max: 200
+size_max: 205
 table_options: [10, 15, 20, 25, 30, 50, 0]
 grid_options: [100, 150, 200, 250, 300, 'All']
 

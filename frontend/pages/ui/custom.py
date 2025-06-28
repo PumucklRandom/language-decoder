@@ -4,7 +4,7 @@ from typing import Union, Iterable
 from nicegui import ui, events
 from backend.config.config import CONFIG
 from backend.utils.utilities import maxlen
-from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, bot_right
+from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, top_left, bot_right
 
 
 def ui_dialog(label_list: list[str], width: int = 800, u_width: str = 'px',
@@ -18,11 +18,11 @@ def ui_dialog(label_list: list[str], width: int = 800, u_width: str = 'px',
     :param space: height space between the labels in pixels
     """
     with ui.dialog() as dialog:
-        with ui.card().style(f'min-width:{width}{u_width}; min-height:{height}px; font-size:11pt; gap:0.0rem') \
-                .classes(f'max-w-[{max_width}%]'):
+        with ui.card().classes(f'max-w-[{max_width}%]') \
+                .style(f'min-width:{width}{u_width}; min-height:{height}px; font-size:12pt; gap:0.0rem'):
             ui.button(icon = 'close', on_click = dialog.close) \
-                .props('dense round size=12px') \
-                .classes('absolute-top-right')
+                .classes('absolute-top-right') \
+                .props('dense round size=12px')
             ui.space().style(f'height:{space}px')
             for label in label_list:
                 if label == '/n':
@@ -34,7 +34,32 @@ def ui_dialog(label_list: list[str], width: int = 800, u_width: str = 'px',
     return dialog
 
 
+class UIUpload(object):
+    __slots__ = ('_upload',)
+
+    def __init__(self, text: str = '', *args, **kwargs) -> None:
+        with ui.element().classes('relative'):
+            self._upload = ui.upload(*args, **kwargs).style('width: 340px; font-size:12pt').props('flat')
+            ui.button(
+                text = text,
+                icon = 'upload',
+                on_click = lambda: self._upload.run_method('pickFiles')) \
+                .classes(top_left(25, 170, center = True)) \
+                .style('font-size:11pt; width:324px') \
+                .props('dense')
+
+    def classes(self, css: str) -> None:
+        self._upload.classes(css)
+
+    def style(self, style: str) -> None:
+        self._upload.style(style)
+
+    def props(self, props: str) -> None:
+        self._upload.props(props)
+
+
 class Table(ui.table):
+    __slots__ = ()
 
     def __init__(self, columns: list[dict] = None, rows: list[dict] = None,
                  row_key: str = 'id', *args, **kwargs) -> None:
@@ -93,26 +118,29 @@ class Table(ui.table):
 
 
 class UIList(Table):
+    __slots__ = ('val_type',)
+
     def __init__(self, columns: list[dict] = None, rows: list[dict] = None,
                  row_key: str = 'id', val_type: str = 'text', *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
         self.val_type = val_type
         self.add_slot('body', self._body())
-        self.props('hide-header separator=none')
         self.style('min-width:420px')
+        self.props('hide-header separator=none')
 
     def _set_type(self, values) -> list[float]:
         if self.val_type == 'number':
             return [float('nan') if val == '' else float(val) for val in values]
         return values
 
+    # ; font-weight:bold
     def _body(self) -> str:
         return f'''
             <q-tr :props="props">
-                <q-td key="source" :props="props" style="font-size:14px; font-weight:bold">
+                <q-td key="source" style="font-size:16px" :props="props">
                     <div style="padding-left:5px">{{{{ props.row.source }}}}</div>
-                    <q-input style="font-family:RobotoMono" v-model="props.row.target" type="{self.val_type}"
-                    dense outlined debounce="{CONFIG.debounce}"
+                    <q-input style="font-family:RobotoMono; font-size:11pt" v-model="props.row.target" 
+                    type="{self.val_type}" dense outlined debounce="{CONFIG.debounce}"
                     @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
             </q-tr>
@@ -120,6 +148,8 @@ class UIList(Table):
 
 
 class UITable(Table):
+    __slots__ = ('btn_color', 'scr_color', 'tar_color')
+
     def __init__(self, columns: list[dict] = None, rows: list[dict] = None, row_key: str = 'id',
                  dark_mode: bool = True, *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
@@ -133,7 +163,7 @@ class UITable(Table):
             self.tar_color = COLORS.BLUE_GREY1.VAL
         self.add_slot('header', self._header)
         self.add_slot('body', self._body())
-        self.classes('table-bottom-space')
+        self.classes('padding-bottom')
         self.props('flat bordered separator=cell')
         self.props['rows-per-page-options'] = CONFIG.table_options
         self.props['rows-per-page'] = CONFIG.table_options[2]
@@ -157,11 +187,13 @@ class UITable(Table):
         return f'''
             <q-tr :props="props">
                 <q-td key="source" style="background-color:{self.scr_color}" :props="props">
-                    <q-input v-model="props.row.source" dense borderless debounce="{CONFIG.debounce}"
+                    <q-input v-model="props.row.source" style="font-size: 11pt"
+                        dense borderless debounce="{CONFIG.debounce}"
                         @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
                 <q-td key="target" style="background-color:{self.tar_color}" :props="props">
-                    <q-input v-model="props.row.target" dense borderless debounce="{CONFIG.debounce}"
+                    <q-input v-model="props.row.target" style="font-size: 11pt"
+                        dense borderless debounce="{CONFIG.debounce}"
                         @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
                 <q-td auto-width style="background-color:{self.btn_color}; text-align:center">
@@ -170,8 +202,7 @@ class UITable(Table):
                             @click="() => $parent.$emit('_del_row', props.row)" :props="props"/>
                         <!-- <q-tooltip> delete row </q-tooltip> -->
                     </div>
-                    <div style="position:absolute; top:103%; left:-1%;
-                        transform:translate(-50%, -50%); z-index:1">
+                    <div style="position:absolute; top:103%; left:-1%; transform:translate(-50%, -50%); z-index:1">
                         <q-btn icon="add" size="12px" dense round color="{COLORS.PRIMARY.KEY}"
                             @click="() => $parent.$emit('_add_row', props.row)" :props="props"/>
                         <!-- <q-tooltip> add row below </q-tooltip> -->
@@ -182,13 +213,12 @@ class UITable(Table):
 
 
 class UIGrid(Table):
+    __slots__ = ('scr_color', 'tar_color', 'item_size')
+
     def __init__(self, source_words: list[str] = None, target_words: list[str] = None,
                  columns: list[dict] = None, rows: list[dict] = None, row_key: str = 'id',
                  preload: bool = False, dark_mode: bool = True, *args, **kwargs) -> None:
         super().__init__(columns = columns, rows = rows, row_key = row_key, *args, **kwargs)
-        if source_words is None: source_words = []
-        if target_words is None: target_words = []
-        self.item_size = 100
         if preload:
             target_words = [''] * len(source_words)
         if dark_mode:
@@ -197,29 +227,32 @@ class UIGrid(Table):
         else:
             self.scr_color = COLORS.GREY1.KEY
             self.tar_color = COLORS.BLUE_GREY1.KEY
+        if source_words is None: source_words = []
+        if target_words is None: target_words = []
+        self.item_size = 100
         self._set_item_size(words = source_words + target_words)
+        self.set_values(source_words, target_words)
         self.add_slot('item', self._item())
         self.props('hide-header grid')
-        self.set_values(source_words, target_words)
 
     def _set_item_size(self, words: list[str] = None) -> None:
         if words and isinstance(words, list):
             chars = maxlen(words)
-            self.item_size = int(chars * CONFIG.size_fct + 3 * CONFIG.size_fct)
+            self.item_size = int(CONFIG.size_bias + CONFIG.size_fct * chars)
             self.item_size = max(min(self.item_size, CONFIG.size_max), CONFIG.size_min)
 
     def _item(self) -> str:
         return f'''
             <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
                 <div class="col">
-                    <q-input style="font-family:RobotoMono"
-                    v-model="props.row.source" debounce="{CONFIG.debounce}" bg-color={self.scr_color}
-                    dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                    <q-input v-model="props.row.source" style="font-family:RobotoMono; font-size:11pt" 
+                        debounce="{CONFIG.debounce}" bg-color={self.scr_color} dense outlined
+                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input style="font-family:RobotoMono"
-                    v-model="props.row.target"  debounce="{CONFIG.debounce}" bg-color={self.tar_color}
-                    dense outlined @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                    <q-input v-model="props.row.target" style="font-family:RobotoMono; font-size:11pt"
+                        debounce="{CONFIG.debounce}" bg-color={self.tar_color} dense outlined
+                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>
         '''
@@ -233,6 +266,10 @@ class UIGrid(Table):
 
 
 class UIGridPages(object):
+    __slots__ = ('_page_number', '_page_size', '_prev_page', 'find_str', 'pattern',
+                 'source_words', 'target_words', '_eos_indices', '_indices', '_s_indices',
+                 '_ui_grid', '_ui_page', '_visible')
+
     def __init__(self, grid_page: dict = None, find_str: str = '',
                  endofs: str = CONFIG.Regex.endofs, quotes: str = CONFIG.Regex.quotes) -> None:
         self._page_number: int = 1
@@ -243,7 +280,7 @@ class UIGridPages(object):
         self.pattern: Pattern = re.compile(rf'.*?[{endofs}][{quotes}]?$')
         self.source_words: list[str] = []
         self.target_words: list[str] = []
-        self._eos_indices: tuple[int] = tuple()  # end of sentence word indices
+        self._eos_indices: tuple[int] = ()  # end of sentence word indices
         self._indices: list[int] = []  # word indices per page
         self._s_indices: list[int] = []  # sentence indices per page
         self._ui_grid: UIGrid
@@ -256,15 +293,15 @@ class UIGridPages(object):
             ui.space().style('height:5px')
 
     def pagination(self):
-        with ui.card().classes(bot_right(66, 0)).style('min-width:550px; min-height:50px') \
+        with ui.card().classes(bot_right(66, 0)).style('width:550px; height:50px') \
                 .bind_visibility_from(self, '_visible'):
-            ui.label('Max words per page:').classes(bot_right(15, 410))
+            ui.label('Max words per page:').classes(bot_right(15, 410)).style('font-size:10.5pt')
             ui.select(options = CONFIG.grid_options,
                       value = CONFIG.grid_options[2],
                       on_change = self._repage) \
                 .classes(bot_right(5, 350)) \
-                .props('dense options-dense borderless') \
-                .style('width:50px') \
+                .style('width:50px; font-size:11pt') \
+                .props('dense options-dense borderless popup-content-style="font-size: 10.5pt"') \
                 .bind_value(self, '_page_size')
             self._ui_page = ui.pagination(
                 min = 1, max = 1,
@@ -272,16 +309,15 @@ class UIGridPages(object):
                 value = self._page_number,
                 on_change = self._scroll) \
                 .classes(bot_right(10, 0)) \
-                .props('max-pages="8"') \
                 .style('width:350px') \
+                .props('max-pages="8"') \
                 .bind_value(self, '_page_number')
 
     @ui.refreshable
     def _table(self, *args, **kwargs) -> None:
         if not self.source_words or not self._indices:
             self._visible = False
-            with ui.element().style('height:500px'):
-                self._ui_grid = UIGrid()
+            self._ui_grid = UIGrid()
             return
         self._visible = True
         p = self._page_number - 1
@@ -310,11 +346,12 @@ class UIGridPages(object):
 
     def _repage(self) -> None:
         # Here it is important that the page reset is done first, to trigger the right scrolling!
-        self._ui_page.value = 1  # have to be first!!!
-        self._prev_page = 1
-        self._set_indices()
-        self._set_s_indices()
-        self._table.refresh()
+        if hasattr(self, '_ui_page'):
+            self._ui_page.value = 1  # have to be first!!!
+            self._prev_page = 1
+            self._set_indices()
+            self._set_s_indices()
+            self._table.refresh()
 
     def _scroll(self) -> None:
         self._upd_values()

@@ -44,8 +44,8 @@ UPLOAD:
         'To clear the currently entered text you can click on the "trash bin" button at the bottom right side.'
     ]
     Uploads: [
-        'Upload a text file or enter some text below.',
-        'Select file'
+        'Upload a text file or enter some text below:',
+        'Upload text file'
     ]
     Title: 'Title'
     Input_txt: [
@@ -106,8 +106,8 @@ DECODING:
             of the current text for better understanding.'
     ]
     Dialogs_import: [
-        'Upload a previously exported json file.',
-        'Select file'
+        'Upload a previously exported json file:',
+        'Upload json file'
     ]
     Dialogs_pdf:
         view: 'VIEW PDF'
@@ -131,11 +131,13 @@ DECODING:
         export: 'Export words'
         view: 'Sentence view'
     Footer:
+        find: 'find'
+        replace: 'replace'
+        apply: 'APPLY'
         import_: 'IMPORT'
-        apply: 'APPLY DICT'
+        apply_dict: 'APPLY DICT'
         create: 'CREATE PDF'
         export: 'EXPORT'
-        replace: 'APPLY'
 DICTIONARY:
     Header:
         dictionaries: 'DICTIONARIES'
@@ -170,8 +172,8 @@ DICTIONARY:
         key: 'Source word'
         val: 'Target word'
     Dialogs_import: [
-        'Upload a previously exported json file.',
-        'Select file'
+        'Upload a previously exported json file:',
+        'Upload json file'
     ]
     Messages:
         add_row: 'Please select or create a dictionary.'
@@ -200,8 +202,8 @@ SETTINGS:
     Dialogs_app: [
         'On this tab, you can change basic application settings.',
         '/n', '/N', '/n',
-        'The first Section contains options for the interface, such as: toggles for "dark mode"
-         and for "showing tooltips" and a selection for changing the current "display language".',
+        'The first section contains options for the user interface, such as: A toggle for the "dark mode" and
+            a toggle to show "tooltips", as well as a selection to change the current "display language".',
         '/n', '/N', '/n',
         'The second Section contains a "reformation" toggle,
             which can be used to reformat the input text with a "regular expression".
