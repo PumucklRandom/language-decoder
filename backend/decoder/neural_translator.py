@@ -164,8 +164,12 @@ class NeuralTranslator(object):
             raise NeuralTranslatorError(message, code = exception.status_code)
 
     def _check_content(self, content: str, csv_len: int) -> list[str]:
+        print(content)
         # get only valid rows
         valid_rows = [row for row in content.split('\n') if '\t' in row]
+        # if the first row does not start with 'Source\tTarget' then add it
+        if not valid_rows or not valid_rows[0].startswith('Source\tTarget'):
+            valid_rows.insert(0, 'Source\tTarget')
         # ensure, that the list is as long as the input
         valid_rows.extend([valid_rows[-1]] * (csv_len - len(valid_rows)))
         # ensure, that the list is max length of the input
@@ -185,7 +189,13 @@ class NeuralTranslator(object):
     @staticmethod
     def _to_csv(source_words: list[str]) -> str:
         with io.StringIO() as io_string:  # type: io.StringIO
-            csv_writer = csv.writer(io_string, delimiter = '\t', lineterminator = '\n')
+            csv_writer = csv.writer(
+                io_string,
+                delimiter = '\t',
+                escapechar = '\\',
+                lineterminator = '\n',
+                quoting = csv.QUOTE_NONE
+            )
             csv_writer.writerows([('Source', 'Target')] + list(zip(source_words)))
             return io_string.getvalue()
 
