@@ -26,7 +26,7 @@ translator = NeuralTranslator(
     api_url = URL,
     api_key = API_KEY
 )
-translator.prompt = translator._load_prompt(prompt_path = prompt_path)
+NeuralTranslator.PROMPT = NeuralTranslator._load_prompt(prompt_path = prompt_path)
 
 # system: define task and rules
 # user: provide the text e.g. CSV input for the translation process

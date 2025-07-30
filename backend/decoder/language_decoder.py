@@ -29,7 +29,8 @@ class LanguageDecoder(object):
         'dicts',
         'settings',
         '_normal_trans',
-        '_neural_trans'
+        '_neural_trans',
+        'pattern'
     )
 
     def __init__(self,
@@ -52,6 +53,8 @@ class LanguageDecoder(object):
         self.settings = Settings(user_uuid = self.user_uuid)
         self._normal_trans = NormalTranslator()
         self._neural_trans = NeuralTranslator()
+        # creates two groups, that matches anything inside the \s
+        self.pattern = re.compile(r'\[\s*(\S[\S ]*\S)\s*(\S[\S ]*\S)\s*\]')
 
     def _set_normal_trans(self) -> None:
         self._normal_trans.__config__(
@@ -261,7 +264,7 @@ class LanguageDecoder(object):
             'sentences': self.sentences
         }
         return re.sub(
-            r'\[\s*"([^"]*)",\s*"([^"]*)"\s*\]',
-            r'["\1", "\2"]',
+            self.pattern,
+            r'[\1 \2]',
             json.dumps(data, ensure_ascii = False, indent = 4)
         )
