@@ -266,5 +266,5 @@ class LanguageDecoder(object):
         return re.sub(
             self.pattern,
             r'[\1 \2]',
-            rf'{json.dumps(data, ensure_ascii = False, indent = 4)}'
+            json.dumps(data, ensure_ascii = False, indent = 4)
         )

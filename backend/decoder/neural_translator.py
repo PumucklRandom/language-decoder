@@ -164,7 +164,6 @@ class NeuralTranslator(object):
             raise NeuralTranslatorError(message, code = exception.status_code)
 
     def _check_content(self, content: str, csv_len: int) -> list[str]:
-        print(content)
         # get only valid rows
         valid_rows = [row for row in content.split('\n') if '\t' in row]
         # if the first row does not start with 'Source\tTarget' then add it
