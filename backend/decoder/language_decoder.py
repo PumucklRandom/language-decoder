@@ -123,21 +123,21 @@ class LanguageDecoder(object):
         if self.regex.ending and self.regex.close:
             # remove any white whitespaces before "ending marks" and add one whitespace after "ending marks"
             text = re.sub(rf'\s*([{self.regex.ending}{self.regex.close}])', r'\1 ', text)
-        if self.regex.digits:
-            # remove any whitespaces around "digit marks"
-            text = re.sub(rf'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
         if self.regex.puncts:
             # remove any white whitespaces before "punctuations" and add one whitespace after "punctuations"
             #   if "punctuations" are followed by letters or whitespace
-            text = re.sub(rf'\s*([{self.regex.puncts}]+)([^\W\d_]|[{self.regex.puncts}\s])', r'\1 \2', text)
+            text = re.sub(rf'\s*([{self.regex.puncts}]+)(.+?)\s*', r'\1 \2', text)
+        if self.regex.digits:
+            # remove any whitespaces around "digit marks"
+            text = re.sub(rf'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
         for quote in self.regex.quotes:
-            # remove any whitespaces inside quote pairs and add one whitespaces outside of quote pairs
+            # remove any whitespaces inside "quote pairs" and add one whitespaces outside of "quote pairs"
             text = re.sub(rf'([{quote}])\s*(.*?)\s*([{quote}])', r' \1\2\3 ', text)
+        if self.regex.quotes:
+            # remove any whitespaces after "quotes" if followed by "punctuations"
+            text = re.sub(rf'([{self.regex.quotes}])\s+([{self.regex.puncts}])', r'\1\2', text)
         # remove redundant whitespaces
         text = ' '.join(text.split())
-        # add a dot at the end of the text in case of missing EndOfSentence mark
-        if not any(mark in text.split()[-1] for mark in self.regex.endofs):
-            text += '.'
         return text
 
     @staticmethod
