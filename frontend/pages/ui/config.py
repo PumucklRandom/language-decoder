@@ -191,8 +191,9 @@ ui.add_head_html(
     shared = True
 )
 
-ui.header.default_style('height:66px')  # align-items:center
-ui.footer.default_style('height:66px')  # align-items:center
+ui.header.default_style('height:68px')
+ui.footer.default_style('height:68px')
+ui.button.default_style('font-size:11pt')
 ui.input.default_props(f'dense outlined debounce="{CONFIG.debounce}"')
 ui.checkbox.default_props('checked-icon=radio_button_checked unchecked-icon=radio_button_unchecked')
 

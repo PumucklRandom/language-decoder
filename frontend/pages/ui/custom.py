@@ -45,7 +45,7 @@ class UIUpload(object):
                 icon = 'upload',
                 on_click = lambda: self._upload.run_method('pickFiles')) \
                 .classes(top_left(25, 170, center = True)) \
-                .style('font-size:11pt; width:324px') \
+                .style('width:324px') \
                 .props('dense')
 
     def classes(self, css: str) -> None:
@@ -293,7 +293,7 @@ class UIGridPages(object):
             ui.space().style('height:5px')
 
     def pagination(self):
-        with ui.card().classes(bot_right(66, 0)).style('width:550px; height:50px') \
+        with ui.card().classes(bot_right(68, 0)).style('width:550px; height:50px') \
                 .bind_visibility_from(self, '_visible'):
             ui.label('Max words per page:').classes(bot_right(15, 410)).style('font-size:10.5pt')
             ui.select(options = CONFIG.grid_options,
