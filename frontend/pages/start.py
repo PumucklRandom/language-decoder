@@ -5,6 +5,8 @@ from frontend.pages.ui.page_abc import Page
 
 
 class Start(Page):
+    __slots__ = ()
+
     _URL = URLS.START
 
     def __init__(self) -> None:
