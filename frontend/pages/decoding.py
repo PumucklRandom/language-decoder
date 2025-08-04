@@ -242,7 +242,7 @@ class Decoding(Page):
     @catch
     def _replace(self) -> None:
         ui.keyboard(on_key = self.on_key_event, active = CONFIG.native, repeating = False, ignore = [])
-        with ui.button(icon = 'find_replace', on_click = self._refresh_replace).props('dense'):
+        with ui.button(icon = 'find_replace', on_click = self._refresh_replace):
             if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.replace)
             with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)) as self._ui_menu:
                 with ui.menu_item(auto_close = False):
@@ -310,7 +310,7 @@ class Decoding(Page):
             with ui.button(text = self.UI_LABELS.DECODING.Footer.export, on_click = self._export):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.export)
             ui.space()
-            with ui.button(icon = 'reorder', on_click = self._dialog_sentences).props('dense'):
+            with ui.button(icon = 'reorder', on_click = self._dialog_sentences):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.view)
 
     async def page(self) -> None:

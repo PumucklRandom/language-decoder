@@ -5,20 +5,15 @@ from frontend.pages.ui.page_abc import Page
 
 
 class Start(Page):
-    __slots__ = (
-        '_font_size',
-    )
-
     _URL = URLS.START
 
     def __init__(self) -> None:
         super().__init__()
-        self._font_size = 14
 
     @catch
     def _center(self) -> None:
         with ui.column().classes('w-full items-center'). \
-                style(f'font-size:{self._font_size}pt'):
+                style(f'font-size:14pt'):
             self._explanation()
             ui.separator()
             self._disclaimer()
@@ -28,11 +23,11 @@ class Start(Page):
         with ui.card().classes('w-[60%] items-center'). \
                 style('min-width:1000px; min-height:562px; height:60vh'):
             ui.label(text = self.UI_LABELS.START.Explanations.title) \
-                .style(f'font-size:{self._font_size * 1.2}pt')
+                .style(f'font-size:18pt')
             ui.label(text = ' '.join(self.UI_LABELS.START.Explanations.text[:-2]))
             with ui.row().style('gap:0.0rem'):
                 ui.label(text = self.UI_LABELS.START.Explanations.text[-2])
-                ui.space().style(f'width:{self._font_size * 0.5}px')
+                ui.space().style(f'width:6px')
                 ui.link(
                     text = self.UI_LABELS.START.Explanations.text[-1],
                     target = self.UI_LABELS.START.Explanations.link,
@@ -40,22 +35,22 @@ class Start(Page):
                 )
             ui.space()
             ui.button(text = self.UI_LABELS.START.Explanations.start,
-                      on_click = lambda: self.goto(URLS.UPLOAD)).style(f'font-size:{self._font_size}pt')
+                      on_click = lambda: self.goto(URLS.UPLOAD)).style(f'font-size:14pt')
             ui.space()
 
     @catch
     def _disclaimer(self) -> None:
         with ui.column().classes('w-[60%] items-center') \
-                .style(f'min-width:1000px; font-size:{self._font_size * 0.8}pt'):
+                .style(f'min-width:1000px; font-size:11pt'):
             ui.label(text = self.UI_LABELS.START.Disclaimers.title) \
-                .style(f'font-size:{self._font_size}pt')
+                .style(f'font-size:14pt')
             labels = ''
             for label in self.UI_LABELS.START.Disclaimers.text[:-2]:
                 labels += f'{label} '
             ui.label(text = labels)
             with ui.row().style('gap:0.0rem'):
                 ui.label(text = self.UI_LABELS.START.Disclaimers.text[-2])
-                ui.space().style(f'width:{self._font_size * 0.8 * 0.5}px')
+                ui.space().style(f'width:4px')
                 ui.link(
                     text = self.UI_LABELS.START.Disclaimers.text[-1],
                     target = self.UI_LABELS.START.Disclaimers.link,
