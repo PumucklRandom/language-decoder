@@ -2,8 +2,6 @@ import re
 from re import Pattern
 from typing import Union, Iterable
 from nicegui import ui, events
-from watchfiles import awatch
-
 from backend.config.config import CONFIG
 from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, top_left, bot_right

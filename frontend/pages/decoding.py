@@ -3,8 +3,6 @@ import asyncio
 import traceback
 from nicegui import ui, events
 from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
-from watchfiles import awatch
-
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
