@@ -131,7 +131,7 @@ class LanguageDecoder(object):
             # remove any whitespaces around "digit marks"
             text = re.sub(rf'(\d)\s*([{self.regex.digits}])\s*(\d)', r'\1\2\3', text)
         for quote in self.regex.quotes:
-            # remove any whitespaces inside "quote pairs" and add one whitespaces outside of "quote pairs"
+            # remove any whitespaces inside "quote pairs" and add one whitespaces outside "quote pairs"
             text = re.sub(rf'([{quote}])\s*(.*?)\s*([{quote}])', r' \1\2\3 ', text)
         if self.regex.quotes:
             # remove any whitespaces after "quotes" if followed by "punctuations"
@@ -172,6 +172,10 @@ class LanguageDecoder(object):
             source_text = self._reformat_text(text = self.source_text)
         else:
             source_text = ' '.join(self.source_text.split())
+        # add a dot at the end of the text in case of missing EndOfSentence mark
+        if not any(mark in source_text.split()[-1] for mark in self.regex.endofs):
+            self.source_text += '.'
+            source_text += '.'
         # split text into words
         self.source_words = source_text.split()
 
@@ -200,9 +204,6 @@ class LanguageDecoder(object):
     @catch(DecoderError)
     def translate_sentences(self) -> None:
         source_text = ' '.join(self.source_words)
-        # add a dot at the end of the text in case of missing EndOfSentence mark
-        if not any(mark in source_text.split()[-1] for mark in self.regex.endofs):
-            source_text += '.'
         scr_sentences = self._split_sentences(text = source_text)
         logger.info(f'Decode {len(scr_sentences)} sentences.')
         tar_sentences = self.translate(source = scr_sentences, neural = False)

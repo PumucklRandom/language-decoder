@@ -98,6 +98,14 @@ COLORS = Colors(
 class JS:
     __slots__ = ()
 
+    GET_SELECTED = '''
+        const selection = window.getSelection();
+        if (selection) {
+            return selection.toString();
+        }
+        return '';
+    '''
+
     FOCUS_INPUT = '''
         const findInput = document.getElementById('find-input');
         if (findInput) {

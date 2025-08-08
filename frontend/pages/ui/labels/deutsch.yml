@@ -21,7 +21,7 @@ START:
         link: 'https://vera-birkenbihl.de/die-birkenbihl-methode/'
         start: 'START'
     Disclaimers:
-        title: 'Disclaimer:'
+        title: 'Hinweis:'
         text: [
             'Der LanguageDecoder ist ein Open-Source-Projekt und läuft unter der MIT-Lizenz.',
             'Um mehr über das Projekt zu erfahren, besuchen Sie den LanguageDecoder unter',

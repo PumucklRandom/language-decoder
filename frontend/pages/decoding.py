@@ -51,8 +51,10 @@ class Decoding(Page):
         return self.state.title if self.state.title else 'decoded'
 
     @catch
-    def on_key_event(self, event: events.KeyEventArguments):
+    async def on_key_event(self, event: events.KeyEventArguments):
         if event.modifiers.ctrl and event.key == 'f' and event.action.keydown:
+            selected = await self._ui_grid.get_selected()
+            if selected: self.state.find = selected
             if hasattr(self, '_ui_menu'):
                 self._refresh_replace()
                 self._ui_menu.open()
