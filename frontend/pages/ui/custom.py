@@ -2,6 +2,8 @@ import re
 from re import Pattern
 from typing import Union, Iterable
 from nicegui import ui, events
+from watchfiles import awatch
+
 from backend.config.config import CONFIG
 from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, top_left, bot_right
@@ -264,6 +266,12 @@ class UIGrid(Table):
             return
         ui.run_javascript(JS.mark_cells(find_str))
 
+    @staticmethod
+    async def get_selected() -> str:
+        return await ui.run_javascript(
+            JS.GET_SELECTED
+        )
+
 
 class UIGridPages(object):
     __slots__ = ('_page_number', '_page_size', '_prev_page', 'find_str', 'pattern',
@@ -393,6 +401,9 @@ class UIGridPages(object):
     def get_values(self) -> tuple[list[str], list[str]]:
         self._upd_values()
         return self.source_words, self.target_words
+
+    async def get_selected(self) -> str:
+        return await self._ui_grid.get_selected()
 
     def highlight_text(self, find_str: str = '') -> None:
         self.find_str = find_str
