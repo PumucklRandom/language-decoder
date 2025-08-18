@@ -34,9 +34,9 @@ class PDF(object):
                  font_path: str = '../fonts/RobotoMono/RobotoMono.ttf',
                  new_line: str = '\n',
                  title_size: float = 24,
-                 font_size: float = 13.25,
-                 top_margin: float = 0.3,
-                 left_margin: float = -0.8,
+                 font_size: float = 13.23,
+                 top_margin: float = 0.4,
+                 left_margin: float = -1,
                  char_lim: int = 75,
                  line_lim: int = 54,
                  page_lim: int = 2,
@@ -52,7 +52,7 @@ class PDF(object):
         :param left_margin: left margin of the pdf (edge at -1)
         :param char_lim: character limit of one line (max: 75)
         :param line_lim: lines limit of one page (max: 54) reduce in steps of 3
-        :param page_lim: page limit of one sheet
+        :param page_lim: pages limit of one sheet
         :param tab_size: the tab size between two words
         :param page_sep: optional pdf page seperator activation
         """

@@ -54,9 +54,9 @@ Replacements: {'<<': '"', '>>': '"', '«': '"', '»': '"', '"': '"', '—': '-',
 
 Pdf_params:
     title_size: 24
-    font_size: 13.25
-    top_margin: 0.3
-    left_margin: -0.8
+    font_size: 13.23
+    top_margin: 0.4
+    left_margin: -1
     char_lim: 75
     line_lim: 54
     page_lim: 2
