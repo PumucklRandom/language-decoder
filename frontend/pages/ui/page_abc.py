@@ -1,6 +1,7 @@
 import time
 import asyncio
 from urllib import parse
+from typing import Any, Callable
 from abc import ABC, abstractmethod
 from fastapi.responses import Response
 from nicegui.storage import PURGE_INTERVAL
@@ -100,7 +101,7 @@ class Page(ABC):
 
     @staticmethod
     @catch
-    def goto(url: str, call: callable = None) -> None:
+    def goto(url: str, call: Callable = None) -> None:
         if call:
             call()
         if url == 'back':
@@ -109,7 +110,7 @@ class Page(ABC):
             ui.navigate.to(url)
 
     @staticmethod
-    def _add_app_route(route: str, content: any, file_type: str, disposition: str, filename: str) -> None:
+    def _add_app_route(route: str, content: Any, file_type: str, disposition: str, filename: str) -> None:
         @app.get(route)
         def app_route():
             return Response(
@@ -124,7 +125,7 @@ class Page(ABC):
     def _del_app_routes(route: str) -> None:
         app.routes[:] = [app_route for app_route in app.routes if not app_route.path.startswith(route)]
 
-    def _upd_app_route(self, url: str, content: any, file_type: str,
+    def _upd_app_route(self, url: str, content: Any, file_type: str,
                        filename: str, disposition: str = 'attachment') -> str:
         route = f'{url}{self.state.uuid}/{self.state.user_uuid}'
         if disposition == 'attachment':
@@ -141,7 +142,7 @@ class Page(ABC):
         )
         return route
 
-    async def open_route(self, content: any, file_type: str,
+    async def open_route(self, content: Any, file_type: str,
                          filename: str, disposition: str = 'attachment') -> None:
         route = self._upd_app_route(
             url = URLS.DOWNLOAD,
@@ -199,7 +200,7 @@ class UIPage(ui.page):
         logger.info('Create prune_pages task')
         background_tasks.create(cls.prune_pages(), name = 'prune_pages')
 
-    def __init__(self, page_class: type(Page)) -> None:
+    def __init__(self, page_class: type[Page]) -> None:
         super().__init__(path = page_class.URL)
         self.page_class = page_class
 

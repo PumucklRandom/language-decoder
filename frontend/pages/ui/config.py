@@ -1,6 +1,8 @@
 import os
+import json
 import yaml
 import traceback
+from typing import Union
 from copy import deepcopy
 from nicegui import ui, app
 from collections import namedtuple
@@ -134,6 +136,7 @@ class JS:
 
     @classmethod
     def mark_cells(cls, find_str: str) -> str:
+        find_str = json.dumps(find_str)
         return f'''
             // Function to mark cells
             function markCells(find_str) {{
@@ -146,13 +149,13 @@ class JS:
                     }}
                 }}
             }}
-            markCells("{find_str}");
+            markCells({find_str});
             {cls.DEL_OBSERVER}
             // Observer to detect changes in cells
             window.cellObserver = new MutationObserver(function(mutations) {{
                 for (const mutation of mutations) {{
                     if (mutation.type === "childList") {{
-                        markCells("{find_str}");
+                        markCells({find_str});
                         break;
                     }}
                 }}
@@ -275,7 +278,7 @@ def dict_to_labels(labels_dict: dict) -> UILabels:
     )
 
 
-def to_labels(name: str, sub_tree: any):
+def to_labels(name: str, sub_tree: Union[dict, list, any]) -> Union[namedtuple, tuple, any]:
     if isinstance(sub_tree, dict):
         return namedtuple(name, sub_tree.keys())(
             **{_name: to_labels(_name, _sub_tree) for _name, _sub_tree in sub_tree.items()}

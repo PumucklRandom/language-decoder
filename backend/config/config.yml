@@ -30,10 +30,10 @@ api_key: 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNz
 model_name: 'Google: Gemini 2.0 Flash Experimental'
 model_seed: 0
 model_temp: 0.0
-model_context: 64_000
+model_context: 32_000
 model_age: 12  # in months
 
-char_limit: 2_850
+char_limit: 2_500
 word_limit: 1_000
 
 Upload:

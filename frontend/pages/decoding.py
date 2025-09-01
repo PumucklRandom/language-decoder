@@ -116,6 +116,8 @@ class Decoding(Page):
                     on_dismiss = self._task_cancel
                 )
                 await self._task_handler()
+                self.decoder.apply_dict()
+                self._set_grid_values()
                 notification.dismiss()
             else:
                 self._set_grid_values(new_indices = True)
@@ -132,7 +134,6 @@ class Decoding(Page):
             await self.state.task
             self.state.task = asyncio.create_task(asyncio.to_thread(self.decoder.translate_sentences))
             await self.state.task
-            self._apply_dict()
             logger.info('Decoding done.')
         except asyncio.exceptions.CancelledError:
             logger.info('Decoding cancelled')
@@ -149,6 +150,7 @@ class Decoding(Page):
     @catch
     def _apply_dict(self) -> None:
         if not self.decoder.target_words: return
+        self._get_grid_values()
         self.decoder.apply_dict()
         self._set_grid_values()
 

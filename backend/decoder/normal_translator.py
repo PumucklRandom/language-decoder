@@ -9,6 +9,8 @@ from backend.logger.logger import logger
 from backend.config.config import CONFIG
 from backend.utils import utilities as utils
 
+GOOGLE_TRANSLATOR = 'Google Translator'
+
 
 class NormalTranslator(object):
     """

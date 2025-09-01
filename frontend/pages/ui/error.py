@@ -2,11 +2,12 @@ import asyncio
 import traceback
 import functools
 from nicegui import ui
+from typing import Callable
 from backend.logger.logger import logger
 from frontend.pages.ui.config import UI_LABELS
 
 
-def catch(func: callable) -> callable:
+def catch(func: Callable) -> Callable:
     if asyncio.iscoroutinefunction(func):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):

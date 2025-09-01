@@ -4,6 +4,7 @@ from nicegui import ui
 from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.config.config import CONFIG
+from backend.decoder.normal_translator import GOOGLE_TRANSLATOR
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.config import URLS, REPLACE_COLS, get_languages
 from frontend.pages.ui.custom import ui_dialog, UITable, UIList
@@ -172,6 +173,8 @@ class Settings(Page):
 
     @catch
     def _app_settings(self) -> None:
+        if self.settings.app.model_name not in self.decoder.models:
+            self.settings.app.model_name = GOOGLE_TRANSLATOR
         with ui.card().classes('items-center').style('width:420px'):
             with ui.column():
                 ui.checkbox(self.UI_LABELS.SETTINGS.App_settings.text[0]) \

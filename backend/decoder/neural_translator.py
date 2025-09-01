@@ -100,13 +100,17 @@ class NeuralTranslator(object):
 
     def get_available_models(self) -> dict[str, str]:
         time_date = time.time() - CONFIG.model_age * 2592000  # 30d * 24h * 3600s per months
-        models = tuple(
-            model for model in self.client.models.list().data if ':free' in model.id
-            and model.context_length >= CONFIG.model_context and model.created >= time_date
-            and model.architecture.get('modality') in ('text->text', 'text+image->text')
-            and {'temperature'}.issubset(model.supported_parameters)
-            and {'reasoning', 'include_reasoning'}.isdisjoint(model.supported_parameters)
-        )
+        models = [
+            model for model in self.client.models.list().data
+            if ':free' in model.id and model.created >= time_date
+               and model.context_length >= CONFIG.model_context
+               and {'text'}.issubset(model.architecture.get('input_modalities'))
+               and {'text'}.issubset(model.architecture.get('output_modalities'))
+               and {'temperature'}.issubset(model.supported_parameters)  # seed
+            # and {'reasoning', 'include_reasoning'}.isdisjoint(model.supported_parameters)
+
+        ]
+        models.sort(key = lambda model: model.name)
         return {model.name.removesuffix(' (free)'): model.id for model in models}
 
     def translate_batch(self, source_words: list[str]) -> list[str]:
