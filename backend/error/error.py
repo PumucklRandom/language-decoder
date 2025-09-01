@@ -1,6 +1,6 @@
 import traceback
 import functools
-from typing import Type
+from typing import Any, Callable
 from backend.logger.logger import logger
 
 
@@ -63,10 +63,10 @@ class UIConfigError(FrontendError):
     __slots__ = ()
 
 
-def catch(error: Type[LanguageDecoderError]) -> callable:
-    def decorator(func: callable) -> callable:
+def catch(error: type[LanguageDecoderError]) -> Callable:
+    def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> any:
+        def wrapper(*args, **kwargs) -> Any:
             try:
                 return func(*args, **kwargs)
             except Exception as exception:

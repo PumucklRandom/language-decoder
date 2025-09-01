@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 from nicegui.observables import ObservableDict
 from backend.config.config import CONFIG
 from backend.decoder.language_decoder import LanguageDecoder
@@ -11,18 +12,18 @@ class State(object):
     def __init__(self, storage: ObservableDict) -> None:
         super().__setattr__('_storage', storage)
 
-    def __setattr__(self, name: str, value: any):
+    def __setattr__(self, name: str, value: Any):
         if name == '_storage':
             super().__setattr__(name, value)
         self._storage[name] = value
 
-    def __getattr__(self, name: str) -> any:
+    def __getattr__(self, name: str) -> Any:
         return self.get(name, None)
 
-    def add(self, name: str, value: any) -> None:
+    def add(self, name: str, value: Any) -> None:
         self._storage.setdefault(name, value)
 
-    def get(self, name: str, default: any = None) -> any:
+    def get(self, name: str, default: Any = None) -> Any:
         return self._storage.setdefault(name, default)
 
     def keys(self):

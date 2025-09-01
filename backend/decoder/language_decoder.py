@@ -6,7 +6,7 @@ from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyErr
 from backend.error.error import DecoderError, NormalTranslatorError, NeuralTranslatorError, catch
 from backend.logger.logger import logger
 from backend.config.config import CONFIG, Regex
-from backend.decoder.normal_translator import NormalTranslator
+from backend.decoder.normal_translator import NormalTranslator, GOOGLE_TRANSLATOR
 from backend.decoder.neural_translator import NeuralTranslator
 from backend.user_data.dictionaries import Dicts
 from backend.user_data.settings import Settings
@@ -85,7 +85,7 @@ class LanguageDecoder(object):
 
     @property
     def models(self) -> list[str]:
-        return ['Google Translator'] + list(self._neural_trans.models.keys())
+        return [GOOGLE_TRANSLATOR] + list(self._neural_trans.models.keys())
 
     @catch(DecoderError)
     def get_supported_languages(self, show: bool = False) -> list[str]:
@@ -93,7 +93,7 @@ class LanguageDecoder(object):
 
     def translate(self, source: list[str], neural = True) -> list[str]:
         try:
-            if neural and self.model_name != 'Google Translator':
+            if neural and self.model_name != GOOGLE_TRANSLATOR:
                 self._set_neural_trans()
                 return self._neural_trans.translate_batch(source)
             self._set_normal_trans()
