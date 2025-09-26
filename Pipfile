@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 deep-translator = "*"
 pyinstaller = "*"
-pip = "*"
 wheel = "*"
 setuptools = "*"
 openai = "*"
@@ -15,6 +14,7 @@ pywebview = "==5.4"
 chardet = "*"
 fpdf2 = "==2.8.2"
 nicegui = "==2.24.2"
+pip = "==25.2"
 
 [dev-packages]
 
