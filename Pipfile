@@ -9,12 +9,12 @@ pyinstaller = "*"
 pip = "*"
 wheel = "*"
 setuptools = "*"
-nicegui = "*"
 openai = "*"
 h11 = "==0.16.0"
 pywebview = "==5.4"
 chardet = "*"
 fpdf2 = "==2.8.2"
+nicegui = "==2.24.2"
 
 [dev-packages]
 
