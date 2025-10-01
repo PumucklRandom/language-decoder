@@ -9,7 +9,7 @@ native: true  # native = true (window mode)
 window_size: [1600, 900]
 fullscreen: false  # set to false
 frameless: false  # set to false
-reload: false  # set to false for production!!! true for dev
+reload: false  # set to false for production!
 storage_secret: 'STORAGE_SECRET'
 
 session_time: 36_000  # in seconds

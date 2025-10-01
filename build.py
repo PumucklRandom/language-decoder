@@ -58,8 +58,6 @@ APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 PW_PATH = './_data/password.txt'
 CERTIFICATE_PATH = './_data/certificate.pfx'
-OUT_ZIP_PATH = f'./{APP_NAME}.zip'
-OUT_ZIP_PATH_LOS = f'./{APP_NAME}-los.zip'
 CONFIG = load_config('../../_data/config.yml')
 
 
@@ -145,7 +143,15 @@ def build_app() -> bool:
     ]
 
     if sys.platform != 'linux':
-        cmd_build.extend(['--version-file', VERSION_RC_PATH])
+        cmd_build.extend([
+            '--exclude-module', 'QtPy',
+            '--exclude-module', 'PyQt5',
+            '--exclude-module', 'PyQt5-Qt5',
+            '--exclude-module', 'PyQt5_sip',
+            '--exclude-module', 'PyQtWebEngine',
+            '--exclude-module', 'PyQtWebEngine-Qt5',
+            '--version-file', VERSION_RC_PATH,
+        ])
 
     if CONFIG.native:
         cmd_build.append('--windowed')
@@ -266,10 +272,10 @@ def main() -> int:
 
         # Step 5: Create zip archive
         if sys.platform == 'linux':
-            if not zip_directory(OUT_ZIP_PATH_LOS, f'./dist/{APP_NAME}/'):
+            if not zip_directory(f'./{APP_NAME}-lx.zip', f'./dist/{APP_NAME}/'):
                 return 1
         else:
-            if not zip_directory(OUT_ZIP_PATH, f'./dist/{APP_NAME}/'):
+            if not zip_directory(f'./{APP_NAME}.zip', f'./dist/{APP_NAME}/'):
                 return 1
 
         logger.info('Build process completed successfully')
