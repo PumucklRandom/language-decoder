@@ -6,12 +6,12 @@ logs
 build
 dist
 LanguageDecoder.spec
-/backend/main.py
-__build__.py
+LanguageDecoder-lx.zip
 *.json
 *.pkl
 *.txt
 *.pfx
-
+# Exceptions
 !requirements.txt
+!requirements-dev.txt
 !prompt.txt

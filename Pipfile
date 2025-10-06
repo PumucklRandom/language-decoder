@@ -5,19 +5,16 @@ name = "pypi"
 
 [packages]
 deep-translator = "*"
-pyinstaller = "*"
-pip = "*"
-wheel = "*"
-setuptools = "*"
-nicegui = "*"
-openai = "*"
-h11 = "==0.16.0"
-pywebview = "==5.4"
-chardet = "*"
 fpdf2 = "==2.8.2"
+openai = "*"
+chardet = "*"
+nicegui = "*"
 
 [dev-packages]
+pyinstaller = "*"
+pywebview = "*"
+qtpy = "*"
+pyqtwebengine = "*"
 
 [requires]
 python_version = "3.12"
-python_full_version = "3.12.10"

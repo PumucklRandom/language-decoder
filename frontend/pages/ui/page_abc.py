@@ -1,10 +1,10 @@
 import time
 import asyncio
 from urllib import parse
+from datetime import timedelta
 from typing import Any, Callable
 from abc import ABC, abstractmethod
 from fastapi.responses import Response
-from nicegui.storage import PURGE_INTERVAL
 from nicegui import ui, app, Client, background_tasks
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
@@ -16,6 +16,7 @@ from frontend.pages.ui.error import catch
 from frontend.pages.ui.state import State
 
 pages_lock = asyncio.Lock()
+PURGE_INTERVAL = timedelta(minutes = 5).total_seconds()
 
 
 class Classproperty(property):

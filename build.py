@@ -53,12 +53,11 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.12.8.4'
+VERSION = '0.12.9.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 PW_PATH = './_data/password.txt'
 CERTIFICATE_PATH = './_data/certificate.pfx'
-OUT_ZIP_PATH = f'./{APP_NAME}.zip'
 CONFIG = load_config('../../_data/config.yml')
 
 
@@ -69,7 +68,7 @@ def update_version(version: str) -> None:
     :param version: Version string in format 'x.y.z.w'
     """
     if not re.match(r'^\d+\.\d+\.\d+\.\d+$', version):
-        raise ValueError(f"Invalid version format: {version}. Expected format: x.y.z.w")
+        raise ValueError(f'Invalid version format: {version}. Expected format: x.y.z.w')
 
     try:
         with open(VERSION_RC_PATH, 'r+') as file:
@@ -79,9 +78,9 @@ def update_version(version: str) -> None:
             file.seek(0)
             file.write(content)
             file.truncate()
-        logger.info(f"Updated version to {version}")
+        logger.info(f'Updated version to {version}')
     except FileNotFoundError:
-        logger.error(f"Version file not found: {VERSION_RC_PATH}")
+        logger.error(f'Version file not found: {VERSION_RC_PATH}')
         raise
 
 
@@ -96,13 +95,13 @@ def del_old_build() -> None:
     for path in paths_to_remove:
         try:
             if os.path.isdir(path):
-                logger.info(f"Removing directory: {path}")
+                logger.info(f'Removing directory: {path}')
                 shutil.rmtree(path)
-            elif os.path.isfile(path):
-                logger.info(f"Removing file: {path}")
+            elif os.path.islink(path) or os.path.isfile(path):
+                logger.info(f'Removing file: {path}')
                 os.remove(path)
         except Exception:
-            logger.warning(f"Failed to remove {path}:\n{traceback.format_exc()}")
+            logger.warning(f'Failed to remove {path}:\n{traceback.format_exc()}')
 
 
 def get_password() -> str:
@@ -113,14 +112,14 @@ def get_password() -> str:
     """
     try:
         if not os.path.isfile(PW_PATH):
-            logger.warning(f"Password file not found: {PW_PATH}")
+            logger.warning(f'Password file not found: {PW_PATH}')
             return ''
 
         with open(file = PW_PATH, mode = 'r', encoding = 'utf-8') as file:
             password = file.read().strip()
             return password
     except Exception:
-        logger.error(f"Could not load password from: {PW_PATH}\n{traceback.format_exc()}")
+        logger.error(f'Could not load password from: {PW_PATH}\n{traceback.format_exc()}')
         return ''
 
 
@@ -134,7 +133,6 @@ def build_app() -> bool:
         'pyinstaller', '__main__.py',
         '--name', APP_NAME,
         '--icon', './frontend/pages/ui/icon/LD-icon.png',
-        '--version-file', VERSION_RC_PATH,
         '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
         '--add-data', f'./_data/config.yml{os.pathsep}./backend/config/',
         '--add-data', f'./backend/decoder/prompt.txt{os.pathsep}./backend/decoder/',
@@ -144,19 +142,30 @@ def build_app() -> bool:
         '--clean', '-y',
     ]
 
+    if sys.platform != 'linux':
+        cmd_build.extend([
+            '--exclude-module', 'QtPy',
+            '--exclude-module', 'PyQt5',
+            '--exclude-module', 'PyQt5-Qt5',
+            '--exclude-module', 'PyQt5_sip',
+            '--exclude-module', 'PyQtWebEngine',
+            '--exclude-module', 'PyQtWebEngine-Qt5',
+            '--version-file', VERSION_RC_PATH,
+        ])
+
     if CONFIG.native:
         cmd_build.append('--windowed')
 
     try:
-        logger.info("Building application with PyInstaller...")
+        logger.info('Building application with PyInstaller...')
         subprocess.run(cmd_build, shell = False, check = True)
-        logger.info("Build completed successfully")
+        logger.info('Build completed successfully')
         return True
     except subprocess.CalledProcessError as e:
-        logger.error(f"Build failed with exit code {e.returncode}\n{traceback.format_exc()}")
+        logger.error(f'Build failed with exit code {e.returncode}\n{traceback.format_exc()}')
         return False
     except Exception:
-        logger.error(f"Build failed with exception:\n{traceback.format_exc()}")
+        logger.error(f'Build failed with exception:\n{traceback.format_exc()}')
         return False
 
 
@@ -166,18 +175,22 @@ def sign_app() -> bool:
 
     return: True if signing succeeded, False otherwise
     """
+    if sys.platform == 'linux':
+        logger.info('Skipping signing on Linux OS.')
+        return True
+
     password = get_password()
     if not password:
-        logger.warning("No password provided, skipping signing")
+        logger.warning('No password provided, skipping signing')
         return False
 
     if not os.path.isfile(CERTIFICATE_PATH):
-        logger.warning(f"Certificate not found: {CERTIFICATE_PATH}")
+        logger.warning(f'Certificate not found: {CERTIFICATE_PATH}')
         return False
 
     exe_path = f'./dist/{APP_NAME}/{APP_NAME}.exe'
     if not os.path.isfile(exe_path):
-        logger.error(f"Executable not found: {exe_path}")
+        logger.error(f'Executable not found: {exe_path}')
         return False
 
     cmd_sign = [
@@ -191,15 +204,15 @@ def sign_app() -> bool:
     ]
 
     try:
-        logger.info("Signing executable...")
+        logger.info('Signing executable...')
         subprocess.run(cmd_sign, shell = False, check = True)
-        logger.info("Signing completed successfully")
+        logger.info('Signing completed successfully')
         return True
     except subprocess.CalledProcessError as e:
-        logger.error(f"Signing failed with exit code {e.returncode}\n{traceback.format_exc()}")
+        logger.error(f'Signing failed with exit code {e.returncode}\n{traceback.format_exc()}')
         return False
     except Exception:
-        logger.error(f"Signing failed with exception:\n{traceback.format_exc()}")
+        logger.error(f'Signing failed with exception:\n{traceback.format_exc()}')
         return False
 
 
@@ -213,27 +226,27 @@ def zip_directory(zip_file_path: str, source_directory: str) -> bool:
     return: True if zipping succeeded, False otherwise
     """
     if not os.path.isdir(source_directory):
-        logger.error(f"Source directory not found: {source_directory}")
+        logger.error(f'Source directory not found: {source_directory}')
         return False
 
     try:
         if os.path.isfile(zip_file_path):
-            logger.info(f"Removing existing zip file: {zip_file_path}")
+            logger.info(f'Removing existing zip file: {zip_file_path}')
             os.remove(zip_file_path)
 
         source_path = pathlib.Path(source_directory).expanduser()  # .resolve(strict = True)
 
-        logger.info(f"Creating zip archive: {zip_file_path}")
+        logger.info(f'Creating zip archive: {zip_file_path}')
         with zipfile.ZipFile(file = zip_file_path, mode = 'w', compression = zipfile.ZIP_DEFLATED) as zf:
             file_count = 0
             for file_path in source_path.rglob('*'):
                 zf.write(file_path, file_path.relative_to(source_path.parent))
                 file_count += 1
 
-        logger.info(f"Zip archive created with {file_count} files")
+        logger.info(f'Zip archive created with {file_count} files')
         return True
     except Exception:
-        logger.error(f"Failed to create zip archive:\n{traceback.format_exc()}")
+        logger.error(f'Failed to create zip archive:\n{traceback.format_exc()}')
         return False
 
 
@@ -258,13 +271,17 @@ def main() -> int:
         sign_app()
 
         # Step 5: Create zip archive
-        if not zip_directory(OUT_ZIP_PATH, f'./dist/{APP_NAME}/'):
-            return 1
+        if sys.platform == 'linux':
+            if not zip_directory(f'./{APP_NAME}-lx.zip', f'./dist/{APP_NAME}/'):
+                return 1
+        else:
+            if not zip_directory(f'./{APP_NAME}.zip', f'./dist/{APP_NAME}/'):
+                return 1
 
-        logger.info("Build process completed successfully")
+        logger.info('Build process completed successfully')
         return 0
     except Exception:
-        logger.error(f"Build process failed with exception:\n{traceback.format_exc()}")
+        logger.error(f'Build process failed with exception:\n{traceback.format_exc()}')
         return 1
 
 

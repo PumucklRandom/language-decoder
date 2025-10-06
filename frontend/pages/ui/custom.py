@@ -243,7 +243,7 @@ class UIGrid(Table):
 
     def _item(self) -> str:
         return f'''
-            <div class="column" style="width:{self.item_size}px; height:70px" :props="props">
+            <div class="column" style="width:{self.item_size}px; height:75px" :props="props">
                 <div class="col">
                     <q-input v-model="props.row.source" style="font-family:RobotoMono; font-size:11pt" 
                         debounce="{CONFIG.debounce}" bg-color={self.scr_color} dense outlined
