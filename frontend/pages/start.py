@@ -14,18 +14,15 @@ class Start(Page):
 
     @catch
     def _center(self) -> None:
-        with ui.column().classes('w-full items-center'). \
-                style('font-size:14pt'):
+        with ui.column().classes('w-full items-center').style('font-size:14pt'):
             self._explanation()
             ui.separator()
             self._disclaimer()
 
     @catch
     def _explanation(self) -> None:
-        with ui.card().classes('w-[60%] items-center'). \
-                style('min-width:1000px; min-height:562px; height:60vh'):
-            ui.label(text = self.UI_LABELS.START.Explanations.title) \
-                .style('font-size:18pt')
+        with ui.card().classes('w-[60%] items-center').style('min-width:1000px; min-height:562px; height:60vh'):
+            ui.label(text = self.UI_LABELS.START.Explanations.title).style('font-size:18pt')
             ui.label(text = ' '.join(self.UI_LABELS.START.Explanations.text[:-2]))
             with ui.row().style('gap:0.0rem'):
                 ui.label(text = self.UI_LABELS.START.Explanations.text[-2])
@@ -42,14 +39,9 @@ class Start(Page):
 
     @catch
     def _disclaimer(self) -> None:
-        with ui.column().classes('w-[60%] items-center') \
-                .style('min-width:1000px; font-size:11pt'):
-            ui.label(text = self.UI_LABELS.START.Disclaimers.title) \
-                .style('font-size:14pt')
-            labels = ''
-            for label in self.UI_LABELS.START.Disclaimers.text[:-2]:
-                labels += '{label} '
-            ui.label(text = labels)
+        with ui.column().classes('w-[60%] items-center').style('min-width:1000px; font-size:11pt'):
+            ui.label(text = self.UI_LABELS.START.Disclaimers.title).style('font-size:14pt')
+            ui.label(text = ' '.join(self.UI_LABELS.START.Disclaimers.text[:-2]))
             with ui.row().style('gap:0.0rem'):
                 ui.label(text = self.UI_LABELS.START.Disclaimers.text[-2])
                 ui.space().style('width:4px')
