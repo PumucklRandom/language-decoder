@@ -28,7 +28,7 @@ def ui_dialog(label_list: list[str], width: int = 800, u_width: str = 'px',
                 if label == '/n':
                     ui.space().style(f'height:{space}px')
                 elif label == '/N':
-                    ui.separator().style(f'height:2px')
+                    ui.separator().style('height:2px')
                 else:
                     ui.label(label)
     return dialog
