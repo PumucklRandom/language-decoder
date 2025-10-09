@@ -1,16 +1,15 @@
 # Default ignored files
 .idea
-.nicegui
 __pycache__
 logs
 build
 dist
-LanguageDecoder.spec
-LanguageDecoder-lx.zip
 *.json
-*.pkl
 *.txt
 *.pfx
+*.spec
+*.lock
+*.zip
 # Exceptions
 !requirements.txt
 !requirements-dev.txt

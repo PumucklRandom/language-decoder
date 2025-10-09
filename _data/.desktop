@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=0.12.9.1
+Type=Application
+Name=LanguageDecoder
+Comment=Decode a source text to a target language
+Exec=sh -c 'cd "$(dirname "%k")" && ./LanguageDecoder'
+Terminal=true

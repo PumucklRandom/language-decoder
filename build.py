@@ -56,32 +56,40 @@ logger = logging.getLogger('build')
 VERSION = '0.12.9.1'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
+DESKTOP_PATH = './_data/.desktop'
 PW_PATH = './_data/password.txt'
 CERTIFICATE_PATH = './_data/certificate.pfx'
 CONFIG = load_config('../../_data/config.yml')
 
 
-def update_version(version: str) -> None:
+def update_version() -> bool:
     """
-    Update version information in the version.rc file.
-
-    :param version: Version string in format 'x.y.z.w'
+    Update version information in the version.rc and .desktop file.
     """
-    if not re.match(r'^\d+\.\d+\.\d+\.\d+$', version):
-        raise ValueError(f'Invalid version format: {version}. Expected format: x.y.z.w')
-
     try:
         with open(VERSION_RC_PATH, 'r+') as file:
             content = file.read()
-            content = re.sub(r'(\d+\.\d+\.\d+\.\d+)', version, content)
-            content = re.sub(r'(\d+, \d+, \d+, \d+)', version.replace('.', ', '), content)
+            content = re.sub(r'(\d+\.\d+\.\d+\.\d+)', VERSION, content)
+            content = re.sub(r'(\d+, \d+, \d+, \d+)', VERSION.replace('.', ', '), content)
             file.seek(0)
             file.write(content)
             file.truncate()
-        logger.info(f'Updated version to {version}')
-    except FileNotFoundError:
-        logger.error(f'Version file not found: {VERSION_RC_PATH}')
-        raise
+
+        with open(DESKTOP_PATH, 'r+') as file:
+            content = file.read()
+            # content = re.sub(r'(\d+\.\d+\.\d+\.\d+)', VERSION, content)
+            content = re.sub(r'(?<=Version=).*$', VERSION, content, flags = re.MULTILINE)
+            content = re.sub(r'(?<=Name=).*$', APP_NAME, content, flags = re.MULTILINE)
+            content = re.sub(r'(?<=\./)[\w-]+', APP_NAME, content, flags = re.MULTILINE)
+            file.seek(0)
+            file.write(content)
+            file.truncate()
+
+        logger.info(f'Updated version to {VERSION}')
+        return True
+    except Exception:
+        logger.error(f'Failed to update version:\n{traceback.format_exc()}')
+        return False
 
 
 def del_old_build() -> None:
@@ -143,22 +151,15 @@ def build_app() -> bool:
     ]
 
     if sys.platform != 'linux':
-        cmd_build.extend([
-            '--exclude-module', 'QtPy',
-            '--exclude-module', 'PyQt5',
-            '--exclude-module', 'PyQt5-Qt5',
-            '--exclude-module', 'PyQt5_sip',
-            '--exclude-module', 'PyQtWebEngine',
-            '--exclude-module', 'PyQtWebEngine-Qt5',
-            '--version-file', VERSION_RC_PATH,
-        ])
-
-    if CONFIG.native:
-        cmd_build.append('--windowed')
+        cmd_build.extend(['--version-file', VERSION_RC_PATH])
+        if CONFIG.native:
+            cmd_build.append('--windowed')
 
     try:
         logger.info('Building application with PyInstaller...')
         subprocess.run(cmd_build, shell = False, check = True)
+        if sys.platform == 'linux':
+            shutil.copy(DESKTOP_PATH, f'./dist/{APP_NAME}/{APP_NAME}.desktop')
         logger.info('Build completed successfully')
         return True
     except subprocess.CalledProcessError as e:
@@ -182,11 +183,11 @@ def sign_app() -> bool:
     password = get_password()
     if not password:
         logger.warning('No password provided, skipping signing')
-        return False
+        return True
 
     if not os.path.isfile(CERTIFICATE_PATH):
         logger.warning(f'Certificate not found: {CERTIFICATE_PATH}')
-        return False
+        return True
 
     exe_path = f'./dist/{APP_NAME}/{APP_NAME}.exe'
     if not os.path.isfile(exe_path):
@@ -216,12 +217,13 @@ def sign_app() -> bool:
         return False
 
 
-def zip_directory(zip_file_path: str, source_directory: str) -> bool:
+def zip_directory(source_directory: str, zip_file_path: str) -> bool:
     """
     Create a zip archive of the directory.
 
-    :param zip_file_path: Path to the output zip file
     :param source_directory: Directory to zip
+    :param zip_file_path: Path to the output zip file
+
 
     return: True if zipping succeeded, False otherwise
     """
@@ -258,31 +260,33 @@ def main() -> int:
     """
     try:
         # Step 1: Update version
-        update_version(VERSION)
+        if not update_version():
+            return 1
 
         # Step 2: Clean previous build
         del_old_build()
 
         # Step 3: Build application
         if not build_app():
-            return 1
+            return 2
 
         # Step 4: Sign executable
-        sign_app()
+        if not sign_app():
+            return 3
 
         # Step 5: Create zip archive
         if sys.platform == 'linux':
-            if not zip_directory(f'./{APP_NAME}-lx.zip', f'./dist/{APP_NAME}/'):
-                return 1
+            if not zip_directory(f'./dist/{APP_NAME}/', f'./{APP_NAME}-lx.zip'):
+                return 4
         else:
-            if not zip_directory(f'./{APP_NAME}.zip', f'./dist/{APP_NAME}/'):
-                return 1
+            if not zip_directory(f'./dist/{APP_NAME}/', f'./{APP_NAME}.zip'):
+                return 4
 
         logger.info('Build process completed successfully')
         return 0
     except Exception:
         logger.error(f'Build process failed with exception:\n{traceback.format_exc()}')
-        return 1
+        return 5
 
 
 if __name__ == '__main__':
