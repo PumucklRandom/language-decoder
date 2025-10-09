@@ -33,8 +33,8 @@ pip install -r requirements.txt
 python ./__main__.py
 ```
 
-or just download the latest desktop application from the releases.
-For Windows use LanguageDecoder.zip, extract the files and execute LanguageDecoder.exe.
+or just download the latest desktop application from the releases.\
+For Windows use LanguageDecoder.zip, extract the files and execute LanguageDecoder.exe.\
 For Linux use LanguageDecoder-lx.zip, extract the files and execute LanguageDecoder.desktop.
 
 With the build.py file you can create your on local desktop application.
