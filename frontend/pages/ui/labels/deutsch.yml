@@ -91,7 +91,7 @@ DECODING:
         'In der Fußzeile finden Sie verschiedene Aktionen, von denen Sie auswählen können:',
         '/n',
         'Die erste Option auf der linken Seite ist eine einfache Such- und Ersetzungsfunktion,
-            welche alle betroffenen Zellen durch ein Hervorheben in orange markiert.',
+            welche alle betroffenen Zellen durch ein Hervorheben in orange markiert. (Ctrl + Shift + F)',
         '/n',
         'Mit der zweiten Option "IMPORTIEREN" auf der linken Seite können Sie eine zuvor exportierte
             Dekodierung wieder importieren.',

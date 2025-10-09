@@ -5,7 +5,6 @@ from nicegui import ui, events
 from requests.exceptions import ConnectionError as HTTPConnectionError, ProxyError
 from backend.error.error import DecoderError
 from backend.logger.logger import logger
-from backend.config.config import CONFIG
 from backend.decoder.pdf import PDF
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.config import URLS, JS, top_right
@@ -52,7 +51,7 @@ class Decoding(Page):
 
     @catch
     async def on_key_event(self, event: events.KeyEventArguments):
-        if event.modifiers.ctrl and event.key == 'f' and event.action.keydown:
+        if event.modifiers.ctrl and event.key == 'F' and event.action.keydown:
             selected = await self._ui_grid.get_selected()
             if selected: self.state.find = selected
             if hasattr(self, '_ui_menu'):
@@ -245,7 +244,7 @@ class Decoding(Page):
 
     @catch
     def _replace(self) -> None:
-        ui.keyboard(on_key = self.on_key_event, active = CONFIG.native, repeating = False, ignore = [])
+        ui.keyboard(on_key = self.on_key_event, repeating = False, ignore = [])
         with ui.button(icon = 'find_replace', on_click = self._refresh_replace):
             if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.replace)
             with ui.menu().on('show', lambda: ui.run_javascript(JS.FOCUS_INPUT)) as self._ui_menu:

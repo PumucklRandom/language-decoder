@@ -6,7 +6,7 @@ dark: true
 debounce: 200
 reconnect_timeout: 3
 native: true  # native = true (window mode)
-window_size: [1600, 900]
+window_size: [1600, 900] # null for native = false
 fullscreen: false  # set to false
 frameless: false  # set to false
 reload: false  # set to false for production!
