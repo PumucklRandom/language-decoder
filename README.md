@@ -2,12 +2,13 @@
 
 ## Language Decoder
 
-The LanguageDecoder translates a given text from the source language to a desired target language word by word (
-decoding). For this purpose, the Google translator is used in the backend (Or alternatively an experimental AI
-translator). To improve the translation, a dictionary can be created to automatically correct common translation errors.
-Afterwards, the decoded text can be exported to a PDF file.
+The LanguageDecoder translates a given text from the source language to a desired target language
+word by word (decoding). For this purpose, the Google translator is used in the backend
+(Or alternatively an experimental LLM translator). To improve the translation, a dictionary can be
+created to automatically correct common translation errors. Afterwards, the decoded text can be
+exported to a PDF file.
 
-The LanguageDecoder can also be used to create language learning lessons based on the
+The LanguageDecoder can also be used to create language learning lessons based on the\
 [Birkenbihl approach.](https://blog.brain-friendly.com/easy-language-learning-by-vera-f-birkenbihl-the-decoding-method/)
 
 ![Upload](_data/upload.png)
@@ -17,27 +18,31 @@ The LanguageDecoder can also be used to create language learning lessons based o
 
 ### Usage
 
-To use the LanguageDecoder you can either clone the repo:
+To use the LanguageDecoder you can either clone the repo with git:
 
 ```
 git clone https://github.com/PumucklRandom/language-decoder.git
+```
+```
 cd language-decoder
 ```
-
-open terminal and run:
-
 ```
-pipenv install
+pip install -r requirements.txt
+```
+```
 python ./__main__.py
 ```
 
-or just download the LanguageDecoder.zip, extract the files and execute the LanguageDecoder.exe.
+or just download the latest desktop application from the releases.\
+For Windows use LanguageDecoder.zip, extract the files and execute LanguageDecoder.exe.\
+For Linux use LanguageDecoder-lx.zip, extract the files and execute LanguageDecoder.desktop.
 
 With the build.py file you can create your on local desktop application.
 
-The LanguageDecoder requires a common modern browser such as Edge, Chrome or Firefox and a free port on localhost port
-8080 (127.0.0.1:8080). If this port is occupied, the IP address and the port can be adjusted as desired in the config
-file. (language_decoder/backend/config/config.yml)
+The LanguageDecoder requires a common modern browser such as Edge, Chrome or Firefox and a free
+port on localhost port 8080 (127.0.0.1:8080). If this port is occupied, the IP address and the port
+can be adjusted as desired in the config file. (language-decoder/backend/config/config.yml)\
+For the desktop application: (LanguageDecoder/_internal/backend/config/config.yml)
 
 ### Known issues
 
@@ -46,6 +51,7 @@ Windows Security may block desktop application. (Workaround: Run application as 
 ### Credits
 
 [Nicegui](https://nicegui.io/) for the grafical user interface\
+[OpenRouter](https://openrouter.ai/) for the access of Large Language Models\
 [Deep Translator](https://github.com/nidhaloff/deep-translator/) for the language translation\
 [FPDF2](https://github.com/py-pdf/fpdf2/) for the pdf creation\
 [TextStudio](https://www.textstudio.com/) for the application icon
