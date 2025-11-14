@@ -267,7 +267,7 @@ SETTINGS:
         '/n',
         'Tab size between words: Sets spacing between the words.',
         '/n',
-        'Use page seperator [0, 1]: Adds a visual separator between pages if set to 1.',
+        'Use page separator [0, 1]: Adds a visual separator between pages if set to 1.',
         '/n', '/N', '/n',
         'Click on the "SAVE" button to save and apply your values.',
         '/n',
@@ -282,7 +282,7 @@ SETTINGS:
         'Lines per page',
         'Pages per sheet',
         'Tab size between words',
-        'Use page seperator [0, 1]'
+        'Use page separator [0, 1]'
     ]
     Dialogs_adv: [
         'On this tab, you can change the "regular expression" settings for the input text.',

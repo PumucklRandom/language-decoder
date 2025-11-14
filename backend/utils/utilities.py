@@ -20,7 +20,7 @@ def yield_batch(string_list: list[str], char_limit: int, offset: int = 1) -> Ite
         offset: Additional character count per string (e.g., for separators)
 
     Yields:
-        Lists of strings that fit within the character limit
+        Lists of strings that fit within the character limit.
     """
 
     batch, batch_len = [], 0
@@ -41,6 +41,20 @@ def yield_batch(string_list: list[str], char_limit: int, offset: int = 1) -> Ite
 
 def yield_batch_eos(string_list: list[str], char_limit: int, offset: int = 1,
                     endofs: str = CONFIG.Regex.endofs, quotes = CONFIG.Regex.quotes) -> Iterator[list[str]]:
+    """
+    Yield batches of strings that fit within a character limit, considering sentence boundaries.
+
+        Args:
+        string_list: List of strings to batch
+        char_limit: Maximum characters per batch
+        offset: Additional character count per string (e.g., for separators)
+        endofs: Characters considered as end of sentence
+        quotes: Characters considered as quotes
+
+    Yields:
+        Lists of strings that fit within the character limit, ending at sentence boundaries.
+    """
+
     last_valid_index = 0
     batch, batch_len = [], 0
     pattern = re.compile(rf'.*?[{endofs}][{quotes}]?$')

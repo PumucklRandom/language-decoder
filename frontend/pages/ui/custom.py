@@ -7,19 +7,19 @@ from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, top_left, bot_right
 
 
-def ui_dialog(label_list: list[str], width: int = 800, u_width: str = 'px',
-              height: int = 100, max_width: int = 80, space: int = 10) -> ui.dialog:
+def ui_dialog(label_list: list[str], max_width: int = 1000, min_width: int = 800,
+              u_width: str = 'px', height: int = 100, space: int = 10) -> ui.dialog:
     """
     :param label_list: list of labels to display in the dialog
-    :param width: width of the dialog in pixels
+    :param max_width: maximum width of the dialog in pixels or percent
+    :param min_width: minimum width of the dialog in pixels
     :param u_width: unit for the width of the dialog, e.g. 'px' or 'vw'
     :param height: height of the dialog in pixels
-    :param max_width: maximum width of the dialog in percent
     :param space: height space between the labels in pixels
     """
     with ui.dialog() as dialog:
-        with ui.card().classes(f'max-w-[{max_width}%]') \
-                .style(f'min-width:{width}{u_width}; min-height:{height}px; font-size:12pt; gap:0.0rem'):
+        with ui.card().classes(f'max-w-[{max_width}{u_width}]') \
+                .style(f'min-width:{min_width}px; min-height:{height}px; font-size:12pt; gap:0.0rem'):
             ui.button(icon = 'close', on_click = dialog.close) \
                 .classes('absolute-top-right') \
                 .props('dense round size=12px')
@@ -69,6 +69,19 @@ class Table(ui.table):
         self.on('_upd_row', self._upd_row)
         self.on('_del_row', self._del_row)
         self.on('_add_row', self._add_row)
+
+    @staticmethod
+    def mark_cells(find_str: str = '') -> None:
+        if not find_str:
+            ui.run_javascript(JS.CLEAR_CELLS)
+            return
+        ui.run_javascript(JS.mark_cells(find_str))
+
+    @staticmethod
+    async def get_selected() -> str:
+        return await ui.run_javascript(
+            JS.GET_SELECTED
+        )
 
     def _add_row(self, event: events.GenericEventArguments) -> None:
         _id = max((row.get('id', -1) for row in self.rows), default = -1) + 1
@@ -139,9 +152,9 @@ class UIList(Table):
             <q-tr :props="props">
                 <q-td key="source" style="font-size:16px" :props="props">
                     <div style="padding-left:5px">{{{{ props.row.source }}}}</div>
-                    <q-input style="font-family:RobotoMono; font-size:11pt" v-model="props.row.target" 
+                    <q-input style="font-family:RobotoMono; font-size:11pt" v-model.lazy="props.row.target" 
                     type="{self.val_type}" dense outlined debounce="{CONFIG.debounce}"
-                    @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                    @change="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
             </q-tr>
         '''
@@ -187,14 +200,14 @@ class UITable(Table):
         return f'''
             <q-tr :props="props">
                 <q-td key="source" style="background-color:{self.scr_color}" :props="props">
-                    <q-input v-model="props.row.source" style="font-size: 11pt"
+                    <q-input v-model.lazy="props.row.source" style="font-size: 11pt"
                         dense borderless debounce="{CONFIG.debounce}"
-                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                        @change="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
                 <q-td key="target" style="background-color:{self.tar_color}" :props="props">
-                    <q-input v-model="props.row.target" style="font-size: 11pt"
+                    <q-input v-model.lazy="props.row.target" style="font-size: 11pt"
                         dense borderless debounce="{CONFIG.debounce}"
-                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                        @change="() => $parent.$emit('_upd_row', props.row)"/>
                 </q-td>
                 <q-td auto-width style="background-color:{self.btn_color}; text-align:center">
                     <div style="position:absolute; top:50%; left:60%; transform:translate(-50%, -50%)">
@@ -245,30 +258,17 @@ class UIGrid(Table):
         return f'''
             <div class="column" style="width:{self.item_size}px; height:75px" :props="props">
                 <div class="col">
-                    <q-input v-model="props.row.source" style="font-family:RobotoMono; font-size:11pt" 
+                    <q-input v-model.lazy="props.row.source" style="font-family:RobotoMono; font-size:11pt"
                         debounce="{CONFIG.debounce}" bg-color={self.scr_color} dense outlined
-                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                        @change="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
                 <div class="col-xl-7">
-                    <q-input v-model="props.row.target" style="font-family:RobotoMono; font-size:11pt"
+                    <q-input v-model.lazy="props.row.target" style="font-family:RobotoMono; font-size:11pt"
                         debounce="{CONFIG.debounce}" bg-color={self.tar_color} dense outlined
-                        @update:model-value="() => $parent.$emit('_upd_row', props.row)"/>
+                        @change="() => $parent.$emit('_upd_row', props.row)"/>
                 </div>
             </div>
         '''
-
-    @staticmethod
-    def mark_cells(find_str: str = '') -> None:
-        if not find_str:
-            ui.run_javascript(JS.CLEAR_CELLS)
-            return
-        ui.run_javascript(JS.mark_cells(find_str))
-
-    @staticmethod
-    async def get_selected() -> str:
-        return await ui.run_javascript(
-            JS.GET_SELECTED
-        )
 
 
 class UIGridPages(object):
@@ -299,14 +299,14 @@ class UIGridPages(object):
             ui.space().style('height:5px')
 
     def pagination(self):
-        with ui.card().classes(bot_right(68, 0)).style('width:550px; height:50px') \
+        with ui.card().classes(bot_right(68, 0)).style('width:560px; height:50px') \
                 .bind_visibility_from(self, '_visible'):
-            ui.label('Max words per page:').classes(bot_right(15, 410)).style('font-size:10.5pt')
+            ui.label('Max words per page:').classes(bot_right(15, 420)).style('font-size:10.5pt')
             ui.select(options = CONFIG.grid_options,
                       value = CONFIG.grid_options[2],
                       on_change = self._repage) \
                 .classes(bot_right(5, 350)) \
-                .style('width:50px; font-size:11pt') \
+                .style('width:60px; font-size:11pt') \
                 .props('dense options-dense borderless popup-content-style="font-size: 10.5pt"') \
                 .bind_value(self, '_page_size')
             self._ui_page = ui.pagination(

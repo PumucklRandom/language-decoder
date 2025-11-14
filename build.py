@@ -53,7 +53,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.12.9.1'
+VERSION = '0.13.0.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 DESKTOP_PATH = './_data/.desktop'

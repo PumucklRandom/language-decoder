@@ -51,15 +51,15 @@ class Upload(Page):
                   type = 'warning', position = 'top')
 
     @catch
-    def _upload_handler(self, event: events.UploadEventArguments) -> None:
+    async def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
-            content = event.content.read()
+            content = await event.file.read()
             encoding = chardet.detect(content).get('encoding')
             text = content.decode(encoding)
         except Exception:
             ui.notify(self.UI_LABELS.UPLOAD.Messages.invalid, type = 'warning', position = 'top')
             return
-        self.state.title = pathlib.Path(event.name).stem
+        self.state.title = pathlib.Path(event.file.name).stem
         self.decoder.source_text = text
         event.sender.reset()  # noqa upload reset
         # ui.notify(self.UI_LABELS.UPLOAD.Messages.success, type = 'positive', position = 'top')

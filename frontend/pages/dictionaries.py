@@ -114,10 +114,10 @@ class Dictionaries(Page):
                   type = 'warning', position = 'top')
 
     @catch
-    def _upload_handler(self, event: events.UploadEventArguments) -> None:
+    async def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
-            data = event.content.read().decode('utf-8')
-            dict_name = pathlib.Path(event.name).stem
+            data = await event.file.text(encoding = 'utf-8')
+            dict_name = pathlib.Path(event.file.name).stem
             self.dicts.from_json_str(dict_name = dict_name, data = data)
             self._ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
             self._ui_selector.set_value(dict_name)
@@ -179,7 +179,7 @@ class Dictionaries(Page):
                 .props('dense').bind_value(self, '_rename')
             self._ui_selector = ui.select(
                 label = self.UI_LABELS.DICTIONARY.Selector.select,
-                value = self.dicts.dict_name,
+                value = self.dicts.dict_name if self.dicts.dict_name in self.dicts.dictionaries else None,
                 options = list(self.dicts.dictionaries.keys()),
                 with_input = True,
                 new_value_mode = 'add-unique',

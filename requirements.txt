@@ -1,11 +1,11 @@
 -i https://pypi.org/simple
-nicegui<3.0.0; python_version >= '3.8'
+nicegui<4.0.0; python_version >= '3.9'
 fastapi<1.0.0; python_version >= '3.8'
 chardet<6.0.0; python_version >= '3.7'
 urllib3<3.0.0; python_version >= '3.9'
 fpdf2<2.8.3; python_version >= '3.7'
 httpx<1.0.0; python_version >= '3.8'
 pyyaml<7.0.0; python_version >= '3.8'
-openai<2.0.0; python_version >= '3.8'
+openai<3.0.0; python_version >= '3.8'
 deep-translator<2.0.0; python_version >= '3.7'
 requests<3.0.0; python_version >= '3.9'
