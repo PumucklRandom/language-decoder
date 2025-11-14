@@ -172,11 +172,11 @@ class Decoding(Page):
                   type = 'warning', position = 'top')
 
     @catch
-    def _upload_handler(self, event: events.UploadEventArguments) -> None:
+    async def _upload_handler(self, event: events.UploadEventArguments) -> None:
         try:
-            data = event.content.read().decode('utf-8')
+            data = await event.file.text(encoding = 'utf-8')
             self.decoder.from_json_str(data = data)
-            self.state.title = pathlib.Path(event.name).stem
+            self.state.title = pathlib.Path(event.file.name).stem
             self.decoder.source_text = ' '.join(self.decoder.source_words)
             self._set_grid_values(new_source = True)
         except DecoderError:
@@ -191,7 +191,7 @@ class Decoding(Page):
     @catch
     def _dialog_sentences(self) -> None:
         if not self.decoder.sentences: return
-        ui_dialog(label_list = self.decoder.sentences[self._ui_grid.slice], width = 80, u_width = 'vw').open()
+        ui_dialog(label_list = self.decoder.sentences[self._ui_grid.slice], max_width = 80, u_width = 'vw').open()
 
     @catch
     def _pdf_dialog(self) -> None:

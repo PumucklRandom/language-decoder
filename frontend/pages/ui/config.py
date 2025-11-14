@@ -12,9 +12,9 @@ from backend.config.config import CONFIG
 
 file_dir = os.path.dirname(os.path.relpath(__file__))
 
-# app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
 # app.native.start_args['private_mode'] = CONFIG.native
 # app.native.start_args['storage_path'] = './_internal/backend/user_data/cookies'
+# app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
 # app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True  zoomable
 app.native.window_args['text_select'] = CONFIG.native
 app.native.window_args['zoomable'] = CONFIG.native
