@@ -82,7 +82,7 @@ def copy_source() -> bool:
 
 def create_env() -> bool:
     try:
-        subprocess.run(f'{sys.executable} {CREATE_ENV_PATH}', check = True)
+        subprocess.run([sys.executable, CREATE_ENV_PATH], check = True)  # nosec
         os.remove(CREATE_ENV_PATH)
         logger.info(f'Created environment in {APP_DIR}')
         return True

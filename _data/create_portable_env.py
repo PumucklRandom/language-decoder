@@ -50,12 +50,11 @@ def get_portable_python() -> bool:
         architecture = 'amd64' if sys.maxsize > 2 ** 32 else 'win32'
         # Check if already exists
         if os.path.exists(PYTHON_EXE):
-            response = subprocess.run(
-                f'{PYTHON_EXE} --version',
+            response = subprocess.run(  # nosec
+                [PYTHON_EXE, '--version'],
                 capture_output = True,
                 check = True,
                 text = True
-
             )
             available_version = response.stdout.strip().split()[-1]
             if available_version == version:
@@ -104,12 +103,11 @@ def install_pip() -> bool:
     try:
         # Check if pip is already installed
         if os.path.exists(os.path.join(ENV_DIR, 'Scripts', 'pip.exe')):
-            response = subprocess.run(
-                f'{PYTHON_EXE} -m pip --version',
+            response = subprocess.run(  # nosec
+                [PYTHON_EXE, '-m', 'pip', '--version'],
                 capture_output = True,
                 check = True,
                 text = True
-
             )
             pip_version = response.stdout.strip().split(' from ')[0]
             print(f'Pip already installed: "{pip_version}"\n')
@@ -118,7 +116,10 @@ def install_pip() -> bool:
         print('Download "get-pip.py"')
         get_pip_path = os.path.join(ENV_DIR, 'get-pip.py')
         urllib.request.urlretrieve(GET_PIP_URL, get_pip_path)
-        subprocess.run(f'{PYTHON_EXE} {get_pip_path} --no-warn-script-location', check = True)
+        subprocess.run(  # nosec
+            [PYTHON_EXE, get_pip_path, '--no-warn-script-location'],
+            check = True
+        )
         os.remove(get_pip_path)
         print()
         return True
@@ -135,18 +136,29 @@ def install_dependencies() -> bool:
         # Clear environment
         uninstall_path = os.path.join(ENV_DIR, 'uninstall.txt')
         with open(uninstall_path, 'w') as file:
-            subprocess.run(f'{PYTHON_EXE} -m pip freeze', stdout = file, check = True)
+            subprocess.run(  # nosec
+                [PYTHON_EXE, '-m', 'pip', 'freeze'],
+                stdout = file,
+                check = True
+            )
         if os.path.getsize(uninstall_path) > 0:
             print('Clearing environment...')
-            subprocess.run(f'{PYTHON_EXE} -m pip uninstall -r {uninstall_path} -y', check = True)
+            subprocess.run(  # nosec
+                [PYTHON_EXE, '-m', 'pip', 'uninstall', '-r', 'uninstall_path', '-y'],
+                check = True
+            )
         os.remove(uninstall_path)
         # Install dependencies
         dependencies_path = os.path.join(ENV_DIR, 'dependencies.txt')
         with open(dependencies_path, 'w') as file:
             print('Installing dependencies...')
-            subprocess.run(f'{sys.executable} -m pip freeze', stdout = file, check = True)
-        subprocess.run(
-            f'{PYTHON_EXE} -m pip install -r {dependencies_path} --no-warn-script-location',
+            subprocess.run(  # nosec
+                [sys.executable, '-m', 'pip', 'freeze'],
+                stdout = file,
+                check = True
+            )
+        subprocess.run(  # nosec
+            [PYTHON_EXE, '-m', 'pip', 'install', '-r', dependencies_path, '--no-warn-script-location'],
             check = True
         )
         os.remove(dependencies_path)
@@ -181,11 +193,12 @@ def rm_global(base_dir: str, pattern: str, exceptions: list[str] = None) -> bool
 
 
 def rm_package(package: str) -> bool:
-    response = subprocess.run(
-        f'{PYTHON_EXE} -m pip uninstall {package} -y',
+    response = subprocess.run(  # nosec
+        [PYTHON_EXE, '-m', 'pip', 'uninstall', package, '-y'],
         capture_output = True,
         check = True,
-        text = True)
+        text = True
+    )
     if response.stderr:
         return False
     return True

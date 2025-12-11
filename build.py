@@ -37,12 +37,13 @@ import re
 import sys
 import shutil
 import pathlib
-import subprocess
 import zipfile
 import nicegui
 import traceback
 import logging
+import subprocess
 from backend.config.config import load_config
+from PyInstaller.__main__ import run as pyinstaller_run
 
 # Configure logging
 logging.basicConfig(
@@ -83,7 +84,6 @@ def update_version() -> bool:
             content = re.sub(r'(?<=\./)[\w-]+', APP_NAME, content, flags = re.MULTILINE)
             file.seek(0)
             file.truncate()
-
             file.write(content)
 
         logger.info(f'Updated version to {VERSION}')
@@ -140,7 +140,7 @@ def build_app() -> bool:
     return: True if build succeeded, False otherwise
     """
     cmd_build = [
-        'pyinstaller', '__main__.py',
+        '__main__.py',
         '--name', APP_NAME,
         '--icon', './frontend/pages/ui/icon/LD-icon.png',
         '--add-data', f'{pathlib.Path(nicegui.__file__).parent}{os.pathsep}nicegui',
@@ -161,14 +161,11 @@ def build_app() -> bool:
 
     try:
         logger.info('Building application with PyInstaller...')
-        subprocess.run(cmd_build, shell = False, check = True)
+        pyinstaller_run(cmd_build)
         if sys.platform == 'linux':
             shutil.copy(DESKTOP_PATH, f'./dist/{APP_NAME}/{APP_NAME}.desktop')
         logger.info('Build completed successfully')
         return True
-    except subprocess.CalledProcessError as e:
-        logger.error(f'Build failed with exit code {e.returncode}\n{traceback.format_exc()}')
-        return False
     except Exception:
         logger.error(f'Build failed with exception:\n{traceback.format_exc()}')
         return False
@@ -210,12 +207,9 @@ def sign_app() -> bool:
 
     try:
         logger.info('Signing executable...')
-        subprocess.run(cmd_sign, shell = False, check = True)
+        subprocess.run(cmd_sign, check = True)  # nosec
         logger.info('Signing completed successfully')
         return True
-    except subprocess.CalledProcessError as e:
-        logger.error(f'Signing failed with exit code {e.returncode}\n{traceback.format_exc()}')
-        return False
     except Exception:
         logger.error(f'Signing failed with exception:\n{traceback.format_exc()}')
         return False
