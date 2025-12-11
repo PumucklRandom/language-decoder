@@ -72,7 +72,7 @@ def get_portable_python() -> bool:
         python_url = f'{PYTHON_FTP_URL}/{version}/{filename}'
         zip_path = os.path.join(ENV_DIR, filename)
         print(f'Download embeddable Python from:\n"{python_url}"')
-        urllib.request.urlretrieve(python_url, zip_path)  # nosec
+        urllib.request.urlretrieve(python_url, zip_path)  # nosec # nosemgrep
         with zipfile.ZipFile(zip_path, 'r') as zip_file:
             zip_file.extractall(ENV_DIR)
         os.remove(zip_path)
@@ -115,7 +115,7 @@ def install_pip() -> bool:
 
         print('Download "get-pip.py"')
         get_pip_path = os.path.join(ENV_DIR, 'get-pip.py')
-        urllib.request.urlretrieve(GET_PIP_URL, get_pip_path)  # nosec
+        urllib.request.urlretrieve(GET_PIP_URL, get_pip_path)  # nosec # nosemgrep
         subprocess.run(  # nosec
             [PYTHON_EXE, get_pip_path, '--no-warn-script-location'],
             check = True
