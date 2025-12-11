@@ -7,7 +7,7 @@ from backend.error.error import SettingsError, catch
 from backend.logger.logger import logger
 from backend.config.config import CONFIG, Regex
 
-file_dir = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 
 
 class Settings(object):
@@ -30,7 +30,7 @@ class Settings(object):
         :param setts_path: path to the settings directory
         """
         self.user_uuid = '00000000-0000-0000-0000-000000000000' if CONFIG.on_prem else user_uuid
-        self.setts_path = os.path.join(file_dir, setts_path)
+        self.setts_path = os.path.join(FILE_DIR, setts_path)
         self.json_path = os.path.join(self.setts_path, f'{self.user_uuid}.json')
         self.app: App = App()
         self.replacements: dict[str, str] = CONFIG.Replacements.copy()

@@ -5,8 +5,7 @@ from collections import namedtuple
 from backend.error.error import ConfigError
 from backend.logger.logger import logger, stream_handler
 
-os.environ["WEBVIEW2_USER_DATA_FOLDER"] = '.\\_internal\\webview'
-file_dir = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 
 # Definition of the static Config
 Config = namedtuple('Config', (
@@ -105,7 +104,7 @@ def dict_to_config(config_dict: dict) -> Config:
 
 
 def load_config(config_path: str = 'config.yml') -> Config:
-    config_path = os.path.join(file_dir, config_path)
+    config_path = os.path.join(FILE_DIR, config_path)
     if not os.path.isfile(config_path):
         message = f'Config file not found at "{config_path}"'
         logger.critical(message)
