@@ -216,10 +216,10 @@ def rm_package_dir(base_dir: str, pattern: str) -> list[str]:
     return removed
 
 
-def clean_up_portable_python(rm_packages: bool = True, rm_pattern: bool = True,
+def clean_up_portable_python(rm_packages: bool = True, rm_pattern: bool = True,  # noqa: C901
                              rm_cache: bool = True, rm_share: bool = False,
                              rm_scripts: bool = False, rm_info: bool = False,
-                             rm_pip: bool = False, exceptions: list[str] = None) -> bool:  # noqa: C901
+                             rm_pip: bool = False, exceptions: list[str] = None) -> bool:
     """
     Remove unnecessary files, folders and packages from the embeddable Python environment
     :param rm_packages: Remove specified packages
