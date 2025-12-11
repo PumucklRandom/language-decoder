@@ -12,10 +12,10 @@ import os
 import sys
 import shutil
 import pathlib
-import subprocess
 import zipfile
 import traceback
 import logging
+import subprocess  # nosec
 from backend.config.config import load_config
 
 # Configure logging

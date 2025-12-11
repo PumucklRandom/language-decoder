@@ -41,7 +41,7 @@ import zipfile
 import nicegui
 import traceback
 import logging
-import subprocess
+import subprocess  # nosec
 from backend.config.config import load_config
 from PyInstaller.__main__ import run as pyinstaller_run
 

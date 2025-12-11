@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 import zipfile
-import subprocess
+import subprocess  # nosec
 import urllib.request
 from pathlib import Path
 
@@ -72,7 +72,7 @@ def get_portable_python() -> bool:
         python_url = f'{PYTHON_FTP_URL}/{version}/{filename}'
         zip_path = os.path.join(ENV_DIR, filename)
         print(f'Download embeddable Python from:\n"{python_url}"')
-        urllib.request.urlretrieve(python_url, zip_path)
+        urllib.request.urlretrieve(python_url, zip_path)  # nosec
         with zipfile.ZipFile(zip_path, 'r') as zip_file:
             zip_file.extractall(ENV_DIR)
         os.remove(zip_path)
@@ -115,7 +115,7 @@ def install_pip() -> bool:
 
         print('Download "get-pip.py"')
         get_pip_path = os.path.join(ENV_DIR, 'get-pip.py')
-        urllib.request.urlretrieve(GET_PIP_URL, get_pip_path)
+        urllib.request.urlretrieve(GET_PIP_URL, get_pip_path)  # nosec
         subprocess.run(  # nosec
             [PYTHON_EXE, get_pip_path, '--no-warn-script-location'],
             check = True
@@ -219,7 +219,7 @@ def rm_package_dir(base_dir: str, pattern: str) -> list[str]:
 def clean_up_portable_python(rm_packages: bool = True, rm_pattern: bool = True,
                              rm_cache: bool = True, rm_share: bool = False,
                              rm_scripts: bool = False, rm_info: bool = False,
-                             rm_pip: bool = False, exceptions: list[str] = None) -> bool:
+                             rm_pip: bool = False, exceptions: list[str] = None) -> bool:  # noqa: C901
     """
     Remove unnecessary files, folders and packages from the embeddable Python environment
     :param rm_packages: Remove specified packages
