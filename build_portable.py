@@ -1,13 +1,3 @@
-"""
-create app folder
-copy create_portable_env.py
-run create_portable_env.py
-delete create_portable_env.py
-copy main, backend and frontend
-copy .bat file
-zip
-"""
-
 import os
 import sys
 import shutil
@@ -26,16 +16,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger('build')
 
+# Default configuration
 APP_NAME = 'LanguageDecoder'
+APP_DIR = f'./{APP_NAME}'
+CREATE_ENV_PATH = os.path.join(APP_DIR, 'create_portable_env.py')
 CONFIG = load_config('../../_data/config.yml')
+# Copy sources
 SOURCES = (
     'backend', 'frontend', '__main__.py',
     '_data/create_portable_env.py', '_data/config.yml',
     '_data/run_main.bat', '_data/run_main.vbs'
 )
-
-APP_DIR = f'./{APP_NAME}'
-CREATE_ENV_PATH = os.path.join(APP_DIR, 'create_portable_env.py')
 
 
 def setup_app_dir() -> bool:
