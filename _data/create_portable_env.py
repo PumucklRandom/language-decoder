@@ -1,3 +1,4 @@
+import io
 import os
 import sys
 import shutil
@@ -70,15 +71,10 @@ def get_portable_python() -> bool:
         # Download and extract
         filename = f'python-{version}-embed-{architecture}.zip'
         python_url = f'{PYTHON_FTP_URL}/{version}/{filename}'
-        zip_path = os.path.join(ENV_DIR, filename)
         print(f'Download embeddable Python from:\n"{python_url}"')
         with urllib.request.urlopen(python_url, timeout = 10) as response:
-            with open(zip_path, 'wb') as file:
-                shutil.copyfileobj(response, file)  # type: ignore
-        with zipfile.ZipFile(zip_path, 'r') as zip_file:
-            zip_file.extractall(ENV_DIR)
-        os.remove(zip_path)
-        # Read the file and uncomment "import site"
+            with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
+                zip_file.extractall(ENV_DIR)
         pth_file_path = list(Path(ENV_DIR).glob('python*._pth'))[0]
         with open(pth_file_path, 'r+') as file:
             lines = file.readlines()

@@ -192,7 +192,7 @@ class NeuralTranslator(object):
 
     @staticmethod
     def _to_csv(source_words: list[str]) -> str:
-        with io.StringIO() as io_string:  # type: io.StringIO
+        with io.StringIO() as io_string:
             csv_writer = csv.writer(
                 io_string,
                 delimiter = '\t',
