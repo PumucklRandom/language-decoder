@@ -41,9 +41,9 @@ import zipfile
 import nicegui
 import traceback
 import logging
-import subprocess  # nosec
-from backend.config.config import load_config
+import subprocess
 from PyInstaller.__main__ import run as pyinstaller_run
+from backend.config.config import load_config
 
 # Configure logging
 logging.basicConfig(
@@ -207,7 +207,7 @@ def sign_app() -> bool:
 
     try:
         logger.info('Signing executable...')
-        subprocess.run(cmd_sign, check = True)  # nosec
+        subprocess.run(cmd_sign, check = True)
         logger.info('Signing completed successfully')
         return True
     except Exception:

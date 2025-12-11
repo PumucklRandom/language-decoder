@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 import zipfile
-import subprocess  # nosec
+import subprocess
 import urllib.request
 from pathlib import Path
 
@@ -50,7 +50,7 @@ def get_portable_python() -> bool:
         architecture = 'amd64' if sys.maxsize > 2 ** 32 else 'win32'
         # Check if already exists
         if os.path.exists(PYTHON_EXE):
-            response = subprocess.run(  # nosec
+            response = subprocess.run(
                 [PYTHON_EXE, '--version'],
                 capture_output = True,
                 check = True,
@@ -72,7 +72,9 @@ def get_portable_python() -> bool:
         python_url = f'{PYTHON_FTP_URL}/{version}/{filename}'
         zip_path = os.path.join(ENV_DIR, filename)
         print(f'Download embeddable Python from:\n"{python_url}"')
-        urllib.request.urlretrieve(python_url, zip_path)  # nosec # nosemgrep
+        with urllib.request.urlopen(python_url, timeout = 10) as response:
+            with open(zip_path, 'wb') as file:
+                shutil.copyfileobj(response, file)  # type: ignore
         with zipfile.ZipFile(zip_path, 'r') as zip_file:
             zip_file.extractall(ENV_DIR)
         os.remove(zip_path)
@@ -103,7 +105,7 @@ def install_pip() -> bool:
     try:
         # Check if pip is already installed
         if os.path.exists(os.path.join(ENV_DIR, 'Scripts', 'pip.exe')):
-            response = subprocess.run(  # nosec
+            response = subprocess.run(
                 [PYTHON_EXE, '-m', 'pip', '--version'],
                 capture_output = True,
                 check = True,
@@ -115,8 +117,10 @@ def install_pip() -> bool:
 
         print('Download "get-pip.py"')
         get_pip_path = os.path.join(ENV_DIR, 'get-pip.py')
-        urllib.request.urlretrieve(GET_PIP_URL, get_pip_path)  # nosec # nosemgrep
-        subprocess.run(  # nosec
+        with urllib.request.urlopen(GET_PIP_URL, timeout = 10) as response:
+            with open(get_pip_path, 'wb') as file:
+                shutil.copyfileobj(response, file)  # type: ignore
+        subprocess.run(
             [PYTHON_EXE, get_pip_path, '--no-warn-script-location'],
             check = True
         )
@@ -136,14 +140,14 @@ def install_dependencies() -> bool:
         # Clear environment
         uninstall_path = os.path.join(ENV_DIR, 'uninstall.txt')
         with open(uninstall_path, 'w') as file:
-            subprocess.run(  # nosec
+            subprocess.run(
                 [PYTHON_EXE, '-m', 'pip', 'freeze'],
                 stdout = file,
                 check = True
             )
         if os.path.getsize(uninstall_path) > 0:
             print('Clearing environment...')
-            subprocess.run(  # nosec
+            subprocess.run(
                 [PYTHON_EXE, '-m', 'pip', 'uninstall', '-r', 'uninstall_path', '-y'],
                 check = True
             )
@@ -152,12 +156,12 @@ def install_dependencies() -> bool:
         dependencies_path = os.path.join(ENV_DIR, 'dependencies.txt')
         with open(dependencies_path, 'w') as file:
             print('Installing dependencies...')
-            subprocess.run(  # nosec
+            subprocess.run(
                 [sys.executable, '-m', 'pip', 'freeze'],
                 stdout = file,
                 check = True
             )
-        subprocess.run(  # nosec
+        subprocess.run(
             [PYTHON_EXE, '-m', 'pip', 'install', '-r', dependencies_path, '--no-warn-script-location'],
             check = True
         )
@@ -193,7 +197,7 @@ def rm_global(base_dir: str, pattern: str, exceptions: list[str] = None) -> bool
 
 
 def rm_package(package: str) -> bool:
-    response = subprocess.run(  # nosec
+    response = subprocess.run(
         [PYTHON_EXE, '-m', 'pip', 'uninstall', package, '-y'],
         capture_output = True,
         check = True,
@@ -216,10 +220,14 @@ def rm_package_dir(base_dir: str, pattern: str) -> list[str]:
     return removed
 
 
-def clean_up_portable_python(rm_packages: bool = True, rm_pattern: bool = True,  # noqa
-                             rm_cache: bool = True, rm_share: bool = False,
-                             rm_scripts: bool = False, rm_info: bool = False,
-                             rm_pip: bool = False, exceptions: list[str] = None) -> bool:
+def clean_up_portable_python(rm_packages: bool = True,  # noqa
+                             rm_pattern: bool = True,
+                             rm_cache: bool = True,
+                             rm_share: bool = False,
+                             rm_scripts: bool = False,
+                             rm_info: bool = False,
+                             rm_pip: bool = False,
+                             exceptions: list[str] = None) -> bool:
     """
     Remove unnecessary files, folders and packages from the embeddable Python environment
     :param rm_packages: Remove specified packages

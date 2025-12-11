@@ -15,7 +15,7 @@ import pathlib
 import zipfile
 import traceback
 import logging
-import subprocess  # nosec
+import subprocess
 from backend.config.config import load_config
 
 # Configure logging
@@ -82,7 +82,7 @@ def copy_source() -> bool:
 
 def create_env() -> bool:
     try:
-        subprocess.run([sys.executable, CREATE_ENV_PATH], check = True)  # nosec
+        subprocess.run([sys.executable, CREATE_ENV_PATH], check = True)
         os.remove(CREATE_ENV_PATH)
         logger.info(f'Created environment in {APP_DIR}')
         return True
