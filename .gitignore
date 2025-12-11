@@ -1,9 +1,10 @@
 # Default ignored files
 .idea
 __pycache__
-logs
 build
 dist
+LanguageDecoder
+logs
 *.json
 *.txt
 *.pfx

@@ -9,7 +9,7 @@ from frontend.pages.decoding import Decoding
 from frontend.pages.dictionaries import Dictionaries
 from frontend.pages.settings import Settings
 
-dir_path = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 native = CONFIG.native if sys.platform != 'linux' else False
 window_size = CONFIG.window_size if native else None
 
@@ -29,7 +29,7 @@ def run() -> None:
         host = CONFIG.host,
         port = CONFIG.port,
         title = CONFIG.title,
-        favicon = os.path.join(dir_path, CONFIG.favicon),
+        favicon = os.path.join(FILE_DIR, CONFIG.favicon),
         dark = CONFIG.dark,
         binding_refresh_interval = CONFIG.debounce / 1000,
         reconnect_timeout = CONFIG.reconnect_timeout,

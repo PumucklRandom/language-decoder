@@ -36,8 +36,8 @@ import os
 import re
 import sys
 import shutil
-import subprocess
 import pathlib
+import subprocess
 import zipfile
 import nicegui
 import traceback
@@ -53,7 +53,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.13.0.0'
+VERSION = '0.13.1.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 DESKTOP_PATH = './_data/.desktop'
@@ -72,8 +72,8 @@ def update_version() -> bool:
             content = re.sub(r'(\d+\.\d+\.\d+\.\d+)', VERSION, content)
             content = re.sub(r'(\d+, \d+, \d+, \d+)', VERSION.replace('.', ', '), content)
             file.seek(0)
-            file.write(content)
             file.truncate()
+            file.write(content)
 
         with open(DESKTOP_PATH, 'r+') as file:
             content = file.read()
@@ -82,8 +82,9 @@ def update_version() -> bool:
             content = re.sub(r'(?<=Name=).*$', APP_NAME, content, flags = re.MULTILINE)
             content = re.sub(r'(?<=\./)[\w-]+', APP_NAME, content, flags = re.MULTILINE)
             file.seek(0)
-            file.write(content)
             file.truncate()
+
+            file.write(content)
 
         logger.info(f'Updated version to {VERSION}')
         return True
@@ -92,24 +93,25 @@ def update_version() -> bool:
         return False
 
 
-def del_old_build() -> None:
+def rm_app_build() -> bool:
     """
     Remove previous build artifacts.
 
     Removes: ./build directory, ./dist directory, ./app_name.spec file
     """
     paths_to_remove = ('./build', './dist', f'./{APP_NAME}.spec')
-
-    for path in paths_to_remove:
-        try:
+    try:
+        for path in paths_to_remove:
             if os.path.isdir(path):
                 logger.info(f'Removing directory: {path}')
                 shutil.rmtree(path)
             elif os.path.islink(path) or os.path.isfile(path):
                 logger.info(f'Removing file: {path}')
                 os.remove(path)
-        except Exception:
-            logger.warning(f'Failed to remove {path}:\n{traceback.format_exc()}')
+        return True
+    except Exception:
+        logger.warning(f'Failed to remove previous build:\n{traceback.format_exc()}')
+        return False
 
 
 def get_password() -> str:
@@ -133,9 +135,9 @@ def get_password() -> str:
 
 def build_app() -> bool:
     """
-    Get certificate password from file.
+    Build the application using PyInstaller.
 
-    return: Password string or empty string if file not found or error occurs
+    return: True if build succeeded, False otherwise
     """
     cmd_build = [
         'pyinstaller', '__main__.py',
@@ -150,7 +152,9 @@ def build_app() -> bool:
         '--clean', '-y',
     ]
 
-    if sys.platform != 'linux':
+    if sys.platform == 'linux':
+        cmd_build.extend(['--exclude-module', 'pywebview'])
+    else:
         cmd_build.extend(['--version-file', VERSION_RC_PATH])
         if CONFIG.native:
             cmd_build.append('--windowed')
@@ -217,7 +221,7 @@ def sign_app() -> bool:
         return False
 
 
-def zip_directory(source_directory: str, zip_file_path: str) -> bool:
+def zip_app(source_directory: str, zip_file_path: str) -> bool:
     """
     Create a zip archive of the directory.
 
@@ -263,30 +267,31 @@ def main() -> int:
         if not update_version():
             return 1
 
-        # Step 2: Clean previous build
-        del_old_build()
+        # Step 2: Remove previous build
+        if not rm_app_build():
+            return 2
 
         # Step 3: Build application
         if not build_app():
-            return 2
+            return 3
 
         # Step 4: Sign executable
         if not sign_app():
-            return 3
+            return 4
 
         # Step 5: Create zip archive
         if sys.platform == 'linux':
-            if not zip_directory(f'./dist/{APP_NAME}/', f'./{APP_NAME}-lx.zip'):
-                return 4
+            if not zip_app(f'./dist/{APP_NAME}/', f'./{APP_NAME}-lx.zip'):
+                return 5
         else:
-            if not zip_directory(f'./dist/{APP_NAME}/', f'./{APP_NAME}.zip'):
-                return 4
+            if not zip_app(f'./dist/{APP_NAME}/', f'./{APP_NAME}.zip'):
+                return 5
 
         logger.info('Build process completed successfully')
         return 0
     except Exception:
         logger.error(f'Build process failed with exception:\n{traceback.format_exc()}')
-        return 5
+        return 6
 
 
 if __name__ == '__main__':

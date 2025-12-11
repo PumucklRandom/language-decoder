@@ -10,18 +10,19 @@ from backend.error.error import UIConfigError
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
 
-file_dir = os.path.dirname(os.path.relpath(__file__))
-
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
+os.environ['WEBVIEW2_USER_DATA_FOLDER'] = './_internal/webview'
 # app.native.start_args['private_mode'] = CONFIG.native
 # app.native.start_args['storage_path'] = './_internal/backend/user_data/cookies'
 # app.native.window_args['background_color'] = COLORS.DARK_PAGE.VAL
-# app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True  zoomable
+# app.native.settings['OPEN_EXTERNAL_LINKS_IN_BROWSER'] = True  # zoomable
+app.native.start_args['icon'] = './frontend/pages/ui/icon/LD-icon.png'
 app.native.window_args['text_select'] = CONFIG.native
 app.native.window_args['zoomable'] = CONFIG.native
 app.native.settings['ALLOW_DOWNLOADS'] = CONFIG.native
 app.storage.max_tab_storage_age = CONFIG.session_time
 app.add_static_file(
-    local_file = os.path.join(file_dir, '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
+    local_file = os.path.join(FILE_DIR, '../../../backend/fonts/RobotoMono/RobotoMono.ttf'),
     url_path = '/fonts/RobotoMono/RobotoMono.ttf'
 )
 
@@ -289,7 +290,7 @@ def to_labels(name: str, sub_tree: Union[dict, list, any]) -> Union[namedtuple, 
 
 
 def load_labels(language: str) -> UILabels:
-    language_path = os.path.join(file_dir, f'labels/{language}.yml')
+    language_path = os.path.join(FILE_DIR, f'labels/{language}.yml')
     if not os.path.isfile(language_path):
         message = f'UI Labels file not found at "{language_path}"'
         logger.critical(message)
@@ -307,7 +308,7 @@ def load_labels(language: str) -> UILabels:
 
 def get_languages() -> list[str]:
     languages = []
-    labels_path = os.path.join(file_dir, 'labels/')
+    labels_path = os.path.join(FILE_DIR, 'labels/')
     for language_file in os.listdir(labels_path):
         if os.path.isfile(os.path.join(labels_path, language_file)) and language_file.endswith('.yml'):
             languages.append(os.path.splitext(language_file)[0])

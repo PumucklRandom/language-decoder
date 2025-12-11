@@ -14,7 +14,7 @@ from backend.logger.logger import logger
 from backend.config.config import CONFIG
 from backend.utils import utilities as utils
 
-file_dir = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 
 
 class NeuralTranslator(object):
@@ -80,9 +80,10 @@ class NeuralTranslator(object):
                    proxies: dict = None, endofs: str = '', quotes: str = '') -> None:
         self.source_language = source_language
         self.target_language = target_language
-        if self.model_name in self.models.keys():
+        if model_name in self.models.keys():
             self.model_name = model_name
         else:
+            logger.warning(f'"{model_name}" not found!')
             self.model_name = CONFIG.model_name
         self._set_proxy(proxies = proxies)
         if endofs: self.endofs = endofs
@@ -209,7 +210,7 @@ class NeuralTranslator(object):
 
     @classmethod
     def _load_prompt(cls, prompt_path: str = 'prompt.txt') -> str:
-        prompt_path = os.path.join(file_dir, prompt_path)
+        prompt_path = os.path.join(FILE_DIR, prompt_path)
         if not os.path.isfile(prompt_path):
             message = f'Prompt file not found at "{prompt_path}"'
             logger.critical(message)

@@ -6,7 +6,7 @@ from backend.error.error import DictionaryError, catch
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
 
-file_dir = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 
 
 class Dicts(object):
@@ -27,7 +27,7 @@ class Dicts(object):
         :param dicts_path: path to the dictionaries directory
         """
         self.user_uuid = '00000000-0000-0000-0000-000000000000' if CONFIG.on_prem else user_uuid
-        self.dicts_path = os.path.join(file_dir, dicts_path)
+        self.dicts_path = os.path.join(FILE_DIR, dicts_path)
         self.json_path: str = os.path.join(self.dicts_path, f'{self.user_uuid}.json')
         self.dictionaries: dict[str, dict[str, str]] = {}
         self.dict_name: Union[str, None] = None

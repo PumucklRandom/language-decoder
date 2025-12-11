@@ -3,7 +3,7 @@ import time
 from backend.logger.logger import logger
 from backend.config.config import CONFIG
 
-file_dir = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 
 
 def cleanup_files(directory: str, timeout: int = CONFIG.files_timeout) -> int:
@@ -17,7 +17,7 @@ def cleanup_files(directory: str, timeout: int = CONFIG.files_timeout) -> int:
     """
     files_removed = 0
     time_limit = time.time() - (timeout * 24 * 3600)
-    files_path = os.path.join(file_dir, directory)
+    files_path = os.path.join(FILE_DIR, directory)
     try:
         if not os.path.isdir(files_path):
             logger.info(f'No json files to cleanup at "{files_path}"')

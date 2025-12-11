@@ -6,7 +6,7 @@ from backend.error.error import PDFFormatterError, catch
 from backend.logger.logger import logger
 from backend.utils import utilities as utils
 
-file_dir = os.path.dirname(os.path.relpath(__file__))
+FILE_DIR = os.path.dirname(os.path.relpath(__file__))
 
 
 class PDF(object):
@@ -56,7 +56,7 @@ class PDF(object):
         :param tab_size: the tab size between two words
         :param page_sep: optional pdf page seperator activation
         """
-        self.font_path = os.path.join(file_dir, font_path)
+        self.font_path = os.path.join(FILE_DIR, font_path)
         self.new_line = new_line
         self.title_size = title_size
         self.font_size = font_size
