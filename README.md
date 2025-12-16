@@ -39,7 +39,7 @@ or just download the latest desktop application from the releases.\
 For Windows use `LanguageDecoder.zip`, extract the files and execute `LanguageDecoder.exe`.\
 For Linux use `LanguageDecoder-lx.zip`, extract the files and execute `LanguageDecoder.desktop`.
 
-With the build.py file you can create your on local desktop application.\
+With the build.py file you can create your own local desktop application.\
 (Install packages from `requirements-dev.txt`)
 
 The LanguageDecoder requires a common modern browser such as Edge, Chrome or Firefox and a free port on localhost port
