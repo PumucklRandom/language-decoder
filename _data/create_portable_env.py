@@ -16,9 +16,8 @@ ENV_DIR = os.path.join(FILE_DIR, 'python')  # relative path to the portable Pyth
 PYTHON_EXE = os.path.join(ENV_DIR, 'python.exe')
 PYTHON_FTP_URL = 'https://www.python.org/ftp/python'
 GET_PIP_URL = 'https://bootstrap.pypa.io/get-pip.py'
-
 # Add any "save to remove" packages here
-RM_PACKAGES = (
+RM_PACKAGES = {  # set
     'PyInstaller',
     'pyinstaller_hooks_contrib',
     'setuptools',
@@ -33,9 +32,16 @@ RM_PACKAGES = (
     # 'tqdm',  # openai dependency 0.16MB
     # 'soupsieve',  # deep-translator -> beautifulsoup dependency 0.14MB
     # 'defusedxml'  # dependency not found 0.03MB
-)
+}
 # Add any "save to remove" Lib/site-packages/... here
-RM_PATTERN = ()
+RM_PATTERN = {}  # set
+
+RM_PACKAGES = set(RM_PACKAGES)
+RM_PATTERN = set(RM_PATTERN)
+# Merge with additional packages from command line
+if '--rm-packages' in sys.argv:
+    idx = sys.argv.index('--rm-packages')
+    RM_PACKAGES.update(sys.argv[idx + 1:])
 os.makedirs(ENV_DIR, exist_ok = True)
 
 

@@ -40,6 +40,33 @@ def setup_app_dir() -> bool:
         return False
 
 
+def switch_command():
+    with open(os.path.join(APP_DIR, f'{APP_NAME}.bat'), 'r+') as file:
+        lines = file.readlines()
+        file.seek(0)
+        file.truncate()
+        for line in lines:
+            if '__main__.py' in line:
+                if line.startswith('@REM'):
+                    file.write(line.lstrip('@REM '))  # uncomment line
+                else:
+                    file.write(f'@REM {line}')  # comment line
+            else:
+                file.write(line)
+    with open(os.path.join(APP_DIR, f'{APP_NAME}.vbs'), 'r+') as file:
+        lines = file.readlines()
+        file.seek(0)
+        file.truncate()
+        for line in lines:
+            if '__main__.py' in line:
+                if line.startswith("'"):
+                    file.write(line.lstrip("' "))  # uncomment line
+                else:
+                    file.write(f"' {line}")  # comment line
+            else:
+                file.write(line)
+
+
 def copy_source() -> bool:
     try:
         for source in SOURCES:
@@ -48,12 +75,14 @@ def copy_source() -> bool:
                 if destin.endswith('config.yml'):
                     destin = os.path.join(APP_DIR, 'backend/config/config.yml')
                 elif destin.endswith('.bat'):
-                    destin = os.path.join(os.path.dirname(destin), f'{APP_NAME}.bat')
+                    destin = os.path.join(APP_DIR, f'{APP_NAME}.bat')
                 elif destin.endswith('.vbs'):
-                    destin = os.path.join(os.path.dirname(destin), f'{APP_NAME}.vbs')
+                    destin = os.path.join(APP_DIR, f'{APP_NAME}.vbs')
                 shutil.copyfile(source, destin)
             if os.path.isdir(source):
                 shutil.copytree(source, destin)
+        if not CONFIG.native:
+            switch_command()
         config_path = os.path.join(APP_DIR, 'frontend/pages/ui/config.py')
         with open(config_path, 'r+') as file:
             lines = file.readlines()
@@ -73,7 +102,10 @@ def copy_source() -> bool:
 
 def create_env() -> bool:
     try:
-        subprocess.run([sys.executable, CREATE_ENV_PATH], check = True)
+        cmd = [sys.executable, CREATE_ENV_PATH]
+        if not CONFIG.native:
+            cmd.extend(['--rm-packages', 'pywebview', 'bottle', 'proxy_tools'])
+        subprocess.run(cmd, check = True)
         os.remove(CREATE_ENV_PATH)
         logger.info(f'Created environment in {APP_DIR}')
         return True

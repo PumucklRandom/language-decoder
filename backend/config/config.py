@@ -47,13 +47,13 @@ Config = namedtuple('Config', (
     'char_limit',
     'word_limit',
 
-    'Upload',
-    'App',
-    'Replacements',  # Replacement settings
-    'Pdf_params',
-    'Regex'
+    'Upload',  # nested Upload settings
+    'App',  # nested App settings
+    'Replacements',  # nested Replacement settings
+    'Pdf_params',  # nested Pdf settings
+    'Regex'  # nested Regex settings
 ))
-# Definition of nested Upload
+# Definition of nested Upload settings
 Upload = namedtuple('Upload', (
     'auto_upload',
     'max_files'

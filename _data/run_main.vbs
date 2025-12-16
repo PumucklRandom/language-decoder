@@ -1,13 +1,13 @@
-Set WshShell = CreateObject("WScript.Shell")
+' Create windows script shell object
+Set WScriptShell = CreateObject("WScript.Shell")
 
-' set environment variables (comment out with a leading apostrophe if not needed)
-' WshShell.Environment("Process")("http_proxy") = "http://localhost:3128"
-' WshShell.Environment("Process")("https_proxy") = "http://localhost:3128"
+' set environment variables for proxy
+' WScriptShell.Environment("Process")("http_proxy") = "http://localhost:3128"
+' WScriptShell.Environment("Process")("https_proxy") = "http://localhost:3128"
 
 ' change working directory to script folder
-Set fso = CreateObject("Scripting.FileSystemObject")
-scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
-WshShell.CurrentDirectory = scriptDir
+WScriptShell.CurrentDirectory = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
 
-' run pythonw.exe with your script
-WshShell.Run ".\python\pythonw.exe .\__main__.py", 0, False
+' run python main script
+' WScriptShell.Run(".\python\python.exe .\__main__.py")
+WScriptShell.Run(".\python\pythonw.exe .\__main__.py")

@@ -139,7 +139,7 @@ def build_app() -> bool:
 
     return: True if build succeeded, False otherwise
     """
-    cmd_build = [
+    cmd = [
         '__main__.py',
         '--name', APP_NAME,
         '--icon', './frontend/pages/ui/icon/LD-icon.png',
@@ -153,15 +153,15 @@ def build_app() -> bool:
     ]
 
     if sys.platform == 'linux':
-        cmd_build.extend(['--exclude-module', 'pywebview'])
+        cmd.extend(['--exclude-module', 'pywebview'])
     else:
-        cmd_build.extend(['--version-file', VERSION_RC_PATH])
+        cmd.extend(['--version-file', VERSION_RC_PATH])
         if CONFIG.native:
-            cmd_build.append('--windowed')
+            cmd.append('--windowed')
 
     try:
         logger.info('Building application with PyInstaller...')
-        pyinstaller_run(cmd_build)
+        pyinstaller_run(cmd)
         if sys.platform == 'linux':
             shutil.copy(DESKTOP_PATH, f'./dist/{APP_NAME}/{APP_NAME}.desktop')
         logger.info('Build completed successfully')
@@ -195,7 +195,7 @@ def sign_app() -> bool:
         logger.error(f'Executable not found: {exe_path}')
         return False
 
-    cmd_sign = [
+    cmd = [
         'signtool', 'sign', '/debug',
         '/f', CERTIFICATE_PATH,
         '/fd', 'SHA256',
@@ -207,7 +207,7 @@ def sign_app() -> bool:
 
     try:
         logger.info('Signing executable...')
-        subprocess.run(cmd_sign, check = True)
+        subprocess.run(cmd, check = True)
         logger.info('Signing completed successfully')
         return True
     except Exception:
