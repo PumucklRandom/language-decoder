@@ -50,7 +50,7 @@ file: `language-decoder/backend/config/config.yml`; For the desktop application:
 ### Known issues
 
 Windows Security may block the desktop application. (Workaround: Run application as admin)\
-As an alternative you may use the portable distribution `LanguageDecoder-portable.zip` and run
+As an alternative on Windows, you may use the portable distribution `LanguageDecoder-portable.zip` and run
 `LanguageDecoder.bat` or `LanguageDecoder.vbs`
 
 ### Credits
