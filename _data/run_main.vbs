@@ -1,3 +1,5 @@
+' Name: AppName
+' Version: 0.0.0.0
 ' Create windows script shell object
 Set WScriptShell = CreateObject("WScript.Shell")
 

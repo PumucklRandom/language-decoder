@@ -110,7 +110,7 @@ class JS:
     '''
 
     FOCUS_INPUT = '''
-        const findInput = document.getElementById('find-input');
+        const findInput = document.querySelector('input[name="find-input"]');
         if (findInput) {
             findInput.focus();
             findInput.select();
