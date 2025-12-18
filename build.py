@@ -32,15 +32,15 @@ Certificate Creation Instructions:
     Remove-Item Cert:/CurrentUser/My/Thumbprint
 """
 
-import os
 import re
+import os
 import sys
 import shutil
 import pathlib
 import zipfile
 import nicegui
-import traceback
 import logging
+import traceback
 import subprocess
 from PyInstaller.__main__ import run as pyinstaller_run
 from backend.config.config import load_config
@@ -54,7 +54,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.13.1.0'
+VERSION = '0.13.1.1'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 DESKTOP_PATH = './_data/.desktop'
@@ -78,7 +78,6 @@ def update_version() -> bool:
 
         with open(DESKTOP_PATH, 'r+') as file:
             content = file.read()
-            # content = re.sub(r'(\d+\.\d+\.\d+\.\d+)', VERSION, content)
             content = re.sub(r'(?<=Version=).*$', VERSION, content, flags = re.MULTILINE)
             content = re.sub(r'(?<=Name=).*$', APP_NAME, content, flags = re.MULTILINE)
             content = re.sub(r'(?<=\./)[\w-]+', APP_NAME, content, flags = re.MULTILINE)

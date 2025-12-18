@@ -1,3 +1,5 @@
+@REM Name: AppName
+@REM Version: 0.0.0.0
 @REM set environment variables for proxy
 @REM set http_proxy=http://localhost:3128
 @REM set https_proxy=http://localhost:3128

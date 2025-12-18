@@ -253,8 +253,8 @@ class Decoding(Page):
                         label = self.UI_LABELS.DECODING.Footer.find,
                         on_change = lambda: self._ui_grid.highlight_text(self.state.find)) \
                         .style('font-size:11pt') \
-                        .props('id=find-input') \
-                        .bind_value(self.state, 'find')
+                        .props('name=find-input') \
+                        .bind_value(self.state, 'find')  # props('autofocus')
                 with ui.menu_item(auto_close = False):
                     self._ui_repl_input = ui.input(
                         label = self.UI_LABELS.DECODING.Footer.replace) \

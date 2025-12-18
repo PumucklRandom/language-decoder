@@ -1,10 +1,11 @@
+import re
 import os
 import sys
 import shutil
 import pathlib
 import zipfile
-import traceback
 import logging
+import traceback
 import subprocess
 from backend.config.config import load_config
 
@@ -17,6 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
+VERSION = '0.13.1.1'
 APP_NAME = 'LanguageDecoder'
 APP_DIR = f'./{APP_NAME}'
 CREATE_ENV_PATH = os.path.join(APP_DIR, 'create_portable_env.py')
@@ -100,6 +102,34 @@ def copy_source() -> bool:
         return False
 
 
+def update_version() -> bool:
+    """
+    Update version information in the version.rc and .desktop file.
+    """
+    try:
+        with open(os.path.join(APP_DIR, f'{APP_NAME}.bat'), 'r+') as file:
+            content = file.read()
+            content = re.sub(r'(?<=Version: ).*$', VERSION, content, flags = re.MULTILINE)
+            content = re.sub(r'(?<=Name: ).*$', APP_NAME, content, flags = re.MULTILINE)
+            file.seek(0)
+            file.truncate()
+            file.write(content)
+
+        with open(os.path.join(APP_DIR, f'{APP_NAME}.vbs'), 'r+') as file:
+            content = file.read()
+            content = re.sub(r'(?<=Version: ).*$', VERSION, content, flags = re.MULTILINE)
+            content = re.sub(r'(?<=Name: ).*$', APP_NAME, content, flags = re.MULTILINE)
+            file.seek(0)
+            file.truncate()
+            file.write(content)
+
+        logger.info(f'Updated version to {VERSION}')
+        return True
+    except Exception:
+        logger.error(f'Failed to update version:\n{traceback.format_exc()}')
+        return False
+
+
 def create_env() -> bool:
     try:
         cmd = [sys.executable, CREATE_ENV_PATH]
@@ -154,7 +184,6 @@ def main() -> int:
     return: Exit code (0 for success, non-zero for error)
     """
     try:
-
         # Step 1: Setup app directory
         if not setup_app_dir():
             return 1
@@ -163,19 +192,23 @@ def main() -> int:
         if not copy_source():
             return 2
 
-        # Step 3: Create portable environment
-        if not create_env():
+        # Step 3: Update version
+        if not update_version():
             return 3
 
-        # Step 4: Create zip archive
-        if not zip_app():
+        # Step 4: Create portable environment
+        if not create_env():
             return 4
+
+        # Step 5: Create zip archive
+        if not zip_app():
+            return 5
 
         logger.info('Build process completed successfully')
         return 0
     except Exception:
         logger.error(f'Build process failed with exception:\n{traceback.format_exc()}')
-        return 5
+        return 6
 
 
 if __name__ == '__main__':
