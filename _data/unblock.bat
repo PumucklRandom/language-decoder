@@ -1,0 +1,1 @@
+powershell -Command "Get-ChildItem -Path '.\' -Recurse | Unblock-File"
