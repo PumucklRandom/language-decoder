@@ -20,7 +20,7 @@ Certificate Creation Instructions:
         -NotAfter (Get-Date).AddYears(10)
 
     # Get certificate
-    Get-childitem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Subject
+    Get-ChildItem 'Cert:/CurrentUser/My' | Format-Table FriendlyName, Thumbprint, Subject
 
     # Set password for certificate
     $password = ConvertTo-SecureString -String "password" -Force -AsPlainText
@@ -53,7 +53,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.13.1.2'
+VERSION = '0.13.2.0'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 DESKTOP_PATH = './_data/.desktop'
