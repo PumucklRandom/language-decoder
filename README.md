@@ -37,8 +37,8 @@ python ./__main__.py
 
 or just download the latest desktop application from the releases.\
 For Windows (browser interface) use `LanguageDecoder.zip`, extract the files and execute `LanguageDecoder.exe`.\
-For Linux (browser interface)  use `LanguageDecoder-lx.zip`, extract the files and execute `LanguageDecoder.desktop`.
-For Windows (window interface) use `LanguageDecoder-native.zip`, extract the files and execute `LanguageDecoder.exe`.\
+For Linux (browser interface)  use `LanguageDecoder-lx.zip`, extract the files and execute `LanguageDecoder.desktop`.\
+For Windows (window interface) use `LanguageDecoder-native.zip`, extract the files and execute `LanguageDecoder.exe`.
 
 With the build.py file you can create your own local desktop application.\
 (Install packages from `requirements-dev.txt`)
