@@ -1,11 +1,12 @@
 -i https://pypi.org/simple
-nicegui>=3.0.0,<4.0.0; python_version >= '3.9'
-fastapi<1.0.0; python_version >= '3.8'
-chardet>=5.0.0,<6.0.0; python_version >= '3.7'
-urllib3>=2.0.0,<3.0.0; python_version >= '3.9'
-fpdf2>=2.8.5,<3.0.0; python_version >= '3.7'
-httpx<1.0.0; python_version >= '3.8'
-pyyaml>=6.0.0,<7.0.0; python_version >= '3.8'
-openai>=2.0.0,<3.0.0; python_version >= '3.8'
-deep-translator>=1.0.0,<2.0.0; python_version >= '3.7'
-requests>=2.0.0,<3.0.0; python_version >= '3.9'
+nicegui>=3.7.0,<4.0.0
+fastapi<1.0.0
+chardet>=5.0.0,<6.0.0
+urllib3>=2.6.3,<3.0.0
+fpdf2>=2.8.5,<3.0.0
+httpx<1.0.0
+pyyaml>=6.0.0,<7.0.0
+openai>=2.0.0,<3.0.0
+deep-translator>=1.0.0,<2.0.0
+requests>=2.32.4,<3.0.0
+
