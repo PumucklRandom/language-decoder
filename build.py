@@ -43,7 +43,6 @@ import logging
 import traceback
 import subprocess
 from PyInstaller.__main__ import run as pyinstaller_run
-from backend.config.config import load_config
 
 # Configure logging
 logging.basicConfig(
@@ -54,18 +53,23 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.13.1.1'
+VERSION = '0.13.1.2'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 DESKTOP_PATH = './_data/.desktop'
+UNBLOCK_PATH = './_data/unblock.bat'
+README_PATH = './_data/readme.txt'
 PW_PATH = './_data/password.txt'
 CERTIFICATE_PATH = './_data/certificate.pfx'
-CONFIG = load_config('../../_data/config.yml')
+SOURCE_DIR = f'./dist/{APP_NAME}/'
+NATIVE = False
 
 
 def update_version() -> bool:
     """
     Update version information in the version.rc and .desktop file.
+
+    return: True if update succeeded, False otherwise
     """
     try:
         with open(VERSION_RC_PATH, 'r+') as file:
@@ -95,8 +99,9 @@ def update_version() -> bool:
 def rm_app_build() -> bool:
     """
     Remove previous build artifacts.
-
     Removes: ./build directory, ./dist directory, ./app_name.spec file
+
+    return: True if removal succeeded, False otherwise
     """
     paths_to_remove = ('./build', './dist', f'./{APP_NAME}.spec')
     try:
@@ -113,23 +118,27 @@ def rm_app_build() -> bool:
         return False
 
 
-def get_password() -> str:
+def app_as_native() -> None:
     """
-    Get certificate password from file.
-
-    return: Password string or empty string if file not found or error occurs
+    Modify config for native app.
     """
     try:
-        if not os.path.isfile(PW_PATH):
-            logger.warning(f'Password file not found: {PW_PATH}')
-            return ''
+        with open(f'./dist/{APP_NAME}/_internal/backend/config/config.yml', 'r+') as file:
+            lines = file.readlines()
+            file.seek(0)
+            file.truncate()
+            for line in lines:
+                if line.startswith('native: false'):
+                    file.write(line.replace('false', 'true', 1))
+                elif line.startswith('window_size: null'):
+                    file.write(line.replace('null', '[1600, 900]', 1))
+                else:
+                    file.write(line)
 
-        with open(file = PW_PATH, mode = 'r', encoding = 'utf-8') as file:
-            password = file.read().strip()
-            return password
+        shutil.copy(UNBLOCK_PATH, f'./dist/{APP_NAME}/{os.path.basename(UNBLOCK_PATH)}')
+        shutil.copy(README_PATH, f'./dist/{APP_NAME}/{os.path.basename(README_PATH)}')
     except Exception:
-        logger.error(f'Could not load password from: {PW_PATH}\n{traceback.format_exc()}')
-        return ''
+        logger.warning(f'Failed to configure app as native:\n{traceback.format_exc()}')
 
 
 def build_app() -> bool:
@@ -151,23 +160,44 @@ def build_app() -> bool:
         '--clean', '-y',
     ]
 
-    if sys.platform == 'linux':
-        cmd.extend(['--exclude-module', 'pywebview'])
-    else:
+    if sys.platform != 'linux':
         cmd.extend(['--version-file', VERSION_RC_PATH])
-        if CONFIG.native:
-            cmd.append('--windowed')
+    if NATIVE:
+        cmd.append('--windowed')
+    else:
+        cmd.extend(['--exclude-module', 'pywebview'])
 
     try:
         logger.info('Building application with PyInstaller...')
         pyinstaller_run(cmd)
         if sys.platform == 'linux':
             shutil.copy(DESKTOP_PATH, f'./dist/{APP_NAME}/{APP_NAME}.desktop')
+        else:
+            if NATIVE: app_as_native()
         logger.info('Build completed successfully')
         return True
     except Exception:
         logger.error(f'Build failed with exception:\n{traceback.format_exc()}')
         return False
+
+
+def get_password() -> str:
+    """
+    Get certificate password from file.
+
+    return: Password string or empty string if file not found or error occurs
+    """
+    try:
+        if not os.path.isfile(PW_PATH):
+            logger.warning(f'Password file not found: {PW_PATH}')
+            return ''
+
+        with open(file = PW_PATH, mode = 'r', encoding = 'utf-8') as file:
+            password = file.read().strip()
+            return password
+    except Exception:
+        logger.error(f'Could not load password from: {PW_PATH}\n{traceback.format_exc()}')
+        return ''
 
 
 def sign_app() -> bool:
@@ -214,18 +244,22 @@ def sign_app() -> bool:
         return False
 
 
-def zip_app(source_directory: str, zip_file_path: str) -> bool:
+def zip_app() -> bool:
     """
-    Create a zip archive of the directory.
-
-    :param source_directory: Directory to zip
-    :param zip_file_path: Path to the output zip file
-
+    Create a zip archive of the app directory.
 
     return: True if zipping succeeded, False otherwise
     """
-    if not os.path.isdir(source_directory):
-        logger.error(f'Source directory not found: {source_directory}')
+
+    zip_file_path = f'./{APP_NAME}.zip'
+    if sys.platform == 'linux':
+        zip_file_path = f'./{APP_NAME}-lx.zip'
+    else:
+        if NATIVE:
+            zip_file_path = f'./{APP_NAME}-native.zip'
+
+    if not os.path.isdir(SOURCE_DIR):
+        logger.error(f'Source directory not found: {SOURCE_DIR}')
         return False
 
     try:
@@ -233,7 +267,7 @@ def zip_app(source_directory: str, zip_file_path: str) -> bool:
             logger.info(f'Removing existing zip file: {zip_file_path}')
             os.remove(zip_file_path)
 
-        source_path = pathlib.Path(source_directory).expanduser()  # .resolve(strict = True)
+        source_path = pathlib.Path(SOURCE_DIR).expanduser()  # .resolve(strict = True)
 
         logger.info(f'Creating zip archive: {zip_file_path}')
         with zipfile.ZipFile(file = zip_file_path, mode = 'w', compression = zipfile.ZIP_DEFLATED) as zf:
@@ -273,12 +307,8 @@ def main() -> int:
             return 4
 
         # Step 5: Create zip archive
-        if sys.platform == 'linux':
-            if not zip_app(f'./dist/{APP_NAME}/', f'./{APP_NAME}-lx.zip'):
-                return 5
-        else:
-            if not zip_app(f'./dist/{APP_NAME}/', f'./{APP_NAME}.zip'):
-                return 5
+        if not zip_app():
+            return 5
 
         logger.info('Build process completed successfully')
         return 0
