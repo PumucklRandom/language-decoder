@@ -55,7 +55,6 @@ UPLOAD:
     Messages:
         decode: 'Upload a text file or enter some text below.'
         invalid: 'Invalid text file. Use a different one or paste some text below.'
-        success: 'Upload finished.'
         reject: 'Upload a text file with max:'
         limit: [
             'Reduce the text size to max:',
@@ -126,9 +125,9 @@ DECODING:
     Tips:
         help: 'Help'
         replace: 'Replace'
-        import_: 'Import words'
+        import_: 'Import decoding'
         refresh: 'Refresh grid'
-        export: 'Export words'
+        export: 'Export decoding'
         view: 'Sentence view'
     Footer:
         find: 'find'

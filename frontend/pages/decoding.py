@@ -8,7 +8,7 @@ from backend.logger.logger import logger
 from backend.decoder.pdf import PDF
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.config import URLS, JS, top_right
-from frontend.pages.ui.custom import UIGridPages, UIUpload, ui_dialog
+from frontend.pages.ui.custom import UIGridPages, ui_dialog
 from frontend.pages.ui.page_abc import Page
 
 
@@ -17,7 +17,8 @@ class Decoding(Page):
         '_ui_grid',
         '_ui_menu',
         '_ui_find_input',
-        '_ui_repl_input'
+        '_ui_repl_input',
+        '_ui_upload'
     )
 
     _URL = URLS.DECODING
@@ -28,6 +29,7 @@ class Decoding(Page):
         self._ui_menu: ui.menu
         self._ui_find_input: ui.input
         self._ui_repl_input: ui.input
+        self._ui_upload: ui.upload
 
     @catch
     async def _open_pdf_view(self) -> None:
@@ -179,7 +181,7 @@ class Decoding(Page):
             self.state.title = pathlib.Path(event.file.name).stem
             self.decoder.source_text = ' '.join(self.decoder.source_words)
             self._set_grid_values(new_source = True)
-        except DecoderError:
+        except Exception:
             ui.notify(self.UI_LABELS.DECODING.Messages.invalid, type = 'warning', position = 'top')
         finally:
             event.sender.reset()  # noqa upload reset
@@ -226,21 +228,14 @@ class Decoding(Page):
 
     @catch
     def _import(self) -> None:
-        with ui.dialog() as dialog:
-            with ui.card().classes('items-center').style('font-size:12pt'):
-                ui.button(icon = 'close', on_click = dialog.close) \
-                    .classes('absolute-top-right') \
-                    .props('dense round size=12px')
-                ui.label(text = self.UI_LABELS.DECODING.Dialogs_import[0])
-                UIUpload(
-                    text = self.UI_LABELS.DECODING.Dialogs_import[1],
-                    on_upload = self._upload_handler,
-                    on_rejected = self._on_upload_reject,
-                    max_file_size = self.max_decode_size,
-                    auto_upload = self.auto_upload,
-                    max_files = self.max_files) \
-                    .props('accept=.json')
-            dialog.open()
+        self._ui_upload = ui.upload(
+            on_upload = self._upload_handler,
+            on_rejected = self._on_upload_reject,
+            max_file_size = self.max_decode_size,
+            auto_upload = self.auto_upload,
+            max_files = self.max_files) \
+            .props('accept=.json') \
+            .classes('hidden')
 
     @catch
     def _replace(self) -> None:
@@ -297,10 +292,12 @@ class Decoding(Page):
 
     @catch
     def _footer(self) -> None:
+        self._import()
         with ui.footer():
             self._replace()
             ui.space()
-            with ui.button(text = self.UI_LABELS.DECODING.Footer.import_, on_click = self._import):
+            with ui.button(text = self.UI_LABELS.DECODING.Footer.import_,
+                           on_click = lambda: self._ui_upload.run_method('pickFiles')):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DECODING.Tips.import_)
             ui.space()
             ui.button(text = self.UI_LABELS.DECODING.Footer.apply_dict, on_click = self._apply_dict)

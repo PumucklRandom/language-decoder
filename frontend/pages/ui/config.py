@@ -97,6 +97,10 @@ COLORS = Colors(
     PRIME_LIGHT = PRIME_LIGHT
 )
 
+app.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
+           dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
+           negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
+
 
 class JS:
     __slots__ = ()

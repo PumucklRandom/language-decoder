@@ -59,7 +59,6 @@ UPLOAD:
     Messages:
         decode: 'Laden Sie eine Textdatei hoch oder geben Sie unten einen Text ein.'
         invalid: 'Ungültige Textdatei. Verwenden Sie eine andere Datei oder fügen Sie unten einen Text ein.'
-        success: 'Hochladen beendet.'
         reject: 'Hochladen einer Textdatei mit maximal:'
         limit: [
             'Reduzieren Sie die Textmenge auf maximal:',
@@ -134,9 +133,9 @@ DECODING:
     Tips:
         help: 'Hilfe'
         replace: 'Austauschen'
-        import_: 'Wörter importieren'
-        refresh: 'Layout neu anordnen'
-        export: 'Wörter exportieren'
+        import_: 'Dekodierung importieren'
+        refresh: 'Raster aktualisieren'
+        export: 'Dekodierung exportieren'
         view: 'Satzansicht'
     Footer:
         find: 'finden'
