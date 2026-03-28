@@ -11,7 +11,7 @@ from backend.config.config import CONFIG
 from backend.user_data.settings import Settings
 from backend.user_data.dictionaries import Dicts
 from backend.decoder.language_decoder import LanguageDecoder
-from frontend.pages.ui.config import URLS, COLORS, UILabels, get_ui_labels
+from frontend.pages.ui.config import URLS, UILabels, get_ui_labels
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.state import State
 
@@ -91,10 +91,6 @@ class Page(ABC):
         self.settings.load()
         if self.state.ui_labels is None: self.get_ui_labels()
         ui.dark_mode().set_value(self.settings.app.dark_mode)
-        # TODO: maybe there is a way to set the default colors instead of overwriting the colors after each reload
-        ui.colors(primary = COLORS.PRIMARY.VAL, secondary = COLORS.SECONDARY.VAL, accent = COLORS.ACCENT.VAL,
-                  dark = COLORS.DARK.VAL, dark_page = COLORS.DARK_PAGE.VAL, positive = COLORS.POSITIVE.VAL,
-                  negative = COLORS.NEGATIVE.VAL, info = COLORS.INFO.VAL, warning = COLORS.WARNING.VAL)
 
     @catch
     def get_ui_labels(self) -> None:

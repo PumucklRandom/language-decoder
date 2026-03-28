@@ -53,7 +53,7 @@ logging.basicConfig(
 logger = logging.getLogger('build')
 
 # Default configuration
-VERSION = '0.13.2.0'
+VERSION = '0.13.2.1'
 APP_NAME = 'LanguageDecoder'
 VERSION_RC_PATH = './_data/version.rc'
 DESKTOP_PATH = './_data/.desktop'
@@ -172,8 +172,8 @@ def build_app() -> bool:
         pyinstaller_run(cmd)
         if sys.platform == 'linux':
             shutil.copy(DESKTOP_PATH, f'./dist/{APP_NAME}/{APP_NAME}.desktop')
-        else:
-            if NATIVE: app_as_native()
+        elif NATIVE:
+            app_as_native()
         logger.info('Build completed successfully')
         return True
     except Exception:

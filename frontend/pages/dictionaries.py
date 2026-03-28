@@ -1,9 +1,8 @@
 import pathlib
 from nicegui import ui, events
-from backend.error.error import DictionaryError
 from frontend.pages.ui.error import catch
 from frontend.pages.ui.config import URLS, DICT_COLS
-from frontend.pages.ui.custom import ui_dialog, UITable, UIUpload
+from frontend.pages.ui.custom import ui_dialog, UITable
 from frontend.pages.ui.page_abc import Page
 
 
@@ -11,6 +10,7 @@ class Dictionaries(Page):
     __slots__ = (
         '_ui_selector',
         '_ui_table',
+        '_ui_upload',
         '_rename'
     )
 
@@ -20,6 +20,7 @@ class Dictionaries(Page):
         super().__init__()
         self._ui_selector: ui.select
         self._ui_table: UITable
+        self._ui_upload: ui.upload
         self._rename: bool = False
 
     @catch
@@ -122,28 +123,21 @@ class Dictionaries(Page):
             self._ui_selector._handle_new_value(dict_name)  # noqa: required to add new value to selection list
             self._ui_selector.set_value(dict_name)
             self._set_dict_values()
-        except DictionaryError:
+        except Exception:
             ui.notify(self.UI_LABELS.DICTIONARY.Messages.invalid, type = 'warning', position = 'top')
         finally:
             event.sender.reset()  # noqa upload reset
 
     @catch
     def _import(self) -> None:
-        with ui.dialog() as dialog:
-            with ui.card().classes('items-center').style('font-size:12pt'):
-                ui.button(icon = 'close', on_click = dialog.close) \
-                    .classes('absolute-top-right') \
-                    .props('dense round size=12px')
-                ui.label(text = self.UI_LABELS.DICTIONARY.Dialogs_import[0])
-                UIUpload(
-                    text = self.UI_LABELS.DICTIONARY.Dialogs_import[1],
-                    on_upload = self._upload_handler,
-                    on_rejected = self._on_upload_reject,
-                    max_file_size = self.max_file_size,
-                    auto_upload = self.auto_upload,
-                    max_files = self.max_files) \
-                    .props('accept=.json')
-            dialog.open()
+        self._ui_upload = ui.upload(
+            on_upload = self._upload_handler,
+            on_rejected = self._on_upload_reject,
+            max_file_size = self.max_decode_size,
+            auto_upload = self.auto_upload,
+            max_files = self.max_files) \
+            .props('accept=.json') \
+            .classes('hidden')
 
     @catch
     def _header(self) -> None:
@@ -208,9 +202,11 @@ class Dictionaries(Page):
 
     @catch
     def _footer(self) -> None:
+        self._import()
         with ui.footer():
             ui.space()
-            with ui.button(text = self.UI_LABELS.DICTIONARY.Footer.import_, on_click = self._import):
+            with ui.button(text = self.UI_LABELS.DICTIONARY.Footer.import_,
+                           on_click = lambda: self._ui_upload.run_method('pickFiles')):
                 if self.show_tips: ui.tooltip(self.UI_LABELS.DICTIONARY.Tips.import_)
             ui.space()
             with ui.button(icon = 'save', on_click = self._save_dict):
