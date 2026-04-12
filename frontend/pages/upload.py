@@ -43,7 +43,9 @@ class Upload(Page):
         )
 
     def _decode(self) -> None:
-        self.state.decode = True
+        if self.decoder.source_text:
+            self.state.decode = True
+            self.goto(URLS.DECODING)
 
     @catch
     def _on_upload_reject(self) -> None:
@@ -129,8 +131,7 @@ class Upload(Page):
                 .style('min-width:200px; font-size:12pt') \
                 .props('dense options-dense outlined popup-content-style="font-size: 11pt"') \
                 .bind_value(self.decoder, 'target_language')
-        with ui.button(text = self.UI_LABELS.UPLOAD.Footer.decode,
-                       on_click = lambda: self.goto(URLS.DECODING, call = self._decode)) \
+        with ui.button(text = self.UI_LABELS.UPLOAD.Footer.decode, on_click = self._decode) \
                 .classes(bot_right(12, 23, 'px', '%')):
             if self.show_tips: ui.tooltip(self.UI_LABELS.UPLOAD.Tips.decode)
         ui.label().classes(bot_right(30, 10, 'px', '%')) \

@@ -31,60 +31,58 @@ class NeuralTranslator(object):
         'model_name',
         'model_temp',
         'model_seed',
-        'client',
+        '_client',
         'models',
     )
 
     PROMPT: str = ''
 
     def __init__(self,
+                 model_name: str = None,
                  source_language: str = 'auto',
                  target_language: str = 'english',
                  proxies: dict = None,
                  endofs: str = CONFIG.Regex.endofs,
                  quotes: str = CONFIG.Regex.quotes,
-                 model_name: str = CONFIG.model_name,
                  model_temp: float = CONFIG.model_temp,
                  model_seed: int = CONFIG.model_seed,
                  api_url: str = CONFIG.api_url,
                  api_key: str = CONFIG.api_key) -> None:
         """
+        :param model_name: LLM/GPT model name
         :param source_language: the translation source language
         :param target_language: the translation target language
         :param proxies: set proxies for translator
         :param endofs: end of sentence characters to split sentences
         :param quotes: quote characters to split sentences
-        :param model_name: LLM/GPT model name
         :param model_temp: model temperature to adapt model 'creativity' and 'determinism'
         :param model_seed: model seed to adapt 'determinism'
         :param api_url: api url to model site
         :param api_key: api key to get access
         """
+        self.model_name = model_name
         self.source_language = source_language
         self.target_language = target_language
-        self.model_name = model_name
         self.model_temp = model_temp
         self.model_seed = model_seed
         self.endofs = endofs
         self.quotes = quotes
         if not NeuralTranslator.PROMPT:
             NeuralTranslator.PROMPT = self._load_prompt()
-        self.client = openai.OpenAI(
+        self._client = openai.OpenAI(
             base_url = api_url,
             api_key = self._decode_key(api_key),
         )
         self._set_proxy(proxies = proxies)
         self.models = self.get_available_models()
+        if self.model_name is None:
+            self.model_name = list(self.models.keys())[0]
 
     def __config__(self, source_language: str, target_language: str, model_name: str,
                    proxies: dict = None, endofs: str = '', quotes: str = '') -> None:
         self.source_language = source_language
         self.target_language = target_language
-        if model_name in self.models.keys():
-            self.model_name = model_name
-        else:
-            logger.warning(f'"{model_name}" not found!')
-            self.model_name = CONFIG.model_name
+        self.model_name = model_name
         self._set_proxy(proxies = proxies)
         if endofs: self.endofs = endofs
         if quotes: self.quotes = quotes
@@ -97,12 +95,12 @@ class NeuralTranslator(object):
                 proxies.update({'https://': httpx.HTTPTransport(proxy = f'http://{proxies.get("https")}')})
             proxies.pop('http', None)
             proxies.pop('https', None)
-        self.client._client = httpx.Client(mounts = proxies)
+        self._client._client = httpx.Client(mounts = proxies)
 
     def get_available_models(self) -> dict[str, str]:
         time_date = time.time() - CONFIG.model_age * 2592000  # 30d * 24h * 3600s per months
         models = [
-            model for model in self.client.models.list().data
+            model for model in self._client.models.list().data
             if ':free' in model.id and model.created >= time_date
                and model.context_length >= CONFIG.model_context
                and {'text'}.issubset(model.architecture.get('input_modalities'))
@@ -112,7 +110,7 @@ class NeuralTranslator(object):
 
         ]
         models.sort(key = lambda model: model.name)
-        return {model.name.removesuffix(' (free)'): model.id for model in models}
+        return {model.name.removesuffix('(free)').strip(): model.id for model in models}
 
     def translate_batch(self, source_words: list[str]) -> list[str]:
         result = []
@@ -124,7 +122,7 @@ class NeuralTranslator(object):
     def _translate(self, source_words: list[str]) -> list[str]:
         try:
             logger.info(f'Translate words with: {self.model_name}')
-            response = self.client.chat.completions.create(
+            response = self._client.chat.completions.create(
                 messages = [
                     ChatCompletionSystemMessageParam(role = 'system', content = self._get_prompt()),
                     ChatCompletionUserMessageParam(role = 'user', content = self._to_csv(source_words))

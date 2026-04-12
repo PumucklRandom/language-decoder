@@ -7,7 +7,7 @@ from backend.utils.utilities import maxlen
 from frontend.pages.ui.config import DEFAULT_COLS, COLORS, JS, top_left, bot_right
 
 
-def ui_dialog(label_list: list[str], max_width: int = 1000, min_width: int = 800,
+def ui_dialog(label_list: Union[list[str], str], max_width: int = 1000, min_width: int = 800,
               u_width: str = 'px', height: int = 100, space: int = 10) -> ui.dialog:
     """
     :param label_list: list of labels to display in the dialog
@@ -122,7 +122,7 @@ class Table(ui.table):
             self.rows.append({'id': i, 'source': source, 'target': target})
         self.update()
 
-    def get_values(self, as_dict: bool = False) -> Union[dict, tuple[list, list]]:
+    def get_values(self, as_dict: bool = False) -> Union[dict[str, str], tuple[list, list]]:
         sources = [f'{row.get("source")}'.strip() for row in self.rows]
         targets = self._set_type([f'{row.get("target")}'.strip() for row in self.rows])
         if as_dict:
@@ -272,18 +272,19 @@ class UIGrid(Table):
 
 
 class UIGridPages(object):
-    __slots__ = ('_page_number', '_page_size', '_prev_page', 'find_str', 'pattern',
+    __slots__ = ('_page_number', '_page_size', '_prev_page', '_find_str', '_page_label', '_pattern',
                  'source_words', 'target_words', '_eos_indices', '_indices', '_s_indices',
                  '_ui_grid', '_ui_page', '_visible')
 
-    def __init__(self, grid_page: dict = None, find_str: str = '',
+    def __init__(self, grid_page: dict = None, find_str: str = '', page_label = 'Words per page <=',
                  endofs: str = CONFIG.Regex.endofs, quotes: str = CONFIG.Regex.quotes) -> None:
         self._page_number: int = 1
         self._page_size: int = CONFIG.grid_options[2]
         self._prev_page: int = 1
         self._set_grid_page(grid_page)
-        self.find_str = find_str
-        self.pattern: Pattern = re.compile(rf'.*?[{endofs}][{quotes}]?$')
+        self._find_str = find_str
+        self._page_label = page_label
+        self._pattern: Pattern = re.compile(rf'.*?[{endofs}][{quotes}]?$')
         self.source_words: list[str] = []
         self.target_words: list[str] = []
         self._eos_indices: tuple[int] = ()  # end of sentence word indices
@@ -301,7 +302,7 @@ class UIGridPages(object):
     def pagination(self):
         with ui.card().classes(bot_right(68, 0)).style('width:560px; height:50px') \
                 .bind_visibility_from(self, '_visible'):
-            ui.label('Max words per page:').classes(bot_right(15, 420)).style('font-size:10.5pt')
+            ui.label(self._page_label).classes(bot_right(15, 420)).style('font-size:10.5pt')
             ui.select(options = CONFIG.grid_options,
                       value = CONFIG.grid_options[2],
                       on_change = self._repage) \
@@ -332,10 +333,10 @@ class UIGridPages(object):
             target_words = self.target_words[self._indices[p]:self._indices[p + 1]],
             *args, **kwargs
         )
-        self._ui_grid.mark_cells(self.find_str)
+        self._ui_grid.mark_cells(self._find_str)
 
     def _get_indices(self, source_words: list[str]) -> None:
-        self._eos_indices = tuple(i + 1 for i, word in enumerate(source_words) if self.pattern.match(word))
+        self._eos_indices = tuple(i + 1 for i, word in enumerate(source_words) if self._pattern.match(word))
 
     def _set_indices(self) -> None:
         if not self._eos_indices: return
@@ -404,8 +405,8 @@ class UIGridPages(object):
         return await self._ui_grid.get_selected()
 
     def highlight_text(self, find_str: str = '') -> None:
-        self.find_str = find_str
-        self._ui_grid.mark_cells(self.find_str)
+        self._find_str = find_str
+        self._ui_grid.mark_cells(self._find_str)
 
     def _set_s_indices(self):
         self._s_indices = [0]

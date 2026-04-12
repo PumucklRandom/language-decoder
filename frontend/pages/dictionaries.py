@@ -197,6 +197,7 @@ class Dictionaries(Page):
             dark_mode = self.settings.app.dark_mode,
             pagination = self.state.table_page,
             on_pagination_change = self._get_table_page) \
+            .props(f'rows-per-page-label="{self.UI_LABELS.DICTIONARY.Table.page_label}"') \
             .classes('sticky-header').style('min-width:550px; max-height:75vh')
         self._set_dict_values()
 

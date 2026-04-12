@@ -3,7 +3,7 @@ name = "LanguageDecoder"
 requires-python = "==3.13.*"
 
 dependencies = [
-    "nicegui>=3.8.0,<4.0.0",
+    "nicegui>=3.10.0,<4.0.0",
     "fastapi<1.0.0",
     "chardet>=5.0.0,<6.0.0",
     "urllib3>=2.6.3,<3.0.0",
@@ -12,7 +12,7 @@ dependencies = [
     "pyyaml>=6.0.0,<7.0.0",
     "openai>=2.0.0,<3.0.0",
     "deep-translator>=1.0.0,<2.0.0",
-    "requests>=2.32.4,<3.0.0",
+    "requests>=2.33.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
