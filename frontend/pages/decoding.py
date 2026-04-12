@@ -102,7 +102,7 @@ class Decoding(Page):
 
     async def _decode_words(self) -> None:
         try:
-            if self.decoder.source_text and self.state.decode:
+            if self.state.decode:
                 self.decoder.split_text()
                 self._set_grid_values(preload = True, new_source = True)
                 notification = ui.notification(
@@ -280,8 +280,9 @@ class Decoding(Page):
             self._ui_grid = UIGridPages(
                 grid_page = self.state.grid_page,
                 find_str = self.state.find,
+                page_label = self.UI_LABELS.DECODING.Table.page_label,
                 endofs = self.decoder.regex.endofs,
-                quotes = self.decoder.regex.quotes,
+                quotes = self.decoder.regex.quotes
             )
             self._ui_grid.page(dark_mode = self.settings.app.dark_mode)
         with ui.footer(): self._ui_grid.pagination()

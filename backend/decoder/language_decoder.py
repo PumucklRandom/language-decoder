@@ -83,6 +83,10 @@ class LanguageDecoder(object):
     def model_name(self) -> str:
         return self.settings.app.model_name
 
+    @model_name.setter
+    def model_name(self, name: str) -> None:
+        self.settings.app.model_name = name
+
     @property
     def models(self) -> list[str]:
         return [GOOGLE_TRANSLATOR] + list(self._neural_trans.models.keys())
@@ -93,6 +97,9 @@ class LanguageDecoder(object):
 
     def translate(self, source: list[str], neural = True) -> list[str]:
         try:
+            if self.model_name not in self.models:
+                logger.warning(f'"{self.model_name}" not found!')
+                self.model_name = GOOGLE_TRANSLATOR
             if neural and self.model_name != GOOGLE_TRANSLATOR:
                 self._set_neural_trans()
                 return self._neural_trans.translate_batch(source)
@@ -243,7 +250,7 @@ class LanguageDecoder(object):
     @catch(DecoderError)
     def from_json_str(self, data: str) -> None:
         try:
-            data = json.loads(data)
+            data: dict = json.loads(data)
             words_lists = list(zip(*data.get('decoded', [])))
             if not words_lists: raise DecoderError('Invalid json file')
             if len(words_lists) != 2:

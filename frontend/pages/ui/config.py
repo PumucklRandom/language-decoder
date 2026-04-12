@@ -2,7 +2,7 @@ import os
 import json
 import yaml
 import traceback
-from typing import Union
+from typing import Any, Union, NamedTuple
 from copy import deepcopy
 from nicegui import ui, app
 from collections import namedtuple
@@ -283,7 +283,7 @@ def dict_to_labels(labels_dict: dict) -> UILabels:
     )
 
 
-def to_labels(name: str, sub_tree: Union[dict, list, any]) -> Union[namedtuple, tuple, any]:
+def to_labels(name: str, sub_tree: Union[dict, list, Any]) -> Union[NamedTuple, tuple, Any]:
     if isinstance(sub_tree, dict):
         return namedtuple(name, sub_tree.keys())(
             **{_name: to_labels(_name, _sub_tree) for _name, _sub_tree in sub_tree.items()}

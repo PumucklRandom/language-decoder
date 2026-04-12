@@ -116,6 +116,8 @@ DECODING:
             'You may either first view the document:',
             'Or just download the document:'
         ]
+    Table:
+        page_label: 'Words per page <='
     Messages:
         decoding: 'Decoding words:'
         cancel: 'CANCEL'
@@ -170,6 +172,7 @@ DICTIONARY:
     Table:
         key: 'Source word'
         val: 'Target word'
+        page_label: 'Records per page:'
     Dialogs_import: [
         'Upload a previously exported json file:',
         'Upload json file'

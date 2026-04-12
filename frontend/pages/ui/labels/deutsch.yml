@@ -123,6 +123,8 @@ DECODING:
             'Sie können das Dokument entweder zuerst ansehen:',
             'Oder laden Sie das Dokument einfach herunter:'
         ]
+    Table:
+        page_label: 'Wörter pro Seite <='
     Messages:
         decoding: 'Wörter dekodieren:'
         cancel: 'ABBRECHEN'
@@ -180,6 +182,7 @@ DICTIONARY:
     Table:
         key: 'Ausgangswort'
         val: 'Zielwort'
+        page_label: 'Einträge pro Seite:'
     Dialogs_import: [
         'Laden Sie eine zuvor exportierte json-Datei hoch:',
         'JSON-Datei hochladen'

@@ -27,7 +27,6 @@ grid_options: [100, 150, 200, 250, 300, 'All']
 
 api_url: 'https://openrouter.ai/api/v1'
 api_key: 'c2stb3ItdjEtMjFjZDU1NTg2M2I0ZWU4Mzg0MTI4MmEwNzA4ZTk2OGFjY2RmNmQyYmEzNzRlZGJhYmQyNzUxNjRmNWMyYzI3Mw=='
-model_name: 'Google: Gemini 2.0 Flash Experimental'
 model_seed: 0
 model_temp: 0.0
 model_context: 32_000

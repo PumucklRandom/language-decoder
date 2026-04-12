@@ -38,7 +38,6 @@ Config = namedtuple('Config', (
 
     'api_url',
     'api_key',
-    'model_name',
     'model_seed',
     'model_temp',
     'model_context',

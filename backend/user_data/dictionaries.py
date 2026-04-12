@@ -70,7 +70,7 @@ class Dicts(object):
     @catch(DictionaryError)
     def from_json_str(self, dict_name: str, data: str) -> None:
         try:
-            data = json.loads(data)
+            data: dict = json.loads(data)
             if any(not isinstance(key, str) for key in data.keys()) or \
                     any(not isinstance(val, str) for val in data.values()):
                 raise DictionaryError('Found a non-string value in data')
